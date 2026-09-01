@@ -12,3 +12,6 @@ xcuserdata/
 research/spacestation/
 *.exe
 *.dll
+# gerado por xcodegen a partir de Apex4/project.yml
+Apex4/*.xcodeproj
+Apex4/build/

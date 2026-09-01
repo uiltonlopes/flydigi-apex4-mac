@@ -5,14 +5,14 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 
 ## Milestone 0 — foundations
 - [x] `FlydigiKit` package: packet framing (XInput/DInput), CRC, device info, config/LED blob read/write, save-to-flash, LVGL RGB565 encoder, screen upload state machine — with tests using the captured blobs.
-- [ ] Privileged helper PoC: `SMAppService.daemon` + XPC + `IOUSBHost` capture of `045e:028e`; read device info. **Go/no-go for the architecture.**
+- [~] Privileged helper: `Apex4Helper` (XPCListener, Codable protocol, IOUSBLib capture) + `SMAppService.daemon` registration from the app — **built, not yet registered/tested** (needs a signing team). IOUSBHost capture was abandoned after a kernel panic; IOUSBLib works from the CLI.
 - [x] `apex4` CLI: `info`, `led`, `screen`, `config dump/restore`, `mode` — info/LED/screen verified on hardware in both channels (`mode` untested).
 
 ## Milestone 1 — what the community asked for first
 - [ ] ✅→app **LED** (CLI done): mode, colours per group, brightness, speed; persist to flash.
 - [ ] ✅→app **Screen** (CLI done: 35-frame GIF via ImageIO + IOUSBLib, 3.5 s/frame): upload GIF/PNG/JPEG (auto crop/resize to 160×80, ≤35 frames, preview of the quantised result), progress, library of animations.
 - [ ] 🔬 Screen standby/sleep time, status bar on/off.
-- [ ] Menu-bar app: battery %, connection (wired / 2.4 GHz), current profile.
+- [~] SwiftUI app `Apex4` (window: Status / Lighting / Screen / Settings + menu bar extra) — skeleton builds; DInput path direct, XInput via helper.
 
 ## Milestone 2 — controller configuration
 - [ ] 🔬 Profiles (config slots), switch active profile, import/export (`.fdg` compatible?).

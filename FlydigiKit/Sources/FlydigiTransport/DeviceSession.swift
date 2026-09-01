@@ -138,35 +138,52 @@ public final class DeviceSession: @unchecked Sendable {
 
     /// Uploads LVGL frames to the LCD. XInput only (the DInput firmware path is broken, see protocol.md §6).
     public func uploadScreen(frames: [[UInt8]], progress: ((UploadProgress) -> Void)? = nil) throws {
-        guard channel == .xinput else { throw TransportError.protocolError("screen upload requires XInput mode") }
-        let plan = ScreenUploadPlan(frames: frames)
+        let total = frames.reduce(0) { $0 + $1.count }
         var sent = 0
-        for step in plan.steps() {
-            var attempts = 0
-            while true {
-                attempts += 1
-                try link.write(step.packet)
-                let accepted = step.acceptedAcks
-                let debug = Self.debug
-                let attempt = attempts
-                let t0 = Date()
-                // Explicit closure type: with `try?` alone Swift may infer T = ScreenAck?, turning a
-                // non-matching report into a "match" whose value is nil (instant false timeout).
-                let ack: ScreenAck? = try? link.waitForReport(timeout: step.isData ? 1.5 : 3) { (r: [UInt8]) -> ScreenAck? in
-                    guard let a = XInputReply.screenAck(r) else { return nil }
-                    if debug, !step.isData || !accepted.contains(a.cmd) || a.ret != 0 {
-                        FileHandle.standardError.write("  ack cmd=\(String(a.cmd, radix: 16)) ret=\(a.ret) value=\(a.value) for \(step.debugName) attempt \(attempt)\n".data(using: .utf8)!)
-                    }
-                    return accepted.contains(a.cmd) ? a : nil
+        for (i, frame) in frames.enumerated() {
+            try uploadScreenFrame(frame, index: i + 1, of: frames.count) { bytes in
+                progress?(UploadProgress(frame: i + 1, frames: frames.count, bytesSent: sent + bytes, totalBytes: total))
+            }
+            sent += frame.count
+        }
+        try finishScreenUpload(frameCount: frames.count)
+    }
+
+    /// One frame (start → data → end). The helper drives uploads frame by frame through this.
+    public func uploadScreenFrame(_ frame: [UInt8], index: Int, of total: Int, progress: ((Int) -> Void)? = nil) throws {
+        guard channel == .xinput else { throw TransportError.protocolError("screen upload requires XInput mode") }
+        var sent = 0
+        for step in ScreenUploadPlan.frameSteps(frame, index: index, of: total) {
+            try perform(step)
+            if case let .data(_, offset, _) = step { sent = min(offset + Screen.chunk, frame.count); progress?(sent) }
+        }
+    }
+
+    public func finishScreenUpload(frameCount: Int) throws {
+        try perform(ScreenUploadPlan.endAllStep(frameCount: frameCount))
+    }
+
+    private func perform(_ step: ScreenUploadPlan.Step) throws {
+        var attempts = 0
+        while true {
+            attempts += 1
+            try link.write(step.packet)
+            let accepted = step.acceptedAcks
+            let debug = Self.debug
+            let attempt = attempts
+            let t0 = Date()
+            // Explicit closure type: with `try?` alone Swift may infer T = ScreenAck?, turning a
+            // non-matching report into a "match" whose value is nil (instant false timeout).
+            let ack: ScreenAck? = try? link.waitForReport(timeout: step.isData ? 1.5 : 3) { (r: [UInt8]) -> ScreenAck? in
+                guard let a = XInputReply.screenAck(r) else { return nil }
+                if debug, !step.isData || !accepted.contains(a.cmd) || a.ret != 0 {
+                    FileHandle.standardError.write("  ack cmd=\(String(a.cmd, radix: 16)) ret=\(a.ret) value=\(a.value) for \(step.debugName) attempt \(attempt)\n".data(using: .utf8)!)
                 }
-                if debug, ack == nil { FileHandle.standardError.write("  no ack for \(step.debugName) attempt \(attempts) (\(String(format: "%.2f", Date().timeIntervalSince(t0)))s)\n".data(using: .utf8)!) }
-                if let ack, ack.ret == 0 { break }
-                if attempts >= 5 { throw TransportError.timeout("no ack for \(step.debugName) after \(attempts) attempts") }
+                return accepted.contains(a.cmd) ? a : nil
             }
-            if case let .data(frame, offset, _) = step {
-                sent += min(Screen.chunk, frames[frame - 1].count - offset)
-                progress?(UploadProgress(frame: frame, frames: frames.count, bytesSent: sent, totalBytes: plan.totalBytes))
-            }
+            if debug, ack == nil { FileHandle.standardError.write("  no ack for \(step.debugName) attempt \(attempts) (\(String(format: "%.2f", Date().timeIntervalSince(t0)))s)\n".data(using: .utf8)!) }
+            if let ack, ack.ret == 0 { return }
+            if attempts >= 5 { throw TransportError.timeout("no ack for \(step.debugName) after \(attempts) attempts") }
         }
     }
 

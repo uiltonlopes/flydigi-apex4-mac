@@ -84,37 +84,44 @@ public struct ScreenUploadPlan: Sendable {
     public var totalBytes: Int { frames.reduce(0) { $0 + $1.count } }
     public var packetCount: Int { frames.reduce(1) { $0 + 2 + ($1.count + Screen.chunk - 1) / Screen.chunk } }
 
-    /// Lazily generates every step in order. Frame numbers are 1-based, like the firmware expects.
+    /// Every step in order: per-frame steps for each frame, then EndAll. Frame numbers are 1-based.
     public func steps() -> [Step] {
         var out: [Step] = []
-        let n = UInt8(frames.count)
-        for (idx, frame) in frames.enumerated() {
-            let num = UInt8(idx + 1)
-            let size = frame.count
-            // A5 D0 09 01 gifType N num 02 sizeHi sizeLo crc(1..9)
-            var start: [UInt8] = [XInput.prefix, XInput.Cmd.screenStart, 0x09, 0x01, gifType, n, num, 0x02,
-                                  UInt8(size >> 8), UInt8(size & 0xFF), 0, 0, 0, 0, 0]
-            start[10] = start[1...9].reduce(0) { $0 &+ $1 }
-            out.append(.start(frame: Int(num), packet: start))
-
-            var offset = 0
-            while offset < size {
-                let end = min(offset + Screen.chunk, size)
-                var p: [UInt8] = [XInput.prefix, XInput.Cmd.screenData, UInt8(offset >> 8), UInt8(offset & 0xFF)]
-                p += frame[offset..<end]
-                p += [UInt8](repeating: 0xFF, count: Screen.chunk - (end - offset))
-                p.append(0)
-                out.append(.data(frame: Int(num), offset: offset, packet: Checksum.apply(p, from: 1)))
-                offset = end
-            }
-            // A5 D2 07 01 num sentHi sentLo 00 crc(1..7)
-            var endPkt: [UInt8] = [XInput.prefix, XInput.Cmd.screenEnd, 0x07, 0x01, num, UInt8(size >> 8), UInt8(size & 0xFF), 0, 0, 0, 0, 0, 0, 0, 0]
-            endPkt[8] = endPkt[1...7].reduce(0) { $0 &+ $1 }
-            out.append(.end(frame: Int(num), packet: endPkt))
-        }
-        var all: [UInt8] = [XInput.prefix, XInput.Cmd.screenEndAll, 0x07, 0x01, n, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-        all[8] = all[1...7].reduce(0) { $0 &+ $1 }
-        out.append(.endAll(packet: all))
+        for (idx, frame) in frames.enumerated() { out += Self.frameSteps(frame, index: idx + 1, of: frames.count) }
+        out.append(Self.endAllStep(frameCount: frames.count))
         return out
+    }
+
+    /// start → data… → end for one frame (`index` 1-based, `total` = number of frames in the animation).
+    public static func frameSteps(_ frame: [UInt8], index: Int, of total: Int, gifType: UInt8 = 1) -> [Step] {
+        precondition((1...total).contains(index) && total <= Screen.maxFrames)
+        var out: [Step] = []
+        let n = UInt8(total), num = UInt8(index), size = frame.count
+        // A5 D0 09 01 gifType N num 02 sizeHi sizeLo crc(1..9)
+        var start: [UInt8] = [XInput.prefix, XInput.Cmd.screenStart, 0x09, 0x01, gifType, n, num, 0x02,
+                              UInt8(size >> 8), UInt8(size & 0xFF), 0, 0, 0, 0, 0]
+        start[10] = start[1...9].reduce(0) { $0 &+ $1 }
+        out.append(.start(frame: index, packet: start))
+        var offset = 0
+        while offset < size {
+            let end = min(offset + Screen.chunk, size)
+            var p: [UInt8] = [XInput.prefix, XInput.Cmd.screenData, UInt8(offset >> 8), UInt8(offset & 0xFF)]
+            p += frame[offset..<end]
+            p += [UInt8](repeating: 0xFF, count: Screen.chunk - (end - offset))
+            p.append(0)
+            out.append(.data(frame: index, offset: offset, packet: Checksum.apply(p, from: 1)))
+            offset = end
+        }
+        // A5 D2 07 01 num sentHi sentLo 00 crc(1..7)
+        var endPkt: [UInt8] = [XInput.prefix, XInput.Cmd.screenEnd, 0x07, 0x01, num, UInt8(size >> 8), UInt8(size & 0xFF), 0, 0, 0, 0, 0, 0, 0, 0]
+        endPkt[8] = endPkt[1...7].reduce(0) { $0 &+ $1 }
+        out.append(.end(frame: index, packet: endPkt))
+        return out
+    }
+
+    public static func endAllStep(frameCount: Int) -> Step {
+        var all: [UInt8] = [XInput.prefix, XInput.Cmd.screenEndAll, 0x07, 0x01, UInt8(frameCount), 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        all[8] = all[1...7].reduce(0) { $0 &+ $1 }
+        return .endAll(packet: all)
     }
 }

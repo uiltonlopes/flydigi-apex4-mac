@@ -6,6 +6,7 @@ let package = Package(
     platforms: [.macOS(.v15)],
     products: [
         .library(name: "FlydigiKit", targets: ["FlydigiKit"]),
+        .library(name: "FlydigiTransport", targets: ["FlydigiTransport"]),
         .executable(name: "apex4", targets: ["apex4"]),
     ],
     dependencies: [

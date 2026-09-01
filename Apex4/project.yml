@@ -1,0 +1,82 @@
+# xcodegen spec — run `xcodegen generate` in this folder to (re)create Apex4.xcodeproj.
+# The .xcodeproj is generated and not committed; this file is the source of truth.
+name: Apex4
+options:
+  bundleIdPrefix: com.uiltonlopes
+  deploymentTarget:
+    macOS: "15.0"
+  xcodeVersion: "26.0"
+  createIntermediateGroups: true
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    MACOSX_DEPLOYMENT_TARGET: "15.0"
+    # Local development: ad-hoc signing. Set DEVELOPMENT_TEAM (and drop the "-") once an Apple ID is added to Xcode.
+    CODE_SIGN_STYLE: Manual
+    CODE_SIGN_IDENTITY: "-"
+    DEVELOPMENT_TEAM: ""
+packages:
+  FlydigiKit:
+    path: ../FlydigiKit
+targets:
+  Apex4:
+    type: application
+    platform: macOS
+    sources:
+      - path: App
+      - path: Shared
+    dependencies:
+      - package: FlydigiKit
+        product: FlydigiKit
+      - package: FlydigiKit
+        product: FlydigiTransport
+      - target: Apex4Helper
+        embed: true
+        codeSign: true
+        copy:
+          destination: executables      # → Contents/MacOS/Apex4Helper (what the daemon plist's BundleProgram points to)
+    info:
+      path: App/Info.plist
+      properties:
+        CFBundleDisplayName: Apex 4
+        CFBundleName: Apex4
+        LSMinimumSystemVersion: "15.0"
+        LSApplicationCategoryType: public.app-category.utilities
+        NSHumanReadableCopyright: MIT — github.com/uiltonlopes/flydigi-apex4-mac
+    entitlements:
+      path: App/Apex4.entitlements
+      properties: {}                     # no sandbox: the app talks to the pad over HID directly
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.uiltonlopes.apex4
+        ENABLE_HARDENED_RUNTIME: true
+        ENABLE_APP_SANDBOX: false
+        INFOPLIST_KEY_LSUIElement: false
+    postBuildScripts:
+      - name: Embed LaunchDaemon plist
+        script: |
+          mkdir -p "${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Library/LaunchDaemons"
+          cp "${SRCROOT}/Helper/com.uiltonlopes.apex4.helper.plist" "${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Library/LaunchDaemons/"
+        outputFiles:
+          - "${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Library/LaunchDaemons/com.uiltonlopes.apex4.helper.plist"
+  Apex4Helper:
+    type: tool
+    platform: macOS
+    sources:
+      - path: Helper
+        excludes: ["*.plist"]
+      - path: Shared
+    dependencies:
+      - package: FlydigiKit
+        product: FlydigiKit
+      - package: FlydigiKit
+        product: FlydigiTransport
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.uiltonlopes.apex4.helper
+        PRODUCT_NAME: Apex4Helper
+        ENABLE_HARDENED_RUNTIME: true
+        # A launchd daemon needs an embedded Info.plist so SMAppService can identify it.
+        CREATE_INFOPLIST_SECTION_IN_BINARY: true
+        INFOPLIST_FILE: Helper/Info.plist
