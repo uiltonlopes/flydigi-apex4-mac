@@ -12,10 +12,13 @@ settings:
     SWIFT_VERSION: "6.0"
     SWIFT_STRICT_CONCURRENCY: complete
     MACOSX_DEPLOYMENT_TARGET: "15.0"
-    # Local development: ad-hoc signing. Set DEVELOPMENT_TEAM (and drop the "-") once an Apple ID is added to Xcode.
-    CODE_SIGN_STYLE: Manual
-    CODE_SIGN_IDENTITY: "-"
-    DEVELOPMENT_TEAM: ""
+    # Signing: automatic with the maintainer's Personal Team (free Apple ID). Contributors: override
+    # DEVELOPMENT_TEAM with your own (`xcodebuild … DEVELOPMENT_TEAM=XXXX`) or use "-" for ad-hoc.
+    # SMAppService derives the helper's launch constraint from the signing team; with ad-hoc signing
+    # every rebuild changes the hash and launchd kills the daemon (Launch Constraint Violation).
+    CODE_SIGN_STYLE: Automatic
+    CODE_SIGN_IDENTITY: "Apple Development"
+    DEVELOPMENT_TEAM: A2NY8257QF
 packages:
   FlydigiKit:
     path: ../FlydigiKit
