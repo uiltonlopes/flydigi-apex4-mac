@@ -117,7 +117,14 @@ The DInput start command (`05 A5 D0 09 01 <gifType> <N> <num> <freq*10/50> <hi> 
 the firmware then NAKs every HID OUT transfer on interfaces 2 and 3 — there is no working DInput data
 path. Recovery: unplug and power-cycle the controller.
 
-## 7. Legacy / other
+## 7. Newer Flydigi devices (for reference)
+Flydigi's official WebHID tool (`hid2.flydigi.com`, a "device ID correction" utility) talks to
+devices with Flydigi's own vendor id **`0x37D7`** using report id 5 and a different framing:
+`5A A5 <cmd> <len+2> <payload…> <crc>`. The Apex 4 (fw 6.8.x) does not enumerate with that VID, but the
+`5A A5` family is the same one the Apex 4 uses for screen replies — expect newer firmware/products to
+converge on it.
+
+## 8. Legacy / other
 - Apex 3 (`k1`, deviceId 24) uses a different screen protocol (`05 F0/F1`, 20-byte packets, w/h in
   the start command). Not targeted by this project.
 - Bluetooth: Flydigi's BLE configuration service does not cover the Apex 4.
