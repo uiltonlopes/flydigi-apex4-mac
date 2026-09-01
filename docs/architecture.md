@@ -56,8 +56,7 @@ on Windows — and more — written from scratch, open source (MIT), using what 
    the user's consent, with unsaved work closed.
    **Update 2026-09-01 (later):** the IOUSBLib rewrite (libusb-style capture) works end to end from
    the CLI as root — device info, LED apply + save, single-frame screen upload in 4.5 s — and Apple's
-   driver re-attaches cleanly on release. Still to validate: the same code running inside a launchd
-   daemon (`SMAppService`), which is where the forum reports say things differ.
+   driver re-attaches cleanly on release. **Validated 2026-09-01 (evening): the same IOUSBLib code runs inside the `SMAppService` launchd daemon** (root) and serves the app over XPC — device info and LED read through the daemon, no re-enumeration loops, no panic.
    Fallbacks, in order: (a) helper installed as a classic LaunchDaemon by a signed `.pkg`;
    (b) DriverKit USB dext — clean but needs Apple to grant
    `com.apple.developer.driverkit.transport.usb` for VID `0x045E` (Microsoft's), which is unlikely,
