@@ -7,6 +7,7 @@ let package = Package(
     products: [
         .library(name: "FlydigiKit", targets: ["FlydigiKit"]),
         .library(name: "FlydigiTransport", targets: ["FlydigiTransport"]),
+        .library(name: "FlydigiHelperProtocol", targets: ["FlydigiHelperProtocol"]),
         .executable(name: "apex4", targets: ["apex4"]),
     ],
     dependencies: [
@@ -21,10 +22,12 @@ let package = Package(
             dependencies: ["FlydigiKit"],
             linkerSettings: [.linkedFramework("IOKit")]
         ),
+        // Codable messages between the app and the privileged helper (shared by app, helper and CLI).
+        .target(name: "FlydigiHelperProtocol", dependencies: ["FlydigiKit"]),
         .executableTarget(
             name: "apex4",
             dependencies: [
-                "FlydigiKit", "FlydigiTransport",
+                "FlydigiKit", "FlydigiTransport", "FlydigiHelperProtocol",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]
         ),

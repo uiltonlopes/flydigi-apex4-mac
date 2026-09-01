@@ -4,12 +4,14 @@ import ArgumentParser
 import Foundation
 import FlydigiKit
 import FlydigiTransport
+import FlydigiHelperProtocol
+import XPC
 
 @main
 struct Apex4: ParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "Configure a Flydigi Apex 4 from macOS (LEDs, screen, profiles).",
-        subcommands: [Info.self, LED.self, ScreenCmd.self, Config.self, Mode.self],
+        subcommands: [Info.self, LED.self, ScreenCmd.self, Config.self, Mode.self, Helper.self],
         defaultSubcommand: Info.self)
 }
 
@@ -173,5 +175,39 @@ struct Mode: ParsableCommand {
     func run() throws {
         let s = try ch.open(); defer { s.close() }
         try s.switchMode(); print("switch requested from \(s.channel)")
+    }
+}
+
+/// Talks to the privileged helper daemon installed by the Apex4 app (SMAppService) over XPC.
+struct Helper: ParsableCommand {
+    static let configuration = CommandConfiguration(abstract: "Query the Apex4 privileged helper daemon over XPC.",
+                                                    subcommands: [Ping.self, HInfo.self, HLed.self], defaultSubcommand: Ping.self)
+    @available(macOS 14.0, *)
+    static func send(_ req: HelperRequest) throws -> HelperReply {
+        let session = try XPCSession(machService: HelperConstants.machService, targetQueue: nil, options: [], cancellationHandler: nil)
+        defer { session.cancel(reason: "done") }
+        let reply = try session.sendSync(req).decode(as: HelperReply.self)
+        if case let .error(e) = reply { throw ValidationError("helper: \(e)") }
+        return reply
+    }
+    struct Ping: ParsableCommand {
+        func run() throws {
+            guard #available(macOS 14.0, *) else { throw ValidationError("macOS 14+") }
+            if case let .pong(v, uid) = try Helper.send(.ping) { print("helper alive · protocol v\(v) · uid \(uid)\(uid == 0 ? " (root)" : "")") }
+        }
+    }
+    struct HInfo: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "info")
+        func run() throws {
+            guard #available(macOS 14.0, *) else { throw ValidationError("macOS 14+") }
+            if case let .deviceInfo(i) = try Helper.send(.deviceInfo) { print("device \(i.deviceId) fw \(i.firmware) mac \(i.mac) \(i.wired ? "wired" : "wireless") battery \(i.batteryRaw)") }
+        }
+    }
+    struct HLed: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "led")
+        func run() throws {
+            guard #available(macOS 14.0, *) else { throw ValidationError("macOS 14+") }
+            if case let .blob(b) = try Helper.send(.readLED), let led = LEDConfig(bytes: b) { print("mode \(led.mode) speed \(led.speed) brightness \(led.brightness)") }
+        }
     }
 }

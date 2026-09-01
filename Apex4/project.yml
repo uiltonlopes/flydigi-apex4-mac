@@ -25,12 +25,13 @@ targets:
     platform: macOS
     sources:
       - path: App
-      - path: Shared
     dependencies:
       - package: FlydigiKit
         product: FlydigiKit
       - package: FlydigiKit
         product: FlydigiTransport
+      - package: FlydigiKit
+        product: FlydigiHelperProtocol
       - target: Apex4Helper
         embed: true
         codeSign: true
@@ -66,12 +67,13 @@ targets:
     sources:
       - path: Helper
         excludes: ["*.plist"]
-      - path: Shared
     dependencies:
       - package: FlydigiKit
         product: FlydigiKit
       - package: FlydigiKit
         product: FlydigiTransport
+      - package: FlydigiKit
+        product: FlydigiHelperProtocol
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.uiltonlopes.apex4.helper

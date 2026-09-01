@@ -4,6 +4,7 @@
 import Foundation
 import XPC
 import FlydigiKit
+import FlydigiHelperProtocol
 import FlydigiTransport
 
 @available(macOS 14.0, *)
@@ -22,13 +23,35 @@ final class HelperService: @unchecked Sendable {
         }
     }
 
+    private var idleTimer: DispatchWorkItem?
+    private static let idleHold: TimeInterval = 3   // keep the capture briefly so bursts of requests don't re-enumerate the pad each time
+
     private func releaseIfIdle() {
         guard uploadFrames == 0 else { return }
-        session?.close(); session = nil          // gives the pad back to Apple's driver
+        idleTimer?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            guard let self, self.uploadFrames == 0 else { return }
+            self.session?.close(); self.session = nil        // gives the pad back to Apple's driver
+        }
+        idleTimer = work
+        queue.asyncAfter(deadline: .now() + Self.idleHold, execute: work)
     }
 
     func handle(_ request: HelperRequest) -> HelperReply {
-        queue.sync { self.handleLocked(request) }
+        queue.sync { self.idleTimer?.cancel(); return self.handleLocked(request) }
+    }
+
+    /// Development convenience: if the app was rebuilt (our executable changed on disk), exit once idle;
+    /// launchd starts the new binary on the next XPC connection.
+    func watchForRebuild() {
+        let path = Bundle.main.executablePath ?? CommandLine.arguments[0]
+        let original = (try? FileManager.default.attributesOfItem(atPath: path)[.modificationDate] as? Date)
+        queue.asyncAfter(deadline: .now() + 5) { [weak self] in self?.checkRebuild(path: path, original: original) }
+    }
+    private func checkRebuild(path: String, original: Date?) {
+        let now = (try? FileManager.default.attributesOfItem(atPath: path)[.modificationDate] as? Date)
+        if let original, let now, now != original, session == nil, uploadFrames == 0 { exit(0) }
+        queue.asyncAfter(deadline: .now() + 5) { [weak self] in self?.checkRebuild(path: path, original: original) }
     }
 
     private func handleLocked(_ request: HelperRequest) -> HelperReply {
@@ -82,6 +105,7 @@ final class HelperService: @unchecked Sendable {
 
 guard #available(macOS 14.0, *) else { fatalError("macOS 14+ required") }
 let service = HelperService()
+service.watchForRebuild()
 do {
     let listener = try XPCListener(service: HelperConstants.machService) { request in
         // TODO(security): restrict peers to our app's code signature (XPCPeerRequirement on macOS 26 /

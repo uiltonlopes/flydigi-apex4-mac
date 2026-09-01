@@ -5,6 +5,7 @@ import Foundation
 import Observation
 import IOKit
 import FlydigiKit
+import FlydigiHelperProtocol
 import FlydigiTransport
 
 @MainActor @Observable
@@ -24,11 +25,30 @@ final class ControllerModel {
     var uploadProgress: Double?   // 0…1 while a screen upload runs
 
     private var monitor: USBMonitor?
+    /// Our own helper calls capture/release the pad, which re-enumerates it and fires USB notifications.
+    /// Ignore notifications until this date so we never refresh in response to ourselves.
+    private var suppressNotificationsUntil = Date.distantPast
+    private var pendingNotification: Task<Void, Never>?
 
     init() {
         refreshHelperStatus()
-        monitor = USBMonitor { [weak self] in Task { @MainActor in await self?.refresh() } }
+        monitor = USBMonitor { [weak self] in Task { @MainActor in self?.usbChanged() } }
         Task { await refresh() }
+    }
+
+    /// Debounced USB attach/detach handling: update `connection`; fetch details only when a pad appears.
+    private func usbChanged() {
+        guard Date() >= suppressNotificationsUntil else { return }
+        pendingNotification?.cancel()
+        pendingNotification = Task { @MainActor in
+            try? await Task.sleep(for: .seconds(1.5))
+            guard !Task.isCancelled, Date() >= suppressNotificationsUntil else { return }
+            let now = USBMonitor.currentConnection()
+            if now != connection {
+                connection = now
+                if now == .none { info = nil; led = nil } else { await refresh() }
+            }
+        }
     }
 
     func refreshHelperStatus() {
@@ -126,7 +146,8 @@ final class ControllerModel {
 
     private func run<T: Sendable>(_ work: @escaping @Sendable () throws -> T, onSuccess: @MainActor (T) -> Void) async {
         busy = true; lastError = nil
-        defer { busy = false }
+        suppressNotificationsUntil = .distantFuture
+        defer { busy = false; suppressNotificationsUntil = Date().addingTimeInterval(4) }   // release + re-match takes ~1–2 s
         let result: Result<T, Error> = await Task.detached { Result { try work() } }.value
         switch result {
         case .success(let v): onSuccess(v)

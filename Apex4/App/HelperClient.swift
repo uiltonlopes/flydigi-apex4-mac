@@ -4,6 +4,7 @@ import Foundation
 import XPC
 import ServiceManagement
 import FlydigiKit
+import FlydigiHelperProtocol
 
 enum HelperError: Error, CustomStringConvertible {
     case notInstalled, remote(String), transport(String)

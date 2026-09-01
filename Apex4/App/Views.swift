@@ -1,6 +1,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import FlydigiKit
+import FlydigiHelperProtocol
 import FlydigiTransport
 
 // MARK: - Main window
