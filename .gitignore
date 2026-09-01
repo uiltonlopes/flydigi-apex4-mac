@@ -1,0 +1,14 @@
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+# Xcode / Swift
+.build/
+DerivedData/
+*.xcuserstate
+xcuserdata/
+*.xcworkspace/xcshareddata/swiftpm/Package.resolved
+# nunca versionar: binários/fontes da Flydigi (copyright)
+research/spacestation/
+*.exe
+*.dll

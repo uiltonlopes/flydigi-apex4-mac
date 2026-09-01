@@ -1,0 +1,45 @@
+# Flydigi Apex 4 for macOS
+
+Native, open-source macOS companion for the **Flydigi Apex 4** controller: LEDs, LCD animations,
+profiles and more — everything Flydigi Space Station does on Windows, on your Mac.
+
+> Status: **research complete, app in development.** The USB protocol has been reverse-engineered
+> and verified on real hardware (LED read/write with persistence, full 35-frame GIF upload to the
+> screen). See [`docs/protocol.md`](docs/protocol.md).
+
+## Why
+
+Flydigi only ships configuration software for Windows. The controller works fine as a gamepad on
+macOS, but you cannot change lighting, upload GIFs to the screen, or tune triggers and sticks.
+Running the Windows app in a VM does not work either: Apple's own Xbox controller driver claims
+the device before the VM can.
+
+## How it works (short version)
+
+- In **DInput** mode the pad exposes a vendor HID interface that macOS leaves alone → the app talks
+  to it directly, no privileges needed (LEDs, config, profiles).
+- In **XInput** mode Apple's driver owns the device; the LCD upload only works in this mode, so a
+  small privileged helper (installed once, `SMAppService`) captures the interface for the app.
+- Image format for the screen is LVGL v8 / RGB565 big-endian, 160×80, up to 35 frames.
+
+Details: [`docs/architecture.md`](docs/architecture.md) · [`docs/roadmap.md`](docs/roadmap.md).
+
+## Repository
+
+```
+docs/              protocol, architecture, roadmap
+research/python/   prototypes that proved the protocol (reference; not the app)
+```
+The Swift package, app and CLI land here as they are built.
+
+## Contributing
+
+Issues and PRs welcome — especially from Apex 4 owners who can test on different firmware
+versions, the 2.4 GHz dongle, and other k2-family variants (EVA, STN…). Please **do not** commit
+any Flydigi binaries or decompiled sources; this project is written from scratch under the MIT
+license, using only knowledge of the wire protocol.
+
+## Disclaimer
+
+Not affiliated with Flydigi. Writing to the controller's flash/LCD is at your own risk; the
+research scripts were tested on one unit (firmware 6.8.3.0).
