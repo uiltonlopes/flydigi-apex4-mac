@@ -59,6 +59,7 @@ Both cause a USB re-enumeration.
 | Screen status bar | read `A5 30 02` → `r[17]==0` on (observed off); set `A5 30 03 <0=on,1=off>` | `05 F2 02/03` | |
 | Screen sleep time | read `A5 30 04` → `r[17]` (observed 15); set `A5 30 05 <t>` | `05 F2 03/02` | |
 | Mapping enable | `A5 18 <1=off,2=on>` | `05 EE <0/1>` | *(unverified)* |
+| **ForceAdapt** (trigger resistance) | `A5 30 06 <1=apply,0=preview> <side 1=L,2=R,3=both> <mode> <params…>` — Normal `[side,0]`; Race `[side,1,stroke,resistance≥1,match]`; Sniper `[side,2,stroke,pressure,strength,freq,match]`; Recoil `[side,3,stroke,recoilStroke,strength,0,match]`; Lock `[side,4,stroke,strength,match]`; Vibration `[side,5,stroke,pressure,strength,freq,match]`; sync-with-grip `A5 30 08 <side,bindType,filter,scale,stroke,pressure,strength,freq>` | `05 A0 01 …` / `05 A0 04 …` | sent & acked (Race/Sniper/Normal); live effect only, profiles persist it in the blob (offsets 185..224) |
 
 `N` = number of 10-byte parcels (config: 79, LED: 50). Config id 0 was used throughout; the
 controller has several config slots.
@@ -100,13 +101,13 @@ offset   size  field
 183..184 2     "lunpan" (wheel)
 185..224 40    ForceAdapt per trigger: type(0 Normal,1 Race,2 Sniper,3 Recoil,4 Lock,5 Vibration), bind type/filter/scale, 5 bind params, mixed border, 10 params
 225..226 2     dataVersion — the random id (`A5 50 02` returns the same two bytes)
-230..767 538   macros: [count][offsets…] then per macro: key, count LE16, enable(0 none,1 once,2 press,3 click), N × (t LE16 ×10 ms, key, event)
+230..767 538   macros: [count][offsets… (maxMacros+1 header)] then per macro: key, actionCount LE16, enable(0 none,1 once,2 press,3 click), N × (t LE16 ×10 ms cumulative, key, event 0 release/1 press) — verified: 4-action macro on M1 round-trips
 770..789 20    title, UTF-16LE
 ```
 Unmodelled bytes are preserved on write (the encoder only re-serialises groups that changed).
 **Profiles (verified 2026-09-01):** the pad holds 4 slots (factory titles 常规/枪战/格斗/赛车 = general/shooter/
 fighting/racing). Read with `A5 21 <slot>`, write with `A5 25 <N> A0 <slot>` + parcels, then save-to-flash;
-`A5 50 05 <slot>` activates a slot. Saving rewrites the blob's `dataVersion` bytes (225..226), so a
+`A5 50 05 <slot>` activates a slot. **Reading a slot with `A5 21 <slot>` also makes `A5 20` report that slot as current** — re-apply the user's slot after enumerating profiles. Saving rewrites the blob's `dataVersion` bytes (225..226), so a
 byte-exact restore is impossible — compare everything else. A full edit cycle (remap A→B, retitle, save,
 read back, activate, restore) was exercised on slot 3.
 Round-tripping the blob unchanged is safe (verified: 80/80 acks, re-read identical).

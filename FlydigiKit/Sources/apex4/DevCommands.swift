@@ -7,7 +7,7 @@ import FlydigiTransport
 
 struct Dev: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Developer experiments (protocol re-tests).", shouldDisplay: false,
-                                                    subcommands: [DInputRetest.self, HIDSniff.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self])
+                                                    subcommands: [DInputRetest.self, HIDSniff.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self])
 
     /// Counts raw input reports on the DInput vendor interface for 2 s (transport smoke test).
     struct HIDSniff: ParsableCommand {
@@ -27,6 +27,62 @@ struct Dev: ParsableCommand {
             }
             print("reports in 2 s: \(n); r[15] histogram: \(tags.sorted { $0.key < $1.key })")
             for r in interesting { print("  ", r.map { String(format: "%02x", $0) }.joined(separator: " ")) }
+        }
+    }
+
+    /// ForceAdapt: Race (stiff, stroke 50) on both triggers for 8 s, then Sniper for 8 s, then Normal.
+    struct ForceTest: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "force-test")
+        func run() throws {
+            let s = try DeviceSession.open(preferring: .xinput); defer { s.close() }
+            try s.setForceTrigger(.race(stroke: 50, resistance: 8, matchStroke: true), side: .both); print("Race (resistance 8) on both triggers — 8 s")
+            Thread.sleep(forTimeInterval: 8)
+            try s.setForceTrigger(.sniper(stroke: 60, pressure: 5, strength: 8, frequency: 5, matchStroke: true), side: .both); print("Sniper — 8 s")
+            Thread.sleep(forTimeInterval: 8)
+            try s.setForceTrigger(.normal, side: .both); print("back to Normal")
+        }
+    }
+
+    /// Toggles the status bar and sleep time, verifying each read-back, then restores the originals.
+    struct ScreenSettings: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "screen-settings-test")
+        func run() throws {
+            let s = try DeviceSession.open(preferring: .xinput); defer { s.close() }
+            let bar = try s.screenStatusBar(), sleep = try s.screenSleepTime()
+            print("status bar on=\(bar), sleep=\(sleep)")
+            try s.setScreenStatusBar(!bar); Thread.sleep(forTimeInterval: 0.5); print("set status bar on=\(!bar) → read \(try s.screenStatusBar())")
+            try s.setScreenSleepTime(sleep == 15 ? 30 : 15); Thread.sleep(forTimeInterval: 0.5); print("set sleep \(sleep == 15 ? 30 : 15) → read \(try s.screenSleepTime())")
+            Thread.sleep(forTimeInterval: 4)
+            try s.setScreenStatusBar(bar); try s.setScreenSleepTime(sleep); Thread.sleep(forTimeInterval: 0.5)
+            print("restored → status bar on=\(try s.screenStatusBar()), sleep=\(try s.screenSleepTime())")
+        }
+    }
+
+    /// Writes a macro (M1 → A press/release, B press/release) into a slot, activates it for 15 s, then restores.
+    struct MacroTest: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "macro-test")
+        @Option var slot: UInt8 = 3
+        func run() throws {
+            let s = try DeviceSession.open(preferring: .xinput); defer { s.close() }
+            let active = try s.currentConfigId()
+            s.configId = slot
+            let original = try s.readBlob(.config)
+            guard var cfg = GamepadConfig(bytes: original) else { throw ValidationError("bad blob") }
+            cfg.keys[.m1] = .macro
+            cfg.macros = [GamepadConfig.Macro(key: ControllerKey.m1.rawValue, count: 1, enable: .once, actions: [
+                .init(durationMs: 0, key: ControllerKey.a.rawValue, event: .press),
+                .init(durationMs: 100, key: ControllerKey.a.rawValue, event: .release),
+                .init(durationMs: 100, key: ControllerKey.b.rawValue, event: .press),
+                .init(durationMs: 100, key: ControllerKey.b.rawValue, event: .release),
+            ])]
+            let acks = try s.writeBlob(cfg.bytes, kind: .config); try s.saveToFlash()
+            let back = GamepadConfig(bytes: try s.readBlob(.config))
+            print("write acks \(acks.acks)/\(acks.packets); read back: M1=\(back?.keys[.m1].map { "\($0)" } ?? "?") macros=\(back?.macros.count ?? -1) actions=\(back?.macros.first?.actions.count ?? -1)")
+            if let m = back?.macros.first { print("  macro: key \(m.key) count \(m.count) enable \(m.enable) actions \(m.actions.map { "\($0.durationMs)ms \(ControllerKey(rawValue: $0.key)!) \($0.event)" })") }
+            try s.applyConfig(slot: slot); print("slot \(slot) active for 15 s — press M1 on the pad: it should fire A then B")
+            Thread.sleep(forTimeInterval: 15)
+            try s.applyConfig(slot: active); _ = try s.writeBlob(original, kind: .config); try s.saveToFlash()
+            print("restored slot \(slot) and active slot \(try s.currentConfigId())")
         }
     }
 
@@ -83,6 +139,7 @@ struct Dev: ParsableCommand {
                 let remapped = cfg.keys.filter { if case .identity = $0.value { return false } else { return true } }.count
                 print("slot \(slot)\(active == UInt8(slot) ? " (active)" : ""): \"\(cfg.title)\" · dataVersion \(cfg.dataVersion) · \(remapped) remapped keys · sticks dz \(cfg.leftStick.deadZone)/\(cfg.rightStick.deadZone) · triggers \(cfg.leftTrigger.kind)/\(cfg.rightTrigger.kind) · motion \(cfg.motion.mapType) · macros \(cfg.macros.count)")
             }
+            if let active { try s.applyConfig(slot: active) }   // reading a slot moves the pad's "current" slot; put it back
         }
     }
 

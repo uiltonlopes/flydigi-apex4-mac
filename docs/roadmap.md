@@ -12,14 +12,14 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 ## Milestone 1 — what the community asked for first
 - [x] **LED** in the app: mode, colours, brightness, speed; persisted to flash. (Per-group colours: TODO.)
 - [x] **Screen** in the app: GIF/PNG/JPEG → 160×80 (aspect-fill), ≤35 frames, quantised preview, per-frame progress. TODO: fit/fill/crop choice, real frame period in the start packet, online library.
-- [~] Screen sleep time / status bar: read verified (`A5 30 04/02`), set commands implemented, untested.
+- [x] Screen sleep time / status bar: read, set and restore verified (`A5 30 02..05`).
 - [x] SwiftUI app `Apex4` (window: Status / Lighting / Screen / Settings + menu bar extra) — **Status, Lighting (apply + save) and Screen (35-frame GIF with progress) verified on hardware through the helper** (2026-09-01).
 
 ## Milestone 2 — controller configuration
 - [~] Profiles: read/apply config slot verified (`A5 20`, `A5 50 05`); per-slot read/write + import/export pending.
-- [ ] 🔬 Button mapping, macros, turbo.
+- [~] Button mapping, macros, turbo: blob fields decoded; remap + macro write/read-back verified on hardware (`apex4 dev slot-write-test`, `dev macro-test`). UI pending.
 - [ ] 🔬 Joystick: dead zone, curve, resolution, return rate, centre sensitivity, rebounce algorithm, round type; **calibration**.
-- [ ] 🔬 Triggers: ForceAdapt modes, vibration, dead zones, jitter elimination; **calibration**.
+- [~] Triggers: ForceAdapt live command implemented (`A5 30 06`, Race/Sniper/Normal sent); dead zones/curves decoded in blob. Calibration, jitter TBD.
 - [~] Vibration motor test verified (`A5 12`); motion mapping decoded in the blob, UI pending.
 - [ ] 🔬 Live input viewer (GameController framework) for testing.
 

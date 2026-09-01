@@ -85,13 +85,15 @@ public struct GamepadConfig: Sendable, Hashable {
         public var durationMs: Int        // delay since the previous action
         public var key: UInt8             // ControllerKey raw
         public var event: Event
+        public init(durationMs: Int, key: UInt8, event: Event) { self.durationMs = durationMs; self.key = key; self.event = event }
     }
     public struct Macro: Sendable, Hashable {
         public enum Enable: UInt8, Sendable, Hashable { case none = 0, once = 1, press = 2, click = 3 }
         public var key: UInt8             // trigger button (ControllerKey raw)
-        public var count: Int
+        public var count: Int             // == actions.count on the wire (SS4 stores the action count here)
         public var enable: Enable
         public var actions: [MacroAction]
+        public init(key: UInt8, count: Int, enable: Enable, actions: [MacroAction]) { self.key = key; self.count = count; self.enable = enable; self.actions = actions }
     }
 
     // MARK: Fields
@@ -242,7 +244,8 @@ public struct GamepadConfig: Sendable, Hashable {
         var body: [UInt8] = []; var offset = 0
         for (i, m) in macros.prefix(maxMacros).enumerated() {
             if i < macros.count - 1 { offset += m.actions.count + 1; if i + 2 < head.count { head[i + 2] = UInt8(offset) } }
-            body += [m.key, UInt8(m.count & 0xFF), UInt8(m.count >> 8), m.enable.rawValue]
+            let n = m.actions.count
+            body += [m.key, UInt8(n & 0xFF), UInt8(n >> 8), m.enable.rawValue]
             var t = 0
             for a in m.actions { t += a.durationMs / tick; body += [UInt8(t & 0xFF), UInt8(t >> 8 & 0xFF), a.key, a.event.rawValue] }
         }

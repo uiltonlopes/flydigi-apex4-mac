@@ -226,6 +226,36 @@ public final class DeviceSession: @unchecked Sendable {
     public func motorTest(left: UInt8, right: UInt8) throws { try link.write(XInput.command(XInput.Cmd.motorTest, left, right)) }
     public func setMappingEnabled(_ on: Bool) throws { try link.write(XInput.command(XInput.Cmd.mappingEnable, on ? 2 : 1)) }
 
+    // MARK: ForceAdapt triggers (`A5 30 06 <1=apply,0=preview> <side> <mode> <params…>`; payloads from SS4)
+
+    public enum TriggerSide: UInt8, Sendable { case left = 1, right = 2, both = 3 }
+    public enum ForceTrigger: Sendable {
+        case normal
+        case race(stroke: UInt8, resistance: UInt8, matchStroke: Bool)
+        case sniper(stroke: UInt8, pressure: UInt8, strength: UInt8, frequency: UInt8, matchStroke: Bool)
+        case recoil(stroke: UInt8, recoilStroke: UInt8, strength: UInt8, matchStroke: Bool)
+        case lock(stroke: UInt8, strength: UInt8, matchStroke: Bool)
+        case vibration(stroke: UInt8, pressure: UInt8, strength: UInt8, frequency: UInt8, matchStroke: Bool)
+
+        func params(side: TriggerSide) -> [UInt8] {
+            func nz(_ v: UInt8) -> UInt8 { max(1, v) }
+            switch self {
+            case .normal: return [side.rawValue, 0]
+            case let .race(s, r, m): return [side.rawValue, 1, s, nz(r), m ? 1 : 0]
+            case let .sniper(s, p, st, f, m): return [side.rawValue, 2, s, nz(p), nz(st), nz(f), m ? 1 : 0]
+            case let .recoil(s, rs, st, m): return [side.rawValue, 3, s, rs, nz(st), 0, m ? 1 : 0]
+            case let .lock(s, st, m): return [side.rawValue, 4, s, st, m ? 1 : 0]
+            case let .vibration(s, p, st, f, m): return [side.rawValue, 5, s, nz(p), nz(st), nz(f), m ? 1 : 0]
+            }
+        }
+    }
+
+    /// Applies (or previews) a ForceAdapt mode on the trigger(s). Live effect only; profile persistence goes through the config blob.
+    public func setForceTrigger(_ mode: ForceTrigger, side: TriggerSide, apply: Bool = true) throws {
+        guard channel == .xinput else { throw TransportError.protocolError("XInput only") }
+        try link.write(XInput.command(XInput.Cmd.module, args: [0x06, apply ? 1 : 0] + mode.params(side: side)))
+    }
+
     // MARK: Mode
 
     /// Asks the controller to re-enumerate in the other mode and closes the link **without** resetting
