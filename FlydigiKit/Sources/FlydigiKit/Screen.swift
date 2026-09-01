@@ -63,6 +63,14 @@ public struct ScreenUploadPlan: Sendable {
             }
         }
         public var isData: Bool { if case .data = self { return true } else { return false } }
+        public var debugName: String {
+            switch self {
+            case let .start(f, _): return "start(frame \(f))"
+            case let .data(f, o, _): return "data(frame \(f), offset \(o))"
+            case let .end(f, _): return "end(frame \(f))"
+            case .endAll: return "endAll"
+            }
+        }
     }
 
     public let frames: [[UInt8]]

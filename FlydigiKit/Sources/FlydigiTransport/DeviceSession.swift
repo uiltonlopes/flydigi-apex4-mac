@@ -78,10 +78,10 @@ public final class DeviceSession: @unchecked Sendable {
         var acks = 0
         for p in packets {
             try link.write(p)
-            let ok: Bool? = try? link.waitForReport(timeout: 1) { r in
+            let ok: Bool? = try? link.waitForReport(timeout: 1) { (r: [UInt8]) -> Bool? in
                 switch self.channel {
-                case .xinput: return XInputReply.writeAck(r, kind: kind).map { _ in true }
-                case .dinput: return DInputReply.writeAck(r).map { _ in true }
+                case .xinput: return XInputReply.writeAck(r, kind: kind) == nil ? nil : true
+                case .dinput: return DInputReply.writeAck(r) == nil ? nil : true
                 }
             }
             if ok == true { acks += 1 }
@@ -128,6 +128,9 @@ public final class DeviceSession: @unchecked Sendable {
 
     // MARK: Screen
 
+    /// Set APEX4_DEBUG=1 to log screen acks to stderr.
+    nonisolated(unsafe) public static var debug = ProcessInfo.processInfo.environment["APEX4_DEBUG"] != nil
+
     public struct UploadProgress: Sendable {
         public var frame: Int, frames: Int, bytesSent: Int, totalBytes: Int
         public var fraction: Double { totalBytes == 0 ? 0 : Double(bytesSent) / Double(totalBytes) }
@@ -144,11 +147,21 @@ public final class DeviceSession: @unchecked Sendable {
                 attempts += 1
                 try link.write(step.packet)
                 let accepted = step.acceptedAcks
-                let ack: ScreenAck? = try? link.waitForReport(timeout: step.isData ? 1.5 : 3) { r in
-                    XInputReply.screenAck(r).flatMap { accepted.contains($0.cmd) ? $0 : nil }
+                let debug = Self.debug
+                let attempt = attempts
+                let t0 = Date()
+                // Explicit closure type: with `try?` alone Swift may infer T = ScreenAck?, turning a
+                // non-matching report into a "match" whose value is nil (instant false timeout).
+                let ack: ScreenAck? = try? link.waitForReport(timeout: step.isData ? 1.5 : 3) { (r: [UInt8]) -> ScreenAck? in
+                    guard let a = XInputReply.screenAck(r) else { return nil }
+                    if debug, !step.isData || !accepted.contains(a.cmd) || a.ret != 0 {
+                        FileHandle.standardError.write("  ack cmd=\(String(a.cmd, radix: 16)) ret=\(a.ret) value=\(a.value) for \(step.debugName) attempt \(attempt)\n".data(using: .utf8)!)
+                    }
+                    return accepted.contains(a.cmd) ? a : nil
                 }
+                if debug, ack == nil { FileHandle.standardError.write("  no ack for \(step.debugName) attempt \(attempts) (\(String(format: "%.2f", Date().timeIntervalSince(t0)))s)\n".data(using: .utf8)!) }
                 if let ack, ack.ret == 0 { break }
-                if attempts >= 5 { throw TransportError.timeout("no ack for \(step) after \(attempts) attempts") }
+                if attempts >= 5 { throw TransportError.timeout("no ack for \(step.debugName) after \(attempts) attempts") }
             }
             if case let .data(frame, offset, _) = step {
                 sent += min(Screen.chunk, frames[frame - 1].count - offset)

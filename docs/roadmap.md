@@ -9,8 +9,8 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 - [x] `apex4` CLI: `info`, `led`, `screen`, `config dump/restore`, `mode` — info/LED/screen verified on hardware in both channels (`mode` untested).
 
 ## Milestone 1 — what the community asked for first
-- [ ] ✅→app **LED**: mode, colours per group, brightness, speed; persist to flash.
-- [ ] ✅→app **Screen**: upload GIF/PNG/JPEG (auto crop/resize to 160×80, ≤35 frames, preview of the quantised result), progress, library of animations.
+- [ ] ✅→app **LED** (CLI done): mode, colours per group, brightness, speed; persist to flash.
+- [ ] ✅→app **Screen** (CLI done: 35-frame GIF via ImageIO + IOUSBLib, 3.5 s/frame): upload GIF/PNG/JPEG (auto crop/resize to 160×80, ≤35 frames, preview of the quantised result), progress, library of animations.
 - [ ] 🔬 Screen standby/sleep time, status bar on/off.
 - [ ] Menu-bar app: battery %, connection (wired / 2.4 GHz), current profile.
 

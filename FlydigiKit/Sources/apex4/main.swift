@@ -120,7 +120,9 @@ struct ScreenCmd: ParsableCommand {
     @Argument(help: "GIF, PNG or JPEG. Resized to 160×80; GIFs up to 35 frames.") var file: String
     @Option(help: "Limit the number of frames.") var frames: Int?
     @Flag(help: "Only convert and report; do not talk to the controller.") var dryRun = false
+    @Flag(help: "Log screen acks to stderr.") var debug = false
     func run() throws {
+        if debug { DeviceSession.debug = true }
         var lvgl = try ImageLoader.frames(url: URL(fileURLWithPath: file))
         if let frames { lvgl = Array(lvgl.prefix(frames)) }
         print("\(lvgl.count) frame(s) × \(lvgl.first?.count ?? 0) B")
