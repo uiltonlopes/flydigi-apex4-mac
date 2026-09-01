@@ -51,7 +51,7 @@ func fixture(_ name: String) throws -> [UInt8] {
     }
 
     @Test func saveToFlash() {
-        #expect(XInput.saveToFlash(randomId: 26) == hex("a55003001a000000000000000000012"))
+        #expect(XInput.saveToFlash(randomId: 26) == hex("a55003001a00000000000000000012"))
     }
 }
 
@@ -121,8 +121,8 @@ func fixture(_ name: String) throws -> [UInt8] {
     }
     @Test func pixelQuantisationIsBigEndian565() {
         let f = Screen.encodeFrame(rgb: [40, 88, 248], width: 1, height: 1)
-        // R 40→5, G 88→22, B 248→31  → 0x2EDF
-        #expect(f[4] == 0x2E && f[5] == 0xDF)
+        // R 40→5, G 88→22, B 248→31  → 0x2ADF
+        #expect(f[4] == 0x2A && f[5] == 0xDF)
     }
     @Test func matchesFlydigiConverterOnFactoryFrame() throws {
         // frame 1 of Flydigi's default GIF, decoded to RGB with ImageIO, must match the bin our
