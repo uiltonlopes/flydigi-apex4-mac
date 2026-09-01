@@ -18,7 +18,8 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 ## Milestone 2 — controller configuration
 - [~] Profiles: read/apply config slot verified (`A5 20`, `A5 50 05`); per-slot read/write + import/export pending.
 - [~] Button mapping, macros, turbo: blob fields decoded; remap + macro write/read-back verified on hardware (`apex4 dev slot-write-test`, `dev macro-test`). UI pending.
-- [ ] 🔬 Joystick: dead zone, curve, resolution, return rate, centre sensitivity, rebounce algorithm, round type; **calibration**.
+- [~] Joystick: dead zone/curve decoded in the blob (write path proven); resolution/return rate/centre sensitivity/rebounce/round type commands known (`A5 50 0A/0B/0D…`), untested.
+- [ ] **Calibration wizard** (`A5 14 01/02` start/stop, `A5 F6 06` stick test): only as a guided flow with live stick readout — starting/stopping blindly can leave sticks with a bogus range.
 - [~] Triggers: ForceAdapt live command implemented (`A5 30 06`, Race/Sniper/Normal sent); dead zones/curves decoded in blob. Calibration, jitter TBD.
 - [~] Vibration motor test verified (`A5 12`); motion mapping decoded in the blob, UI pending.
 - [ ] 🔬 Live input viewer (GameController framework) for testing.
@@ -38,6 +39,6 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 ## Later / research
 - [x] 2.4 GHz dongle: LED/config work over the base's receiver (same XInput protocol). ❌ Screen upload gets no ack wirelessly — cable only.
 - [ ] ❓ Firmware updates (MCU, dongle, trigger board, LCD via ESP32 bootloader). Highest risk; last.
-- [ ] 🚫 DualSense/DS-mode emulation, keyboard-mouse mapping driver — Windows kernel drivers; a macOS
-      equivalent would need a virtual HID driver (DriverKit). Out of scope for now.
+- [ ] Keyboard/mouse mapping **the macOS way** (Milestone 3): the firmware only flags a key as `0xFE`; Flydigi's Windows driver does the translation. On macOS the app can read the pad via GameController and post `CGEvent`s (needs Accessibility permission, app running) — no kernel driver.
+- [ ] 🚫 DualSense/DS-mode emulation — Windows kernel driver; a macOS equivalent would need a virtual HID driver (DriverKit). Out of scope.
 - [ ] 🚫 Bluetooth configuration — Flydigi's BLE service only covers the BS1 cooler, not the Apex 4.
