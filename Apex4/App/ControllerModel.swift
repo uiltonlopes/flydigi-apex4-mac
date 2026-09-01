@@ -125,8 +125,9 @@ final class ControllerModel {
             }
             return ()
         } onSuccess: { (_: Void) in }
-        try? await Task.sleep(for: .seconds(2))
+        try? await Task.sleep(for: .seconds(4))          // re-enumeration + driver matching
         await refresh()
+        if lastError != nil { try? await Task.sleep(for: .seconds(2)); await refresh() }
     }
 
     func installHelper() {

@@ -6,7 +6,7 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 ## Milestone 0 — foundations
 - [x] `FlydigiKit` package: packet framing (XInput/DInput), CRC, device info, config/LED blob read/write, save-to-flash, LVGL RGB565 encoder, screen upload state machine — with tests using the captured blobs.
 - [x] Privileged helper: `Apex4Helper` (XPCListener, Codable protocol, IOUSBLib capture) registered via `SMAppService.daemon` — **validated on hardware from inside the launchd daemon** (device info/LED through the app). IOUSBHost capture was abandoned after a kernel panic.
-- [ ] Helper hardening: verify the XPC peer is our app (XPCPeerRequirement on macOS 26 / audit token + `SecCodeCheckValidity` on 14–15); idle exit.
+- [~] Helper hardening: XPC peer must be signed by our team (`XPCPeerRequirement.isFromSameTeam()`, macOS 26+). TODO: audit-token check on macOS 14–15; idle exit.
 - [x] `apex4` CLI: `info`, `led`, `screen`, `config dump/restore`, `mode` — info/LED/screen verified on hardware in both channels (`mode` untested).
 
 ## Milestone 1 — what the community asked for first
@@ -28,7 +28,7 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 - [ ] Per-game trigger presets: `GET /pc/adapter_trigger/list?device_code=k2` (94 games) — feed Milestone 3.
 - [ ] Config blob (790 B) field map from SS4's parser (keys 13..109, joystick 109..123, trigger 123..137, motion 137..145, vibration 145..154, macros 230..768, UTF-16 title 770..790) — drives Milestone 2.
 - [ ] Firmware availability notice (read-only): `POST /pc/Update/firmware` → 6.8.3.7 for k2 today. Flashing stays out of scope.
-- [ ] Re-test the three DInput details flagged in `protocol.md` §3.
+- [x] Re-tested the DInput details flagged by the SS4 analysis (see `protocol.md` §3): keep `EA`/`E7`; acks are 1-based; DInput commands need 12-byte padding.
 
 ## Milestone 3 — beyond Space Station
 - [ ] Per-game trigger/vibration profiles: detect the frontmost app (`NSWorkspace`) and apply the profile automatically (Space Station's `GameTriggerModService`, Windows-only today).

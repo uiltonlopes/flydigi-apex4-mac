@@ -189,11 +189,14 @@ public final class DeviceSession: @unchecked Sendable {
 
     // MARK: Mode
 
-    /// Asks the controller to re-enumerate in the other mode. The link becomes invalid afterwards.
+    /// Asks the controller to re-enumerate in the other mode and closes the link **without** resetting
+    /// the device (a reset would cancel the switch). The session is unusable afterwards.
     public func switchMode() throws {
         switch channel {
         case .xinput: try link.write(XInput.command(XInput.Cmd.switchToDInput))
         case .dinput: try link.write(DInput.command(DInput.Cmd.switchToXInput))
         }
+        Thread.sleep(forTimeInterval: 0.2)
+        link.closeWithoutReset()
     }
 }

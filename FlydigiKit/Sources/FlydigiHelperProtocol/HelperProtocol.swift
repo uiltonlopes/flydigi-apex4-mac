@@ -9,6 +9,7 @@ public enum HelperConstants {
     public static let machService = "com.uiltonlopes.apex4.helper"
     public static let plistName = "com.uiltonlopes.apex4.helper.plist"
     public static let protocolVersion = 1
+    public static let appBundleId = "com.uiltonlopes.apex4"
 }
 
 public enum HelperRequest: Codable, Sendable {

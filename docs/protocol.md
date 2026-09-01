@@ -34,7 +34,9 @@ Both cause a USB re-enumeration.
   - `r[14]==0x5A && r[15]==0xA5` → **screen** reply, `r[16]` = cmd (`D0..D3`), `r[18]` = ret, `r[19..20]` = size/offset (BE).
 
 ### DInput channel (HID interface 2)
-- Output = report id `5`: `05 <cmd> <args…>` — short writes (12–14 B) are accepted; the report is nominally 63 B.
+- Output = report id `5`: `05 <cmd> <args…>`, **zero-padded to 12 bytes** (14 B for write parcels); a
+  5-byte report is silently ignored. With IOKit/hidapi on macOS the buffer passed to `SetReport` must
+  **include the report-id byte** (`05 …`) — passing only the payload gets no reply.
 - Input = report id `4`: `04 xx xx <payload…>` — payload starts at **offset 3**. For bulk reads the parcel index is at `r[3]`, data at `r[5..14]`, and the command id at `r[15]`.
 
 ## 3. Commands
@@ -60,9 +62,11 @@ controller has several config slots.
 > for the full k2 command inventory taken from SS4's `Flydigi.ControllerSdk`. The k2 wire protocol is
 > unchanged; SS4 adds partial writes (`A5 23`/`A5 28`), module versions (`A5 30 01`), status bar
 > (`A5 30 02/03`), sleep (`A5 30 04/05`), ForceAdapt (`A5 30 06`), apply config (`A5 50 05`), and more.
-> Items to re-test against our observations: DInput config-write start (`05 EF <start> <N> A0 <cfg>` vs
-> our `EA`), DInput LED-write start (`05 E6 <cfg> <start> <N>` vs our `E7`, which did work), save-to-flash
-> byte order (SS4 writes little-endian), config blobs of 840 B (v3.1) — read the parcel count from the header.
+> **Re-tested on hardware (fw 6.8.3.0, DInput):** config start `EA` and `EF` both work (79/79 acks, same
+> `EA` ack tag); LED start `E7` works (50/50), `E6` does **not** accept our parcels — we keep `EA`/`E7`.
+> DInput acks carry the parcel index **1-based** in `r[3]` (`0xFF` for the header ack). Save-to-flash
+> byte order is a host-side convention only (the firmware echoes the two bytes back); we use big-endian.
+> Config blobs of 840 B (v3.1) not seen on this firmware — still read the parcel count from the header.
 
 ### Firmware quirk — LED writes in XInput
 In XInput mode a standalone LED write is **acknowledged but ignored**. Flydigi's software always

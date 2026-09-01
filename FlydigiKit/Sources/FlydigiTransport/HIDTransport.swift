@@ -24,7 +24,12 @@ public protocol Link: AnyObject, Sendable {
     /// Waits up to `timeout` for a report satisfying `match`; returns its result.
     func waitForReport<T>(timeout: TimeInterval, _ match: @Sendable @escaping ([UInt8]) -> T?) throws -> T
     func close()
+    /// Close without resetting/re-enumerating the device (use right after a mode-switch command,
+    /// which makes the controller re-enumerate on its own — a reset would abort the switch).
+    func closeWithoutReset()
 }
+
+public extension Link { func closeWithoutReset() { close() } }
 
 public final class HIDLink: Link, @unchecked Sendable {
     public let channel: Channel = .dinput
@@ -34,7 +39,7 @@ public final class HIDLink: Link, @unchecked Sendable {
     private let lock = NSLock()
     private var inbox: [[UInt8]] = []
     private let arrived = DispatchSemaphore(value: 0)
-    private var reportBuffer = [UInt8](repeating: 0, count: 64)
+    private let reportBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: 64)
 
     /// Opens the vendor interface of the first Apex 4 found in DInput mode.
     public init() throws {
@@ -53,25 +58,28 @@ public final class HIDLink: Link, @unchecked Sendable {
         guard IOHIDDeviceOpen(device, IOOptionBits(kIOHIDOptionsTypeNone)) == kIOReturnSuccess else {
             throw TransportError.io("IOHIDDeviceOpen failed")
         }
-        IOHIDDeviceScheduleWithRunLoop(device, CFRunLoopGetMain(), CFRunLoopMode.defaultMode.rawValue)
+        // Dispatch-queue based delivery (no run loop needed — works in the app, the CLI and the daemon).
+        IOHIDDeviceSetDispatchQueue(device, queue)
         let ctx = Unmanaged.passUnretained(self).toOpaque()
-        reportBuffer.withUnsafeMutableBufferPointer { buf in
-            IOHIDDeviceRegisterInputReportCallback(device, buf.baseAddress!, buf.count, { ctx, _, _, _, reportId, report, length in
+        do {
+            IOHIDDeviceRegisterInputReportCallback(device, reportBuffer, 64, { ctx, _, _, _, reportId, report, length in
                 let me = Unmanaged<HIDLink>.fromOpaque(ctx!).takeUnretainedValue()
-                var bytes = [UInt8](repeating: 0, count: Int(length) + 1)
-                bytes[0] = UInt8(reportId)                       // keep the same layout as hidapi: report id first
-                for i in 0..<Int(length) { bytes[i + 1] = report[i] }
-                me.lock.lock(); me.inbox.append(bytes); me.lock.unlock(); me.arrived.signal()
+                // For devices with numbered reports IOHIDManager already delivers the report id as byte 0
+                // (same layout as hidapi), so the buffer is used as-is.
+                _ = reportId
+                let bytes = Array(UnsafeBufferPointer(start: report, count: Int(length)))
+                me.lock.lock(); me.inbox.append(bytes); if me.inbox.count > 512 { me.inbox.removeFirst() }; me.lock.unlock()
+                me.arrived.signal()
             }, ctx)
         }
-        // Pump the main run loop from a background thread if nobody else does (CLI use).
-        RunLoopPump.ensureRunning()
+        IOHIDDeviceActivate(device)
     }
 
     public func write(_ packet: [UInt8]) throws {
+        // Like hidapi on macOS: the buffer handed to IOHIDDeviceSetReport keeps the report-id byte in
+        // front — that is the byte layout the Flydigi firmware expects (verified: stripping it gets no reply).
         let id = CFIndex(packet[0])
-        let body = Array(packet.dropFirst())
-        let r = body.withUnsafeBufferPointer { IOHIDDeviceSetReport(device, kIOHIDReportTypeOutput, id, $0.baseAddress!, $0.count) }
+        let r = packet.withUnsafeBufferPointer { IOHIDDeviceSetReport(device, kIOHIDReportTypeOutput, id, $0.baseAddress!, $0.count) }
         guard r == kIOReturnSuccess else { throw TransportError.io(String(format: "IOHIDDeviceSetReport failed: 0x%08x", r)) }
     }
 
@@ -91,24 +99,11 @@ public final class HIDLink: Link, @unchecked Sendable {
     }
 
     public func close() {
+        guard !closed else { return }
+        closed = true
+        IOHIDDeviceCancel(device)
         IOHIDDeviceClose(device, IOOptionBits(kIOHIDOptionsTypeNone))
         IOHIDManagerClose(manager, IOOptionBits(kIOHIDOptionsTypeNone))
     }
-}
-
-/// Keeps the main CFRunLoop spinning for IOKit callbacks when running as a command-line tool.
-enum RunLoopPump {
-    nonisolated(unsafe) private static var started = false
-    static func ensureRunning() {
-        guard !started else { return }
-        started = true
-        if Thread.isMainThread && !RunLoop.main.isRunningInsideApp {
-            Thread { while true { CFRunLoopRunInMode(.defaultMode, 0.05, false) } }.start()
-        }
-    }
-}
-
-private extension RunLoop {
-    /// Heuristic: inside an app the main run loop is already driven by NSApplication.
-    var isRunningInsideApp: Bool { Bundle.main.bundleIdentifier != nil && ProcessInfo.processInfo.environment["XPC_SERVICE_NAME"] != nil }
+    private var closed = false
 }

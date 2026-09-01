@@ -84,7 +84,8 @@ public enum DInputReply {
         return (Int(r[3]), Array(r[5..<15]))
     }
 
-    /// Any of 234/231/51 acknowledges a write parcel; index at r[3].
+    /// Any of 234/231/51 acknowledges a write parcel. r[3] is the parcel index **1-based** for data parcels
+    /// (0xFF for the start header). Verified on hardware 2026-09-01.
     public static func writeAck(_ r: [UInt8]) -> Int? {
         guard r.count > 15, [DInput.Cmd.writeConfigStart, DInput.Cmd.writeLEDStart, DInput.Cmd.writeLEDData, DInput.Cmd.writeConfigData].contains(r[15]) else { return nil }
         return Int(r[3])

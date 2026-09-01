@@ -169,14 +169,16 @@ public enum DInput {
         command(kind == .config ? Cmd.readConfig : Cmd.readLED, configId)
     }
 
-    /// `05 50 02 cfg crc` — checksum over bytes 0..<4.
+    /// `05 50 02 cfg crc 00…` — DInput commands must be zero-padded to 12 bytes (a 5-byte report is
+    /// ignored by the firmware); the checksum byte is kept for parity with Space Station.
     public static func readRandomId(configId: UInt8) -> [UInt8] {
-        Checksum.apply([reportId, Cmd.subFunc, 0x02, configId, 0])
+        pad(Checksum.apply([reportId, Cmd.subFunc, 0x02, configId, 0]))
     }
-    /// `05 50 03 hi lo crc`
+    /// `05 50 03 hi lo crc 00…`
     public static func saveToFlash(randomId: UInt16) -> [UInt8] {
-        Checksum.apply([reportId, Cmd.subFunc, 0x03, UInt8(randomId >> 8), UInt8(randomId & 0xFF), 0])
+        pad(Checksum.apply([reportId, Cmd.subFunc, 0x03, UInt8(randomId >> 8), UInt8(randomId & 0xFF), 0]))
     }
+    static func pad(_ p: [UInt8], to n: Int = 12) -> [UInt8] { p + [UInt8](repeating: 0, count: max(0, n - p.count)) }
 }
 
 public enum BlobKind: Sendable, Hashable {

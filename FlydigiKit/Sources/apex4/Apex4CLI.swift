@@ -11,7 +11,7 @@ import XPC
 struct Apex4: ParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "Configure a Flydigi Apex 4 from macOS (LEDs, screen, profiles).",
-        subcommands: [Info.self, LED.self, ScreenCmd.self, Config.self, Mode.self, Helper.self],
+        subcommands: [Info.self, LED.self, ScreenCmd.self, Config.self, Mode.self, Helper.self, Dev.self],
         defaultSubcommand: Info.self)
 }
 
@@ -181,7 +181,7 @@ struct Mode: ParsableCommand {
 /// Talks to the privileged helper daemon installed by the Apex4 app (SMAppService) over XPC.
 struct Helper: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Query the Apex4 privileged helper daemon over XPC.",
-                                                    subcommands: [Ping.self, HInfo.self, HLed.self], defaultSubcommand: Ping.self)
+                                                    subcommands: [Ping.self, HInfo.self, HLed.self, HSwitch.self], defaultSubcommand: Ping.self)
     @available(macOS 14.0, *)
     static func send(_ req: HelperRequest) throws -> HelperReply {
         let session = try XPCSession(machService: HelperConstants.machService, targetQueue: nil, options: [], cancellationHandler: nil)
@@ -201,6 +201,13 @@ struct Helper: ParsableCommand {
         func run() throws {
             guard #available(macOS 14.0, *) else { throw ValidationError("macOS 14+") }
             if case let .deviceInfo(i) = try Helper.send(.deviceInfo) { print("device \(i.deviceId) fw \(i.firmware) mac \(i.mac) \(i.wired ? "wired" : "wireless") battery \(i.batteryRaw)") }
+        }
+    }
+    struct HSwitch: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "switch", abstract: "Ask the pad (via the helper, XInput) to switch to DInput.")
+        func run() throws {
+            guard #available(macOS 14.0, *) else { throw ValidationError("macOS 14+") }
+            _ = try Helper.send(.switchMode); print("switch requested — the controller re-enumerates in ~2 s")
         }
     }
     struct HLed: ParsableCommand {

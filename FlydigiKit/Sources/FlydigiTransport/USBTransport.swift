@@ -129,7 +129,12 @@ public final class USBLink: Link, @unchecked Sendable {
     }
 
     /// Releases the interface and asks macOS to re-enumerate the device so Apple's driver comes back.
-    public func close() {
+    public func close() { close(reattach: true) }
+
+    /// Releases without `USBDeviceReEnumerate(0)`: the controller is about to re-enumerate itself.
+    public func closeWithoutReset() { close(reattach: false) }
+
+    private func close(reattach: Bool) {
         guard !closed else { return }
         closed = true
         if let intf = interface {
@@ -138,7 +143,7 @@ public final class USBLink: Link, @unchecked Sendable {
             Self.release(intf)
             interface = nil
         }
-        teardownDevice(reattach: true)
+        teardownDevice(reattach: reattach)
     }
 
     // MARK: Internals

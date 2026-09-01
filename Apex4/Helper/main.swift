@@ -93,8 +93,10 @@ final class HelperService: @unchecked Sendable {
                 try withSession { try $0.finishScreenUpload(frameCount: uploadFrames) }
                 uploadFrames = 0; releaseIfIdle(); return .ok
             case .switchMode:
-                try withSession { try $0.switchMode() }
-                session?.close(); session = nil; return .ok
+                let s = try (session ?? DeviceSession.open(preferring: .xinput))
+                session = nil                                   // switchMode() closes the link itself, without reset
+                try s.switchMode()
+                return .ok
             }
         } catch {
             uploadFrames = 0
@@ -107,9 +109,7 @@ guard #available(macOS 14.0, *) else { fatalError("macOS 14+ required") }
 let service = HelperService()
 service.watchForRebuild()
 do {
-    let listener = try XPCListener(service: HelperConstants.machService) { request in
-        // TODO(security): restrict peers to our app's code signature (XPCPeerRequirement on macOS 26 /
-        // audit-token + SecCode checks on 14/15) before shipping.
+    let handler: @Sendable (XPCListener.IncomingSessionRequest) -> XPCListener.IncomingSessionRequest.Decision = { request in
         request.accept { (message: XPCReceivedMessage) -> (any Encodable)? in
             do {
                 let req = try message.decode(as: HelperRequest.self)
@@ -118,6 +118,17 @@ do {
                 return HelperReply.error("bad request: \(error)")
             }
         }
+    }
+    // Only code signed by our team (the app, or the `apex4` CLI signed with the same identity) may talk
+    // to the daemon. The Swift peer-requirement API is macOS 26+; on 14/15 the listener is unrestricted
+    // (local processes only) — TODO: audit-token based check for older systems.
+    let listener: XPCListener
+    if #available(macOS 26.0, *) {
+        listener = try XPCListener(service: HelperConstants.machService,
+                                   requirement: .isFromSameTeam(),
+                                   incomingSessionHandler: handler)
+    } else {
+        listener = try XPCListener(service: HelperConstants.machService, incomingSessionHandler: handler)
     }
     _ = listener
     dispatchMain()

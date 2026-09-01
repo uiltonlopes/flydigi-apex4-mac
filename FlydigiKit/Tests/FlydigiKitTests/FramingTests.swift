@@ -58,7 +58,7 @@ func fixture(_ name: String) throws -> [UInt8] {
 @Suite struct DInputFraming {
     @Test func commands() {
         #expect(DInput.command(DInput.Cmd.deviceInfo) == hex("05ec00000000000000000000"))
-        #expect(DInput.readRandomId(configId: 0) == [5, 0x50, 2, 0, 0x57])
+        #expect(DInput.readRandomId(configId: 0) == [5, 0x50, 2, 0, 0x57, 0, 0, 0, 0, 0, 0, 0])
     }
     @Test func ledWriteParcels() {
         let pk = DInput.writeParcels([UInt8](repeating: 1, count: 500), kind: .led, configId: 0)
