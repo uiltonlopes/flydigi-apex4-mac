@@ -66,6 +66,20 @@ on Windows — and more — written from scratch, open source (MIT), using what 
 3. **Firmware updates**: Flydigi ships `esptool` for the LCD (ESP32) and vendor loaders for the
    MCU. Out of scope until the rest is solid; must never brick a pad.
 
+## Development gotchas
+
+- **Helper killed at launch with `Launch Constraint Violation` / launchd `last exit code = 78 (EX_CONFIG)`.**
+  launchd caches a spawn constraint derived from the daemon's *designated requirement* at first
+  registration. Re-signing the helper (e.g. ad-hoc → team, or a changed signing identifier) makes every
+  later launch fail, even after `SMAppService.unregister()`/`register()`
+  ([forum 795022](https://developer.apple.com/forums/thread/795022),
+  [forum 799933](https://developer.apple.com/forums/thread/799933)). Fix: `sudo launchctl bootout
+  system/com.uiltonlopes.apex4.helper`, then re-register from the app; if that is not enough,
+  `sudo sfltool resetbtm` and reboot (resets *all* login-item registrations on the Mac). Keep the
+  helper's signing identifier and team stable across releases for the same reason.
+- Rebuilding the helper with the **same** identity is fine: the daemon notices its executable changed
+  and exits when idle; launchd relaunches it on the next XPC connection.
+
 ## Repository layout (target)
 
 ```
