@@ -7,7 +7,7 @@ import FlydigiTransport
 
 struct Dev: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Developer experiments (protocol re-tests).", shouldDisplay: false,
-                                                    subcommands: [DInputRetest.self, HIDSniff.self, RandomId.self])
+                                                    subcommands: [DInputRetest.self, HIDSniff.self, RandomId.self, Probe.self])
 
     /// Counts raw input reports on the DInput vendor interface for 2 s (transport smoke test).
     struct HIDSniff: ParsableCommand {
@@ -27,6 +27,22 @@ struct Dev: ParsableCommand {
             }
             print("reports in 2 s: \(n); r[15] histogram: \(tags.sorted { $0.key < $1.key })")
             for r in interesting { print("  ", r.map { String(format: "%02x", $0) }.joined(separator: " ")) }
+        }
+    }
+
+    /// Exercises the extra XInput commands confirmed in SS4 (read-only unless --motor / --slot given).
+    struct Probe: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "xinput-probe")
+        @Flag(help: "Buzz both motors briefly") var motor = false
+        @Option(help: "Activate a config slot 0…3") var slot: UInt8?
+        func run() throws {
+            let s = try DeviceSession.open(preferring: .xinput); defer { s.close() }
+            print("current config slot: \((try? s.currentConfigId()).map(String.init) ?? "no reply")")
+            print("module versions (A5 30 01): \((try? s.moduleVersions().description) ?? "no reply")")
+            print("status bar on: \((try? s.screenStatusBar()).map(String.init) ?? "no reply")")
+            print("screen sleep: \((try? s.screenSleepTime()).map(String.init) ?? "no reply")")
+            if motor { try s.motorTest(left: 200, right: 200); print("motor test sent"); Thread.sleep(forTimeInterval: 0.6); try s.motorTest(left: 0, right: 0) }
+            if let slot { try s.applyConfig(slot: slot); print("applied slot \(slot); now: \((try? s.currentConfigId()).map(String.init) ?? "?")") }
         }
     }
 

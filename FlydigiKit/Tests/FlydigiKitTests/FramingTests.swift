@@ -132,3 +132,26 @@ func fixture(_ name: String) throws -> [UInt8] {
         #expect(Screen.encodeFrame(rgb: rgb) == (try fixture("screen_frame1_lvgl.bin")))
     }
 }
+
+
+@Suite struct ConfigBlob {
+    @Test func decodesFactoryConfig() throws {
+        let cfg = try #require(GamepadConfig(bytes: try fixture("config_factory_790.bin")))
+        #expect(cfg.protoVersion == 0x0300 && cfg.title == "常规游戏配置")
+        #expect(cfg.keys[.c] == .key(.thumbL) && cfg.keys[.z] == .key(.thumbR) && cfg.keys[.a] == .identity)
+        #expect(cfg.leftStick.end == 127 && cfg.leftTrigger.kind == .normal && cfg.motion.mapType == .off)
+        #expect(cfg.vibration.enabled && cfg.vibration.left.scale == 60)
+        #expect(cfg.macros.isEmpty)
+    }
+    @Test func roundTripsUnchanged() throws {
+        let raw = try fixture("config_factory_790.bin")
+        #expect(GamepadConfig(bytes: raw)?.bytes == raw)
+    }
+    @Test func encodesEdits() throws {
+        var cfg = try #require(GamepadConfig(bytes: try fixture("config_factory_790.bin")))
+        cfg.keys[.a] = .key(.b); cfg.title = "Test"; cfg.leftStick.deadZone = 10
+        let again = try #require(GamepadConfig(bytes: cfg.bytes))
+        #expect(again.keys[.a] == .key(.b) && again.title == "Test" && again.leftStick.deadZone == 10)
+        #expect(again.keys[.c] == .key(.thumbL))   // untouched fields survive
+    }
+}

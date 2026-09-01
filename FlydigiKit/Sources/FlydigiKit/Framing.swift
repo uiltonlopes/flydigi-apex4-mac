@@ -44,8 +44,11 @@ public enum XInput {
     public enum Cmd {
         public static let deviceInfo: UInt8 = 0x10
         public static let dongleInfo: UInt8 = 0x11
-        public static let motorTest: UInt8 = 0x12
+        public static let motorTest: UInt8 = 0x12         // A5 12 <L> <R>
         public static let switchToDInput: UInt8 = 0x17
+        public static let mappingEnable: UInt8 = 0x18      // A5 18 <1=off,2=on>
+        public static let currentConfigId: UInt8 = 0x20    // reply r[15]=20, cfg r[16]
+        public static let module: UInt8 = 0x30             // A5 30 01 versions · 02/03 status bar get/set · 04/05 sleep get/set · 06 ForceAdapt
         public static let readConfig: UInt8 = 0x21        // reply 0x22
         public static let configReply: UInt8 = 0x22
         public static let configStartAck: UInt8 = 0x23

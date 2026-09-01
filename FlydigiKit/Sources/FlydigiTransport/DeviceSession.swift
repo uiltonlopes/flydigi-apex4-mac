@@ -187,6 +187,32 @@ public final class DeviceSession: @unchecked Sendable {
         }
     }
 
+    // MARK: Extra device commands (XInput; confirmed in Space Station 4's SDK, exercised on hardware via `apex4 dev`)
+
+    public struct ModuleVersions: Sendable { public var raw: [UInt8]; public var description: String { raw.map { String(format: "%02x", $0) }.joined(separator: " ") } }
+
+    /// Sends an XInput command and returns the first reply whose r[15] == cmd (and r[16] == sub if given).
+    func xinputQuery(_ cmd: UInt8, _ args: [UInt8], sub: UInt8? = nil, timeout: TimeInterval = 2) throws -> [UInt8] {
+        guard channel == .xinput else { throw TransportError.protocolError("XInput only") }
+        try link.write(XInput.command(cmd, args: args))
+        return try link.waitForReport(timeout: timeout) { (r: [UInt8]) -> [UInt8]? in
+            guard r.count > 27, r[14] == XInput.prefix, r[15] == cmd else { return nil }
+            if let sub, r[16] != sub { return nil }
+            return r
+        }
+    }
+
+    public func currentConfigId() throws -> UInt8 { try xinputQuery(XInput.Cmd.currentConfigId, [])[16] }
+    /// Activates an on-board config slot (0…3).
+    public func applyConfig(slot: UInt8) throws { _ = try xinputQuery(XInput.Cmd.subFunc, [0x05, slot], sub: 0x05) }
+    public func moduleVersions() throws -> ModuleVersions { ModuleVersions(raw: Array(try xinputQuery(XInput.Cmd.module, [0x01], sub: 0x01)[17..<27])) }
+    public func screenStatusBar() throws -> Bool { try xinputQuery(XInput.Cmd.module, [0x02], sub: 0x02)[17] == 0 }
+    public func setScreenStatusBar(_ on: Bool) throws { try link.write(XInput.command(XInput.Cmd.module, 0x03, on ? 0 : 1)) }
+    public func screenSleepTime() throws -> UInt8 { try xinputQuery(XInput.Cmd.module, [0x04], sub: 0x04)[17] }
+    public func setScreenSleepTime(_ t: UInt8) throws { try link.write(XInput.command(XInput.Cmd.module, 0x05, t)) }
+    public func motorTest(left: UInt8, right: UInt8) throws { try link.write(XInput.command(XInput.Cmd.motorTest, left, right)) }
+    public func setMappingEnabled(_ on: Bool) throws { try link.write(XInput.command(XInput.Cmd.mappingEnable, on ? 2 : 1)) }
+
     // MARK: Mode
 
     /// Asks the controller to re-enumerate in the other mode and closes the link **without** resetting

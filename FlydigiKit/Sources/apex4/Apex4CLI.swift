@@ -11,7 +11,7 @@ import XPC
 struct Apex4: ParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "Configure a Flydigi Apex 4 from macOS (LEDs, screen, profiles).",
-        subcommands: [Info.self, LED.self, ScreenCmd.self, Config.self, Mode.self, Helper.self, Dev.self],
+        subcommands: [Info.self, LED.self, ScreenCmd.self, Config.self, Mode.self, Helper.self, API.self, Dev.self],
         defaultSubcommand: Info.self)
 }
 
@@ -141,7 +141,20 @@ struct ScreenCmd: ParsableCommand {
 
 struct Config: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Dump or restore the raw configuration blobs.",
-                                                    subcommands: [Dump.self, Restore.self])
+                                                    subcommands: [Show.self, Dump.self, Restore.self], defaultSubcommand: Show.self)
+    struct Show: ParsableCommand {
+        static let configuration = CommandConfiguration(abstract: "Decode the active configuration (keys, sticks, triggers, motion, vibration, macros).")
+        @OptionGroup var ch: ChannelOption
+        @Option(help: "Decode a saved config.bin instead of reading the controller") var file: String?
+        func run() throws {
+            let bytes: [UInt8]
+            if let file { bytes = [UInt8](try Data(contentsOf: URL(fileURLWithPath: file))) }
+            else { let s = try ch.open(); defer { s.close() }; bytes = try s.readBlob(.config) }
+            guard let cfg = GamepadConfig(bytes: bytes) else { throw ValidationError("not a 790-byte config blob") }
+            print(cfg.summary)
+            print("round-trip identical: \(cfg.bytes == bytes)")
+        }
+    }
     struct Dump: ParsableCommand {
         @OptionGroup var ch: ChannelOption
         @Argument(help: "output directory") var dir: String
@@ -215,6 +228,45 @@ struct Helper: ParsableCommand {
         func run() throws {
             guard #available(macOS 14.0, *) else { throw ValidationError("macOS 14+") }
             if case let .blob(b) = try Helper.send(.readLED), let led = LEDConfig(bytes: b) { print("mode \(led.mode) speed \(led.speed) brightness \(led.brightness)") }
+        }
+    }
+}
+
+/// Flydigi's public web API (what Space Station 4 uses): GIF library, per-game presets, firmware check.
+struct API: ParsableCommand {
+    static let configuration = CommandConfiguration(commandName: "api", abstract: "Query Flydigi's public web API (GIF library, game presets, firmware).",
+                                                    subcommands: [Gifs.self, Games.self, Firmware.self])
+    struct Gifs: ParsableCommand {
+        @Flag(help: "Download every picture into ./flydigi-gifs") var download = false
+        func run() throws {
+            let pics = try FlydigiAPI.screenPictures()
+            print("\(pics.count) pictures for k2 (\(pics.filter(\.isGIF).count) GIF)")
+            for p in pics { print("  #\(p.id) \(p.type) freq=\(p.freq) cate=\(p.cate) \(p.isRecomment == 1 ? "★" : " ") \(p.title)  \(p.imagePath.lastPathComponent)") }
+            if download {
+                let dir = URL(fileURLWithPath: "flydigi-gifs"); try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+                for p in pics { try FlydigiAPI.download(p.imagePath).write(to: dir.appendingPathComponent("\(p.id)-\(p.imagePath.lastPathComponent)")) }
+                print("saved to \(dir.path)")
+            }
+        }
+    }
+    struct Games: ParsableCommand {
+        @Argument(help: "Filter by name (optional)") var filter: String?
+        func run() throws {
+            var games = try FlydigiAPI.gamePresets()
+            if let f = filter?.lowercased() { games = games.filter { $0.enGameName.lowercased().contains(f) || $0.gameName.lowercased().contains(f) } }
+            print("\(games.count) game presets")
+            for g in games { print("  #\(g.id) \(g.enGameName) [\(g.platforms.joined(separator: ","))] procs=\(g.processGameNames.joined(separator: ",")) vib=\(g.isVibration) type=\(g.vibType) params=\(g.vibParams) filter=\(g.vibFilter) pwm=\(g.pwmScal) minFw=\(g.minFirmwareVersion)\(g.isPS5 == 1 ? " PS5" : "")") }
+        }
+    }
+    struct Firmware: ParsableCommand {
+        @Option(help: "Current main-chip firmware, e.g. 6.8.3.0 (default: ask the controller)") var current: String?
+        func run() throws {
+            var cur = current
+            if cur == nil, let s = try? DeviceSession.open() { cur = try? s.deviceInfo().firmware; s.close() }
+            guard let cur else { throw ValidationError("pass --current x.y.z.w or connect the controller") }
+            let chips = try FlydigiAPI.firmwareUpdates(mainChip: cur)
+            if chips.isEmpty { print("firmware \(cur): up to date (no chips offered)"); return }
+            for (chip, c) in chips { print("\(chip): \(c.version) available (you have \(cur))\n  \(c.url)\n  min app \(c.min_app_version) · \(c.info.replacingOccurrences(of: "\n", with: " "))") }
         }
     }
 }

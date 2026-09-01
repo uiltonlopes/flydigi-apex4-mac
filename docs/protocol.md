@@ -52,8 +52,13 @@ Both cause a USB re-enumeration.
 | Read config random id | `A5 50 02 <cfgId>` → `r[15]=0x50,r[16]=2`, id `r[17..18]` BE, cfg `r[19]` | `05 50 02 <cfgId> crc` → payload `[80,2,hi,lo,cfg]` at `r[3..]` | |
 | **Save to flash** | `A5 50 03 <hi> <lo>` (id = random+1) → `r[17]==1` on success | `05 50 03 <hi> <lo> crc` → `r[5]==1` | **required** for a written config/LED to survive power-cycle |
 | Screen info / sleep time | — | `05 F2 03` / `05 F2 02 <sleep>` (242) | `r[3]=242,r[4]=3/4` *(unverified)* |
-| Switch active config | `A5 50 05 <cfgId>` *(unverified)* | | |
-| Motor test | `A5 12 <L> <R>` *(unverified)* | | |
+| Current config slot | `A5 20` → `r[15]=20`, slot `r[16]` (verified: 0) | `05 EB A0` *(unverified)* | |
+| Switch active config | `A5 50 05 <slot>` → ack `r[15]=50 r[16]=05` (verified: 0→1→0) | `05 50 05 <slot>` | |
+| Motor test | `A5 12 <L> <R>` (verified; send `A5 12 00 00` to stop) | `05 0F <L> <R>` | |
+| Module versions | `A5 30 01` → 10 bytes at `r[17..26]` (observed `03 09 01 13 04 01 80 80 00 00`) | `05 F5 01` | layout TBD |
+| Screen status bar | read `A5 30 02` → `r[17]==0` on (observed off); set `A5 30 03 <0=on,1=off>` | `05 F2 02/03` | |
+| Screen sleep time | read `A5 30 04` → `r[17]` (observed 15); set `A5 30 05 <t>` | `05 F2 03/02` | |
+| Mapping enable | `A5 18 <1=off,2=on>` | `05 EE <0/1>` | *(unverified)* |
 
 `N` = number of 10-byte parcels (config: 79, LED: 50). Config id 0 was used throughout; the
 controller has several config slots.
@@ -74,11 +79,32 @@ writes the full config first (`37/36`), waits ~500 ms, then writes the LED confi
 Replaying that sequence makes the LED write take effect. In DInput mode a standalone LED write
 takes effect immediately.
 
-## 4. Config blob (790 B) — partially decoded
+## 4. Config blob (790 B) — decoded
 
-Mapping, joystick, trigger, gyro and vibration settings. Layout decoded by Flydigi's
-`GamepadConfigUtilsV2` — to be documented as we implement each feature. Round-tripping the blob
-unchanged is safe (verified: 80/80 acks, re-read identical).
+Implemented in `FlydigiKit/GamepadConfig.swift` (layout from Space Station 4's `MappingConfigParserV30`,
+verified on the Apex 4's factory profile: title "常规游戏配置", C/Z mapped to the stick clicks).
+
+```
+offset   size  field
+0..1     2     protoVersion, LE (0x0300 = "3.0")
+2        1     packageCount (77 in the header even though 79 parcels are transferred)
+3..12    10    legacy LED reference
+13..108  96    key table: 32 × (target, turboEnable, turboFreq), index = ControllerKey id 0…31
+                 target 0xFF or own id = identity · 0x20 = macro · 0xFE = keyboard/mouse · else remap
+                 turboFreq > 0 → turbo ("Continuous") with enable 0 close / 1 press / 2 click
+109..122 14    sticks L,R: curve(0 default,1 quick,2 slow,3 custom), deadZone(0…127), p1x,p1y,p2x,p2y, end
+123..136 14    triggers L,R: kind(0 normal,1 ForceAdapt,2 vibration), zero, p1x,p1y,p2x,p2y, end
+137..144 8     motion: mapType(0 off,1 L-stick,2 R-stick,3 mouse), enableKey, enableType, deadZone, sens, sens, useMode(0 FPS,1 racer), enableKey2
+145..153 9     vibration: enabled(0=on), L(enabled,min,max,scale), R(enabled,min,max,scale)
+154..182 29    trigger vibration motors (linear/micro presets per side)
+183..184 2     "lunpan" (wheel)
+185..224 40    ForceAdapt per trigger: type(0 Normal,1 Race,2 Sniper,3 Recoil,4 Lock,5 Vibration), bind type/filter/scale, 5 bind params, mixed border, 10 params
+225..226 2     dataVersion — the random id (`A5 50 02` returns the same two bytes)
+230..767 538   macros: [count][offsets…] then per macro: key, count LE16, enable(0 none,1 once,2 press,3 click), N × (t LE16 ×10 ms, key, event)
+770..789 20    title, UTF-16LE
+```
+Unmodelled bytes are preserved on write (the encoder only re-serialises groups that changed).
+Round-tripping the blob unchanged is safe (verified: 80/80 acks, re-read identical).
 
 ## 5. LED blob (500 B)
 
