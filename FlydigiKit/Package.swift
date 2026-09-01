@@ -14,11 +14,11 @@ let package = Package(
     targets: [
         // Pure protocol layer: packet framing, blobs, LVGL encoder, upload plan. No I/O.
         .target(name: "FlydigiKit"),
-        // macOS transports (IOHIDManager for DInput, IOUSBHost for XInput) + device session.
+        // macOS transports (IOHIDManager for DInput, IOUSBLib device capture for XInput) + device session.
         .target(
             name: "FlydigiTransport",
             dependencies: ["FlydigiKit"],
-            linkerSettings: [.linkedFramework("IOKit"), .linkedFramework("IOUSBHost")]
+            linkerSettings: [.linkedFramework("IOKit")]
         ),
         .executableTarget(
             name: "apex4",

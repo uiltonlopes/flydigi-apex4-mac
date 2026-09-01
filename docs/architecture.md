@@ -11,7 +11,7 @@ on Windows — and more — written from scratch, open source (MIT), using what 
 | UI | **SwiftUI** (macOS 15 minimum, Liquid Glass on 26) — menu-bar extra + main window | Native look, `MenuBarExtra`, `Observation`, Settings scenes. |
 | Live input | **GameController** framework | Works in both modes (Apple's Xbox dext in XInput; HID gamepad in DInput) — button test / mapping UI. |
 | Protocol core | Swift package **`FlydigiKit`** (no UI, no I/O side effects): packet builders/parsers, config & LED blobs, LVGL encoder, upload state machine | Testable with **Swift Testing**; reusable by CLI, app and helper. |
-| Transports | `IOHIDManager` (DInput, unprivileged) · `IOUSBHost` (XInput, privileged) | Both are Apple frameworks; no third-party USB stack. |
+| Transports | `IOHIDManager` (DInput, unprivileged) · **IOUSBLib** user-client API in `IOKit.usb` (XInput, privileged; libusb-style `USBDeviceReEnumerate` capture) | Both are Apple frameworks; no third-party USB stack. IOUSBHost capture was tried first and panicked the kernel (see risks). |
 | Privileged helper | **launchd daemon registered with `SMAppService.daemon`**, talking to the app over **XPC** (`XPCListener`/`XPCSession`, Swift-native, macOS 14+; peer requirements on 26) | Screen upload needs the Xbox interface captured from Apple's driver, which requires root. One approval at install time, no password per action. |
 | CLI | `apex4` (swift-argument-parser) on top of `FlydigiKit` | Power users, scripting, CI of the protocol. |
 | Images | ImageIO / CoreGraphics for GIF decoding & resizing | No ImageMagick. |
@@ -22,7 +22,7 @@ on Windows — and more — written from scratch, open source (MIT), using what 
 ```
 ┌──────────────────────────┐  XPC (Codable)   ┌───────────────────────────────┐
 │ Apex4.app (SwiftUI)      │◄────────────────►│ com.flydigi-mac.helper (root) │
-│  • menu bar + window     │                  │  • IOUSBHost capture 045e:028e │
+│  • menu bar + window     │                  │  • IOUSBLib capture 045e:028e  │
 │  • DInput HID directly   │                  │  • screen upload, XInput cfg   │
 │  • GameController live   │                  │  • mode switch                 │
 └──────────────────────────┘                  └───────────────────────────────┘

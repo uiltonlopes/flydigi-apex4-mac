@@ -1,121 +1,116 @@
-// ⚠️ EXPERIMENTAL — DO NOT RUN WITHOUT THE USER'S EXPLICIT CONSENT.
-// On 2026-09-01 this exact sequence (IOUSBHostDevice capture → configure(1, matchInterfaces:false) →
-// IOUSBHostInterface open → interrupt IO → destroy) completed successfully and was followed within
-// seconds by a kernel panic ("Kernel data abort", far 0x30) on macOS 26.6 / Apple Silicon. The
-// libusb prototype (legacy IOUSBLib re-enumeration capture) never panicked. Being reworked.
+// XInput transport: the Xbox-360-style interface (045e:028e, interface 0, OUT ep5 / IN ep1).
 //
-// XInput transport: the Xbox-360-style interface (045e:028e, interface 0, OUT ep5 / IN ep1) via IOUSBHost.
-// Apple's XboxGamepad dext owns this interface, so we *capture* the device — which requires root
-// (or the com.apple.vm.device-access entitlement). See docs/architecture.md.
+// Apple's XboxGamepad dext owns this interface, so the device has to be *captured*. This file uses the
+// classic IOUSBLib user-client API (IOKit.usb) and mirrors libusb's darwin backend step by step:
+//   open (USBDeviceOpenSeize) → USBDeviceReEnumerate(kUSBReEnumerateCaptureDeviceMask) → close/re-open →
+//   ensure configuration → claim interface 0 (USBInterfaceOpen) → synchronous interrupt I/O →
+//   release: USBInterfaceClose → USBDeviceReEnumerate(0) (drivers re-match) → USBDeviceClose.
+// That exact sequence ran dozens of times through libusb/pyusb on this machine without incident, whereas
+// the IOUSBHost capture path panicked the kernel on macOS 26.6 (2026-09-01) — see docs/architecture.md.
+//
+// ⚠️ Still requires root and still terminates Apple's driver for the pad while open. Run deliberately.
 
 import Foundation
 import IOKit
-import IOUSBHost
+import IOKit.usb
 import FlydigiKit
+
+private typealias DeviceInterface = IOUSBDeviceInterface650
+private typealias InterfaceInterface = IOUSBInterfaceInterface800
+private typealias DevicePtr = UnsafeMutablePointer<UnsafeMutablePointer<DeviceInterface>?>
+private typealias InterfacePtr = UnsafeMutablePointer<UnsafeMutablePointer<InterfaceInterface>?>
+
+/// UUIDs from IOUSBLib.h / IOCFPlugIn.h (macros Swift cannot import).
+private enum UUIDs {
+    static var cfPlugIn: CFUUID { CFUUIDGetConstantUUIDWithBytes(nil, 0xC2, 0x44, 0xE8, 0x58, 0x10, 0x9C, 0x11, 0xD4, 0x91, 0xD4, 0x00, 0x50, 0xE4, 0xC6, 0x42, 0x6F) }
+    static var deviceUserClient: CFUUID { CFUUIDGetConstantUUIDWithBytes(nil, 0x9d, 0xc7, 0xb7, 0x80, 0x9e, 0xc0, 0x11, 0xD4, 0xa5, 0x4f, 0x00, 0x0a, 0x27, 0x05, 0x28, 0x61) }
+    static var interfaceUserClient: CFUUID { CFUUIDGetConstantUUIDWithBytes(nil, 0x2d, 0x97, 0x86, 0xc6, 0x9e, 0xf3, 0x11, 0xD4, 0xad, 0x51, 0x00, 0x0a, 0x27, 0x05, 0x28, 0x61) }
+    static var deviceInterface650: CFUUID { CFUUIDGetConstantUUIDWithBytes(nil, 0x4A, 0xAC, 0x1B, 0x2E, 0x24, 0xC2, 0x47, 0x6A, 0x96, 0x4D, 0x91, 0x33, 0x35, 0x34, 0xF2, 0xCC) }
+    static var interfaceInterface800: CFUUID { CFUUIDGetConstantUUIDWithBytes(nil, 0x33, 0xA8, 0x5D, 0xB0, 0x0C, 0x3B, 0x43, 0x28, 0x8F, 0x02, 0xFD, 0xA8, 0x1B, 0x11, 0x7F, 0x4C) }
+}
+
+private let captureMask: UInt32 = 1 << 30      // kUSBReEnumerateCaptureDeviceMask
 
 public final class USBLink: Link, @unchecked Sendable {
     public let channel: Channel = .xinput
-    private let device: IOUSBHostDevice
-    private let interface: IOUSBHostInterface
-    private let outPipe: IOUSBHostPipe
-    private let inPipe: IOUSBHostPipe
-    private let queue = DispatchQueue(label: "flydigi.usb")
+
+    private var device: DevicePtr
+    private var interface: InterfacePtr?
+    private var inPipe: UInt8 = 0
+    private var outPipe: UInt8 = 0
     private let lock = NSLock()
     private var inbox: [[UInt8]] = []
     private let arrived = DispatchSemaphore(value: 0)
     private var closed = false
+    private var reader: Thread?
 
-    static let outEndpoint = 0x05
-    static let inEndpoint = 0x81
-
+    /// Captures the first Apex 4 (or its 2.4 GHz receiver) in XInput mode. Needs root.
     public init() throws {
-        guard getuid() == 0 else {
+        guard geteuid() == 0 else {
             throw TransportError.io("XInput access needs root (Apple's Xbox driver owns the interface). Re-run with sudo, or use the privileged helper.")
         }
-        // 1. Find the device service and capture it (terminates Apple's dext clients for this device).
-        let devMatch = IOUSBHostDevice.__createMatchingDictionary(
-            withVendorID: NSNumber(value: USBID.xinputVendor), productID: NSNumber(value: USBID.xinputProduct),
-            bcdDevice: nil, deviceClass: nil, deviceSubclass: nil, deviceProtocol: nil, speed: nil, productIDArray: nil
-        ).takeRetainedValue()
-        let devService = IOServiceGetMatchingService(kIOMainPortDefault, devMatch)
-        guard devService != IO_OBJECT_NULL else {
+        let match = IOServiceMatching("IOUSBHostDevice")! as NSMutableDictionary
+        match["idVendor"] = Int(USBID.xinputVendor)
+        match["idProduct"] = Int(USBID.xinputProduct)
+        let service = IOServiceGetMatchingService(kIOMainPortDefault, match as CFDictionary)
+        guard service != IO_OBJECT_NULL else {
             throw TransportError.notFound("Apex 4 not found in XInput mode (045e:028e). Plug it in over USB and switch to XInput.")
         }
+        defer { IOObjectRelease(service) }
+
+        device = try Self.deviceInterface(for: service)
+        var kr = device.pointee!.pointee.USBDeviceOpenSeize(device)
+        guard kr == kIOReturnSuccess || kr == kIOReturnExclusiveAccess else { Self.release(device); throw Self.err("USBDeviceOpenSeize", kr) }
+
+        // Capture: terminates Apple's driver stack for this device. Does not re-enumerate, but requires a re-open.
+        kr = device.pointee!.pointee.USBDeviceReEnumerate(device, captureMask)
+        guard kr == kIOReturnSuccess else { _ = device.pointee!.pointee.USBDeviceClose(device); Self.release(device); throw Self.err("USBDeviceReEnumerate(capture)", kr) }
+        // libusb's darwin_restore_state: close and re-open the *same* device interface (no re-creation).
+        _ = device.pointee!.pointee.USBDeviceClose(device)
+        kr = device.pointee!.pointee.USBDeviceOpenSeize(device)
+        guard kr == kIOReturnSuccess else { Self.release(device); throw Self.err("USBDeviceOpenSeize (after capture)", kr) }
+
+        var config: UInt8 = 0
+        _ = device.pointee!.pointee.GetConfiguration(device, &config)
+        if config == 0 {
+            kr = device.pointee!.pointee.SetConfiguration(device, 1)
+            guard kr == kIOReturnSuccess else { teardownDevice(reattach: true); throw Self.err("SetConfiguration(1)", kr) }
+        }
+
         do {
-            device = try IOUSBHostDevice(__ioService: devService, options: .deviceCapture, queue: queue, interestHandler: nil)
+            let ifService = try Self.interfaceService(of: device, number: 0)
+            defer { IOObjectRelease(ifService) }
+            interface = try Self.interfaceInterface(for: ifService)
         } catch {
-            let e = error as NSError
-            throw TransportError.io("device capture failed: \(e.domain) code=\(e.code) (0x\(String(e.code, radix: 16))) \(e.userInfo) uid=\(getuid()) euid=\(geteuid())")
+            teardownDevice(reattach: true)
+            throw error
         }
-        // 2. Open interface 0 and its two interrupt pipes. With matchInterfaces:false the interface nubs
-        // exist but are not registered for matching, so IOServiceGetMatchingService cannot see them:
-        // walk the device's children in the IORegistry instead.
-        var ifService: io_service_t = IO_OBJECT_NULL
-        let deadline = Date().addingTimeInterval(5)
-        while ifService == IO_OBJECT_NULL && Date() < deadline {
-            ifService = Self.childInterface(of: devService, number: 0)
-            if ifService == IO_OBJECT_NULL { Thread.sleep(forTimeInterval: 0.1) }
+        let intf = interface!
+        kr = intf.pointee!.pointee.USBInterfaceOpen(intf)
+        guard kr == kIOReturnSuccess else { Self.release(intf); interface = nil; teardownDevice(reattach: true); throw Self.err("USBInterfaceOpen", kr) }
+
+        // Map endpoint addresses to pipe references.
+        var numEndpoints: UInt8 = 0
+        _ = intf.pointee!.pointee.GetNumEndpoints(intf, &numEndpoints)
+        for pipeRef in 1...max(1, numEndpoints) {
+            var direction: UInt8 = 0, number: UInt8 = 0, transferType: UInt8 = 0, interval: UInt8 = 0
+            var maxPacket: UInt16 = 0
+            guard intf.pointee!.pointee.GetPipeProperties(intf, pipeRef, &direction, &number, &transferType, &maxPacket, &interval) == kIOReturnSuccess else { continue }
+            if direction == UInt8(kUSBIn) && number == 1 { inPipe = pipeRef }
+            if direction == UInt8(kUSBOut) && number == 5 { outPipe = pipeRef }
         }
-        guard ifService != IO_OBJECT_NULL else { device.destroy(); throw TransportError.io("interface 0 not published after capture (waited 5s)") }
-        do {
-            interface = try IOUSBHostInterface(__ioService: ifService, options: [], queue: queue, interestHandler: nil)
-        } catch {
-            device.destroy()
-            throw TransportError.io("interface open failed: \(error.localizedDescription) (see docs/architecture.md, risk #1)")
-        }
-        do {
-            outPipe = try interface.copyPipe(withAddress: Self.outEndpoint)
-            inPipe = try interface.copyPipe(withAddress: Self.inEndpoint)
-        } catch {
-            interface.destroy(); device.destroy()
-            throw TransportError.io("pipes: \(error.localizedDescription)")
-        }
-        armRead()
+        guard inPipe != 0, outPipe != 0 else { close(); throw TransportError.io("interface 0 does not expose IN ep1 / OUT ep5 (found \(numEndpoints) endpoints)") }
+
+        startReader()
     }
 
-    /// Finds the IOUSBHostInterface child of `device` with the given bInterfaceNumber (registered or not).
-    private static func childInterface(of device: io_service_t, number: Int) -> io_service_t {
-        var iter: io_iterator_t = 0
-        guard IORegistryEntryGetChildIterator(device, kIOServicePlane, &iter) == kIOReturnSuccess else { return IO_OBJECT_NULL }
-        defer { IOObjectRelease(iter) }
-        while case let child = IOIteratorNext(iter), child != IO_OBJECT_NULL {
-            if IOObjectConformsTo(child, "IOUSBHostInterface") != 0,
-               let n = IORegistryEntryCreateCFProperty(child, "bInterfaceNumber" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? Int,
-               n == number {
-                return child
-            }
-            IOObjectRelease(child)
-        }
-        return IO_OBJECT_NULL
-    }
-
-    /// Keeps one asynchronous read outstanding on the IN pipe; every completed report lands in `inbox`.
-    private final class ReadBuffer: @unchecked Sendable { let data = NSMutableData(length: 64)! }
-
-    private func armRead() {
-        let box = ReadBuffer()
-        do {
-            try inPipe.enqueueIORequest(with: box.data, completionTimeout: 0) { [weak self] status, transferred in
-                guard let self, !self.closed else { return }
-                if status == kIOReturnSuccess, transferred > 0 {
-                    let bytes = [UInt8](box.data.prefix(Int(transferred)))
-                    self.lock.lock(); self.inbox.append(bytes); self.lock.unlock(); self.arrived.signal()
-                }
-                if status == kIOReturnSuccess || status == kIOReturnTimeout { self.armRead() }
-            }
-        } catch {
-            // Device went away; waiters will time out.
-        }
-    }
+    // MARK: Link
 
     public func write(_ packet: [UInt8]) throws {
-        let data = NSMutableData(bytes: packet, length: packet.count)
-        var sent: Int = 0
-        do {
-            try outPipe.__sendIORequest(with: data, bytesTransferred: &sent, completionTimeout: 0)
-        } catch {
-            throw TransportError.io("USB write failed: \(error.localizedDescription)")
-        }
+        guard let intf = interface, !closed else { throw TransportError.io("link closed") }
+        var buf = packet
+        let kr = buf.withUnsafeMutableBytes { intf.pointee!.pointee.WritePipe(intf, outPipe, $0.baseAddress, UInt32(packet.count)) }
+        guard kr == kIOReturnSuccess else { throw Self.err("WritePipe", kr) }
     }
 
     public func waitForReport<T>(timeout: TimeInterval, _ match: @Sendable @escaping ([UInt8]) -> T?) throws -> T {
@@ -133,12 +128,101 @@ public final class USBLink: Link, @unchecked Sendable {
         }
     }
 
-    /// Releases the device; macOS re-matches Apple's driver so the pad works as a gamepad again.
+    /// Releases the interface and asks macOS to re-enumerate the device so Apple's driver comes back.
     public func close() {
         guard !closed else { return }
         closed = true
-        try? inPipe.__abort(with: .synchronous)
-        interface.destroy()
-        device.destroy()
+        if let intf = interface {
+            _ = intf.pointee!.pointee.AbortPipe(intf, inPipe)          // unblocks the reader thread
+            _ = intf.pointee!.pointee.USBInterfaceClose(intf)
+            Self.release(intf)
+            interface = nil
+        }
+        teardownDevice(reattach: true)
+    }
+
+    // MARK: Internals
+
+    private func startReader() {
+        let t = Thread { [weak self] in
+            var buf = [UInt8](repeating: 0, count: 64)
+            while let self, !self.closed, let intf = self.interface {
+                var size: UInt32 = 64
+                let kr = buf.withUnsafeMutableBytes { intf.pointee!.pointee.ReadPipe(intf, self.inPipe, $0.baseAddress, &size) }
+                if kr == kIOReturnSuccess, size > 0 {
+                    let report = Array(buf[0..<Int(size)])
+                    self.lock.lock(); self.inbox.append(report); if self.inbox.count > 512 { self.inbox.removeFirst() }; self.lock.unlock()
+                    self.arrived.signal()
+                } else if kr == kIOReturnAborted || kr == kIOReturnNotOpen || kr == kIOReturnNoDevice {
+                    return
+                } else {
+                    Thread.sleep(forTimeInterval: 0.005)
+                }
+            }
+        }
+        t.name = "flydigi.usb.reader"
+        t.start()
+        reader = t
+    }
+
+    /// Close the device; with `reattach`, re-enumerate without the capture mask so drivers re-match (libusb's attach_kernel_driver).
+    private func teardownDevice(reattach: Bool) {
+        if reattach { _ = device.pointee!.pointee.USBDeviceReEnumerate(device, 0) }
+        _ = device.pointee!.pointee.USBDeviceClose(device)
+        Self.release(device)
+    }
+
+    private static func deviceInterface(for service: io_service_t) throws -> DevicePtr {
+        var plugIn: UnsafeMutablePointer<UnsafeMutablePointer<IOCFPlugInInterface>?>?
+        var score: Int32 = 0
+        var kr = kIOReturnSuccess
+        for _ in 0..<5 {   // libusb retries: the first attempt can fail with "out of resources"
+            kr = IOCreatePlugInInterfaceForService(service, UUIDs.deviceUserClient, UUIDs.cfPlugIn, &plugIn, &score)
+            if kr == kIOReturnSuccess, plugIn != nil { break }
+            usleep(1000)
+        }
+        guard kr == kIOReturnSuccess, let plugIn else { throw err("IOCreatePlugInInterfaceForService(device)", kr) }
+        defer { _ = plugIn.pointee!.pointee.Release(plugIn) }
+        var raw: LPVOID?
+        let hr = plugIn.pointee!.pointee.QueryInterface(plugIn, CFUUIDGetUUIDBytes(UUIDs.deviceInterface650), &raw)
+        guard hr == S_OK, let raw else { throw TransportError.io("QueryInterface(IOUSBDeviceInterface650) failed: \(hr)") }
+        return DevicePtr(OpaquePointer(raw))
+    }
+
+    private static func interfaceService(of device: DevicePtr, number: UInt8) throws -> io_service_t {
+        var request = IOUSBFindInterfaceRequest(bInterfaceClass: UInt16(kIOUSBFindInterfaceDontCare),
+                                                bInterfaceSubClass: UInt16(kIOUSBFindInterfaceDontCare),
+                                                bInterfaceProtocol: UInt16(kIOUSBFindInterfaceDontCare),
+                                                bAlternateSetting: UInt16(kIOUSBFindInterfaceDontCare))
+        var iterator: io_iterator_t = 0
+        let kr = device.pointee!.pointee.CreateInterfaceIterator(device, &request, &iterator)
+        guard kr == kIOReturnSuccess else { throw err("CreateInterfaceIterator", kr) }
+        defer { IOObjectRelease(iterator) }
+        while case let s = IOIteratorNext(iterator), s != IO_OBJECT_NULL {
+            if let n = IORegistryEntryCreateCFProperty(s, "bInterfaceNumber" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? Int, n == Int(number) {
+                return s
+            }
+            IOObjectRelease(s)
+        }
+        throw TransportError.io("interface \(number) not found after capture")
+    }
+
+    private static func interfaceInterface(for service: io_service_t) throws -> InterfacePtr {
+        var plugIn: UnsafeMutablePointer<UnsafeMutablePointer<IOCFPlugInInterface>?>?
+        var score: Int32 = 0
+        let kr = IOCreatePlugInInterfaceForService(service, UUIDs.interfaceUserClient, UUIDs.cfPlugIn, &plugIn, &score)
+        guard kr == kIOReturnSuccess, let plugIn else { throw err("IOCreatePlugInInterfaceForService(interface)", kr) }
+        defer { _ = plugIn.pointee!.pointee.Release(plugIn) }
+        var raw: LPVOID?
+        let hr = plugIn.pointee!.pointee.QueryInterface(plugIn, CFUUIDGetUUIDBytes(UUIDs.interfaceInterface800), &raw)
+        guard hr == S_OK, let raw else { throw TransportError.io("QueryInterface(IOUSBInterfaceInterface800) failed: \(hr)") }
+        return InterfacePtr(OpaquePointer(raw))
+    }
+
+    private static func release(_ p: DevicePtr) { _ = p.pointee!.pointee.Release(UnsafeMutableRawPointer(p)) }
+    private static func release(_ p: InterfacePtr) { _ = p.pointee!.pointee.Release(UnsafeMutableRawPointer(p)) }
+
+    private static func err(_ what: String, _ kr: IOReturn) -> TransportError {
+        .io(String(format: "%@ failed: 0x%08x", what, UInt32(bitPattern: kr)))
     }
 }
