@@ -10,10 +10,10 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 - [x] `apex4` CLI: `info`, `led`, `screen`, `config dump/restore`, `mode` — info/LED/screen verified on hardware in both channels (`mode` untested).
 
 ## Milestone 1 — what the community asked for first
-- [ ] ✅→app **LED** (CLI done): mode, colours per group, brightness, speed; persist to flash.
-- [ ] ✅→app **Screen** (CLI done: 35-frame GIF via ImageIO + IOUSBLib, 3.5 s/frame): upload GIF/PNG/JPEG (auto crop/resize to 160×80, ≤35 frames, preview of the quantised result), progress, library of animations.
+- [x] **LED** in the app: mode, colours, brightness, speed; persisted to flash. (Per-group colours: TODO.)
+- [x] **Screen** in the app: GIF/PNG/JPEG → 160×80 (aspect-fill), ≤35 frames, quantised preview, per-frame progress. TODO: fit/fill/crop choice, real frame period in the start packet, online library.
 - [ ] 🔬 Screen standby/sleep time, status bar on/off.
-- [~] SwiftUI app `Apex4` (window: Status / Lighting / Screen / Settings + menu bar extra) — running; Status via helper verified. Lighting/Screen tabs to be exercised.
+- [x] SwiftUI app `Apex4` (window: Status / Lighting / Screen / Settings + menu bar extra) — **Status, Lighting (apply + save) and Screen (35-frame GIF with progress) verified on hardware through the helper** (2026-09-01).
 
 ## Milestone 2 — controller configuration
 - [ ] 🔬 Profiles (config slots), switch active profile, import/export (`.fdg` compatible?).
