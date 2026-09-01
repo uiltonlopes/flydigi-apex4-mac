@@ -1,3 +1,9 @@
+// ⚠️ EXPERIMENTAL — DO NOT RUN WITHOUT THE USER'S EXPLICIT CONSENT.
+// On 2026-09-01 this exact sequence (IOUSBHostDevice capture → configure(1, matchInterfaces:false) →
+// IOUSBHostInterface open → interrupt IO → destroy) completed successfully and was followed within
+// seconds by a kernel panic ("Kernel data abort", far 0x30) on macOS 26.6 / Apple Silicon. The
+// libusb prototype (legacy IOUSBLib re-enumeration capture) never panicked. Being reworked.
+//
 // XInput transport: the Xbox-360-style interface (045e:028e, interface 0, OUT ep5 / IN ep1) via IOUSBHost.
 // Apple's XboxGamepad dext owns this interface, so we *capture* the device — which requires root
 // (or the com.apple.vm.device-access entitlement). See docs/architecture.md.
@@ -38,7 +44,8 @@ public final class USBLink: Link, @unchecked Sendable {
         do {
             device = try IOUSBHostDevice(__ioService: devService, options: .deviceCapture, queue: queue, interestHandler: nil)
         } catch {
-            throw TransportError.io("device capture failed: \(error.localizedDescription)")
+            let e = error as NSError
+            throw TransportError.io("device capture failed: \(e.domain) code=\(e.code) (0x\(String(e.code, radix: 16))) \(e.userInfo) uid=\(getuid()) euid=\(geteuid())")
         }
         // 2. Open interface 0 and its two interrupt pipes. With matchInterfaces:false the interface nubs
         // exist but are not registered for matching, so IOServiceGetMatchingService cannot see them:

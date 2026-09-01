@@ -46,6 +46,14 @@ on Windows — and more — written from scratch, open source (MIT), using what 
    ([thread 795686](https://developer.apple.com/forums/thread/795686)). Our libusb PoC (which uses
    IOUSBHost capture under the hood) **worked as root from a terminal on macOS 26.6**. The first
    engineering task is a minimal daemon that captures the pad and reads device info.
+   **Update 2026-09-01:** the first IOUSBHost-based capture from the CLI (`sudo apex4 info`) read the
+   device info successfully and the Mac **kernel-panicked seconds later** (`Kernel data abort`,
+   `far 0x30`, panic report cites IOUSBHostInterface / XboxGamepad dext). Sequence used: device
+   capture → `configure(1, matchInterfaces: false)` → interface open → interrupt IO → destroy.
+   The Python prototype (libusb → legacy IOUSBLib `USBDeviceReEnumerate` with the capture mask,
+   then `USBInterfaceOpen`) ran the same protocol dozens of times without a panic. Next attempt will
+   mirror libusb's mechanism (IOUSBLib via IOKit, still an Apple framework) and must be run only with
+   the user's consent, with unsaved work closed.
    Fallbacks, in order: (a) helper installed as a classic LaunchDaemon by a signed `.pkg`;
    (b) DriverKit USB dext — clean but needs Apple to grant
    `com.apple.developer.driverkit.transport.usb` for VID `0x045E` (Microsoft's), which is unlikely,

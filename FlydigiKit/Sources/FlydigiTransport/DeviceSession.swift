@@ -11,10 +11,13 @@ public final class DeviceSession: @unchecked Sendable {
 
     public init(link: Link) { self.link = link }
 
-    /// Opens whichever mode the controller is currently in. XInput needs root.
+    /// Opens the controller. DInput is tried by default; **XInput is only attempted when explicitly
+    /// requested** — the IOUSBHost capture path triggered a kernel panic on macOS 26.6 (2026-09-01,
+    /// see docs/architecture.md) and is being reworked. Never run it casually.
     public static func open(preferring: Channel? = nil) throws -> DeviceSession {
         var errors: [String] = []
-        for ch in [preferring, .dinput, .xinput].compactMap({ $0 }) where !(ch == .xinput && getuid() != 0 && preferring != .xinput) {
+        let candidates: [Channel] = preferring == .xinput ? [.xinput] : [.dinput]
+        for ch in candidates {
             do {
                 switch ch {
                 case .dinput: return DeviceSession(link: try HIDLink())
