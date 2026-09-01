@@ -46,8 +46,15 @@ public final class USBLink: Link, @unchecked Sendable {
             bcdDevice: nil, interfaceNumber: 0, configurationValue: nil, interfaceClass: nil, interfaceSubclass: nil,
             interfaceProtocol: nil, speed: nil, productIDArray: nil
         ).takeRetainedValue()
-        let ifService = IOServiceGetMatchingService(kIOMainPortDefault, ifMatch)
-        guard ifService != IO_OBJECT_NULL else { throw TransportError.io("interface 0 not found after capture") }
+        // Capturing terminates Apple's driver stack; the IOUSBHostInterface services are re-registered
+        // asynchronously, so poll for a few seconds instead of failing on the first miss.
+        var ifService: io_service_t = IO_OBJECT_NULL
+        let deadline = Date().addingTimeInterval(5)
+        while ifService == IO_OBJECT_NULL && Date() < deadline {
+            ifService = IOServiceGetMatchingService(kIOMainPortDefault, (ifMatch as NSDictionary).mutableCopy() as! CFMutableDictionary)
+            if ifService == IO_OBJECT_NULL { Thread.sleep(forTimeInterval: 0.1) }
+        }
+        guard ifService != IO_OBJECT_NULL else { device.destroy(); throw TransportError.io("interface 0 not found after capture (waited 5s)") }
         do {
             interface = try IOUSBHostInterface(__ioService: ifService, options: [], queue: queue, interestHandler: nil)
         } catch {
