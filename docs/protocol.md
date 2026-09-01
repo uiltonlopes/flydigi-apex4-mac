@@ -56,6 +56,14 @@ Both cause a USB re-enumeration.
 `N` = number of 10-byte parcels (config: 79, LED: 50). Config id 0 was used throughout; the
 controller has several config slots.
 
+> **Cross-check with Space Station 4.2 (2026-09-01):** see [`spacestation4-analysis.md` §4.2](spacestation4-analysis.md)
+> for the full k2 command inventory taken from SS4's `Flydigi.ControllerSdk`. The k2 wire protocol is
+> unchanged; SS4 adds partial writes (`A5 23`/`A5 28`), module versions (`A5 30 01`), status bar
+> (`A5 30 02/03`), sleep (`A5 30 04/05`), ForceAdapt (`A5 30 06`), apply config (`A5 50 05`), and more.
+> Items to re-test against our observations: DInput config-write start (`05 EF <start> <N> A0 <cfg>` vs
+> our `EA`), DInput LED-write start (`05 E6 <cfg> <start> <N>` vs our `E7`, which did work), save-to-flash
+> byte order (SS4 writes little-endian), config blobs of 840 B (v3.1) — read the parcel count from the header.
+
 ### Firmware quirk — LED writes in XInput
 In XInput mode a standalone LED write is **acknowledged but ignored**. Flydigi's software always
 writes the full config first (`37/36`), waits ~500 ms, then writes the LED config (`42/41`).
@@ -102,7 +110,8 @@ frames are resized to 160×80; frame delay is taken from the GIF (`duration/10` 
 ### Upload sequence (XInput only — see §1)
 For each frame `num = 1..N` (`gifType=1`, size = frame length):
 ```
-start   A5 D0 09 01 <gifType> <N> <num> 02 <sizeHi> <sizeLo> <crc = sum(bytes 1..9)> 00 00 00 00
+start   A5 D0 09 01 <gifType> <N> <num> <period> <sizeHi> <sizeLo> <crc = sum(bytes 1..9)> 00 00 00 00
+        (period = frame interval in 100 ms units per SS4; Space Station 3.4 hard-codes 02, which is what we send)
         → reply 5A A5 D0 … ret@18
 data    A5 D1 <offHi> <offLo> <26 data bytes, FF-padded> <crc = sum(bytes 1..29)>   (31 B)
         → reply 5A A5 D1 … ret@18 (0 = ok, 1 = resend), next offset @19..20

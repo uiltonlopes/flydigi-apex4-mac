@@ -23,6 +23,13 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 - [ ] 🔬 Vibration motors test; gyro / motion mapping.
 - [ ] 🔬 Live input viewer (GameController framework) for testing.
 
+## Inputs from the Space Station 4 analysis (see `docs/spacestation4-analysis.md`)
+- [ ] Online GIF library: `GET https://api.flydigi.com/pc/screen_pic/list?device_code=k2` (38 items) — browse & upload from the app.
+- [ ] Per-game trigger presets: `GET /pc/adapter_trigger/list?device_code=k2` (94 games) — feed Milestone 3.
+- [ ] Config blob (790 B) field map from SS4's parser (keys 13..109, joystick 109..123, trigger 123..137, motion 137..145, vibration 145..154, macros 230..768, UTF-16 title 770..790) — drives Milestone 2.
+- [ ] Firmware availability notice (read-only): `POST /pc/Update/firmware` → 6.8.3.7 for k2 today. Flashing stays out of scope.
+- [ ] Re-test the three DInput details flagged in `protocol.md` §3.
+
 ## Milestone 3 — beyond Space Station
 - [ ] Per-game trigger/vibration profiles: detect the frontmost app (`NSWorkspace`) and apply the profile automatically (Space Station's `GameTriggerModService`, Windows-only today).
 - [ ] Shareable community presets (LED themes, GIF packs, game profiles).
