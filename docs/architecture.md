@@ -54,6 +54,10 @@ on Windows — and more — written from scratch, open source (MIT), using what 
    then `USBInterfaceOpen`) ran the same protocol dozens of times without a panic. Next attempt will
    mirror libusb's mechanism (IOUSBLib via IOKit, still an Apple framework) and must be run only with
    the user's consent, with unsaved work closed.
+   **Update 2026-09-01 (later):** the IOUSBLib rewrite (libusb-style capture) works end to end from
+   the CLI as root — device info, LED apply + save, single-frame screen upload in 4.5 s — and Apple's
+   driver re-attaches cleanly on release. Still to validate: the same code running inside a launchd
+   daemon (`SMAppService`), which is where the forum reports say things differ.
    Fallbacks, in order: (a) helper installed as a classic LaunchDaemon by a signed `.pkg`;
    (b) DriverKit USB dext — clean but needs Apple to grant
    `com.apple.developer.driverkit.transport.usb` for VID `0x045E` (Microsoft's), which is unlikely,

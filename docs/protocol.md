@@ -109,7 +109,7 @@ data    A5 D1 <offHi> <offLo> <26 data bytes, FF-padded> <crc = sum(bytes 1..29)
 end     A5 D2 07 01 <num> <sentHi> <sentLo> 00 <crc = sum(bytes 1..7)> 00…      (15 B)
         → reply 5A A5 D2 … ret@18
 ```
-After the last frame: `A5 D3 07 01 <N> 00 00 00 <crc> …` (EndAll). Throughput ≈ 4.5 s per frame
+After the last frame: `A5 D3 07 01 <N> 00 00 00 <crc> …` (EndAll) — the firmware acknowledges it with a **`D2`** reply, not `D3`. Throughput ≈ 4.5 s per frame
 (985 × 26-byte packets, each acknowledged).
 
 The DInput start command (`05 A5 D0 09 01 <gifType> <N> <num> <freq*10/50> <hi> <lo> <crc(2..10)>`)

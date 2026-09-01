@@ -4,9 +4,9 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 ✅ proven on hardware · 🔬 protocol known, not implemented · ❓ needs reverse-engineering · 🚫 not applicable on macOS
 
 ## Milestone 0 — foundations
-- [ ] `FlydigiKit` package: packet framing (XInput/DInput), CRC, device info, config/LED blob read/write, save-to-flash, LVGL RGB565 encoder, screen upload state machine — with tests using the captured blobs.
+- [x] `FlydigiKit` package: packet framing (XInput/DInput), CRC, device info, config/LED blob read/write, save-to-flash, LVGL RGB565 encoder, screen upload state machine — with tests using the captured blobs.
 - [ ] Privileged helper PoC: `SMAppService.daemon` + XPC + `IOUSBHost` capture of `045e:028e`; read device info. **Go/no-go for the architecture.**
-- [ ] `apex4` CLI: `info`, `led`, `screen`, `config dump/restore`, `mode`.
+- [x] `apex4` CLI: `info`, `led`, `screen`, `config dump/restore`, `mode` — info/LED/screen verified on hardware in both channels (`mode` untested).
 
 ## Milestone 1 — what the community asked for first
 - [ ] ✅→app **LED**: mode, colours per group, brightness, speed; persist to flash.

@@ -53,15 +53,16 @@ public struct ScreenUploadPlan: Sendable {
             case let .start(_, p), let .data(_, _, p), let .end(_, p), let .endAll(p): return p
             }
         }
-        /// The screen-ack command byte that completes this step.
-        public var expectedAck: UInt8 {
+        /// Screen-ack command bytes that complete this step. The firmware answers EndAll (D3) with a D2 ack.
+        public var acceptedAcks: Set<UInt8> {
             switch self {
-            case .start: return XInput.Cmd.screenStart
-            case .data: return XInput.Cmd.screenData
-            case .end: return XInput.Cmd.screenEnd
-            case .endAll: return XInput.Cmd.screenEndAll
+            case .start: return [XInput.Cmd.screenStart]
+            case .data: return [XInput.Cmd.screenData]
+            case .end: return [XInput.Cmd.screenEnd]
+            case .endAll: return [XInput.Cmd.screenEnd, XInput.Cmd.screenEndAll]
             }
         }
+        public var isData: Bool { if case .data = self { return true } else { return false } }
     }
 
     public let frames: [[UInt8]]

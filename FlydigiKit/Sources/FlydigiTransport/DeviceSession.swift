@@ -143,8 +143,9 @@ public final class DeviceSession: @unchecked Sendable {
             while true {
                 attempts += 1
                 try link.write(step.packet)
-                let ack: ScreenAck? = try? link.waitForReport(timeout: step.expectedAck == XInput.Cmd.screenData ? 1.5 : 3) { r in
-                    XInputReply.screenAck(r).flatMap { $0.cmd == step.expectedAck ? $0 : nil }
+                let accepted = step.acceptedAcks
+                let ack: ScreenAck? = try? link.waitForReport(timeout: step.isData ? 1.5 : 3) { r in
+                    XInputReply.screenAck(r).flatMap { accepted.contains($0.cmd) ? $0 : nil }
                 }
                 if let ack, ack.ret == 0 { break }
                 if attempts >= 5 { throw TransportError.timeout("no ack for \(step) after \(attempts) attempts") }
