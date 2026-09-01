@@ -55,7 +55,7 @@ Both cause a USB re-enumeration.
 | Current config slot | `A5 20` → `r[15]=20`, slot `r[16]` (verified: 0) | `05 EB A0` *(unverified)* | |
 | Switch active config | `A5 50 05 <slot>` → ack `r[15]=50 r[16]=05` (verified: 0→1→0) | `05 50 05 <slot>` | |
 | Motor test | `A5 12 <L> <R>` (verified; send `A5 12 00 00` to stop) | `05 0F <L> <R>` | |
-| Module versions | `A5 30 01` → 10 bytes at `r[17..26]` (observed `03 09 01 13 04 01 80 80 00 00`) | `05 F5 01` | layout TBD |
+| Module versions | `A5 30 01` → `r[17..26]`: trigger `0.r17.r18hi.r18lo`, screen `0.r19.r20hi.r20lo`, switch `r21hi.r21lo.r22hi.r22lo`, adc `0.r23.r24hi.r24lo`, nearlink `r25…r26` (observed: trigger 0.3.0.9, screen 0.1.1.3, switch 0.4.0.1, adc 0.128.8.0) | `05 F5 01` → same at `r[4..13]` | verified |
 | Screen status bar | read `A5 30 02` → `r[17]==0` on (observed off); set `A5 30 03 <0=on,1=off>` | `05 F2 02/03` | |
 | Screen sleep time | read `A5 30 04` → `r[17]` (observed 15); set `A5 30 05 <t>` | `05 F2 03/02` | |
 | Mapping enable | `A5 18 <1=off,2=on>` | `05 EE <0/1>` | *(unverified)* |
@@ -104,6 +104,11 @@ offset   size  field
 770..789 20    title, UTF-16LE
 ```
 Unmodelled bytes are preserved on write (the encoder only re-serialises groups that changed).
+**Profiles (verified 2026-09-01):** the pad holds 4 slots (factory titles 常规/枪战/格斗/赛车 = general/shooter/
+fighting/racing). Read with `A5 21 <slot>`, write with `A5 25 <N> A0 <slot>` + parcels, then save-to-flash;
+`A5 50 05 <slot>` activates a slot. Saving rewrites the blob's `dataVersion` bytes (225..226), so a
+byte-exact restore is impossible — compare everything else. A full edit cycle (remap A→B, retitle, save,
+read back, activate, restore) was exercised on slot 3.
 Round-tripping the blob unchanged is safe (verified: 80/80 acks, re-read identical).
 
 ## 5. LED blob (500 B)

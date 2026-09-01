@@ -7,7 +7,7 @@ import FlydigiTransport
 
 struct Dev: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Developer experiments (protocol re-tests).", shouldDisplay: false,
-                                                    subcommands: [DInputRetest.self, HIDSniff.self, RandomId.self, Probe.self])
+                                                    subcommands: [DInputRetest.self, HIDSniff.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self])
 
     /// Counts raw input reports on the DInput vendor interface for 2 s (transport smoke test).
     struct HIDSniff: ParsableCommand {
@@ -27,6 +27,62 @@ struct Dev: ParsableCommand {
             }
             print("reports in 2 s: \(n); r[15] histogram: \(tags.sorted { $0.key < $1.key })")
             for r in interesting { print("  ", r.map { String(format: "%02x", $0) }.joined(separator: " ")) }
+        }
+    }
+
+    /// Does reading slot N's config change what `A5 20` reports as the current slot?
+    struct ReadAffectsActive: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "read-affects-active")
+        func run() throws {
+            let s = try DeviceSession.open(preferring: .xinput); defer { s.close() }
+            print("current before: \(try s.currentConfigId())")
+            s.configId = 2; _ = try s.readBlob(.config); Thread.sleep(forTimeInterval: 0.3)
+            print("current after reading slot 2: \(try s.currentConfigId())")
+            try s.applyConfig(slot: 0); print("re-applied 0 → \(try s.currentConfigId())")
+        }
+    }
+
+    /// Write path for profiles: remaps A→B in a non-active slot, saves, reads back, activates it briefly,
+    /// then restores the original bytes and the original active slot.
+    struct SlotWriteTest: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "slot-write-test")
+        @Option(help: "Slot to use for the test (default 3)") var slot: UInt8 = 3
+        func run() throws {
+            let s = try DeviceSession.open(preferring: .xinput); defer { s.close() }
+            let active = try s.currentConfigId(); print("active slot \(active); testing on slot \(slot)")
+            s.configId = slot
+            let original = try s.readBlob(.config)
+            guard var cfg = GamepadConfig(bytes: original) else { throw ValidationError("bad blob") }
+            print("before: A → \(cfg.keys[.a]!) · title \"\(cfg.title)\"")
+            cfg.keys[.a] = .key(.b); cfg.title = "apex4 test"
+            let acks = try s.writeBlob(cfg.bytes, kind: .config); print("write acks \(acks.acks)/\(acks.packets)")
+            try s.saveToFlash(); print("saved to flash")
+            Thread.sleep(forTimeInterval: 0.5)
+            let back = try require(GamepadConfig(bytes: try s.readBlob(.config)))
+            print("after:  A → \(back.keys[.a]!) · title \"\(back.title)\" · other fields intact: \(back.keys[.c] == cfg.keys[.c] && back.leftStick == cfg.leftStick)")
+            try s.applyConfig(slot: slot); print("activated slot \(slot) → current \(try s.currentConfigId()) (press A on the pad: it should act as B for a few seconds)")
+            Thread.sleep(forTimeInterval: 6)
+            try s.applyConfig(slot: active); print("restored active slot → \(try s.currentConfigId())")
+            let r = try s.writeBlob(original, kind: .config); try s.saveToFlash()
+            let now = try s.readBlob(.config)
+            let diffs = zip(original, now).enumerated().filter { $0.element.0 != $0.element.1 }.map { "\($0.offset):\(String(format: "%02x→%02x", $0.element.0, $0.element.1))" }
+            print("restored original bytes: acks \(r.acks)/\(r.packets), identical \(diffs.isEmpty)\(diffs.isEmpty ? "" : " — differing offsets: \(diffs.joined(separator: " "))")")
+        }
+        private func require<T>(_ v: T?) throws -> T { guard let v else { throw ValidationError("nil") }; return v }
+    }
+
+    /// Reads and decodes every on-board config slot (0…3) without changing anything.
+    struct Slots: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "slots")
+        func run() throws {
+            let s = try DeviceSession.open(preferring: .xinput); defer { s.close() }
+            let active = try? s.currentConfigId()
+            for slot in 0..<4 {
+                s.configId = UInt8(slot)
+                guard let cfg = GamepadConfig(bytes: try s.readBlob(.config)) else { print("slot \(slot): bad blob"); continue }
+                let remapped = cfg.keys.filter { if case .identity = $0.value { return false } else { return true } }.count
+                print("slot \(slot)\(active == UInt8(slot) ? " (active)" : ""): \"\(cfg.title)\" · dataVersion \(cfg.dataVersion) · \(remapped) remapped keys · sticks dz \(cfg.leftStick.deadZone)/\(cfg.rightStick.deadZone) · triggers \(cfg.leftTrigger.kind)/\(cfg.rightTrigger.kind) · motion \(cfg.motion.mapType) · macros \(cfg.macros.count)")
+            }
         }
     }
 

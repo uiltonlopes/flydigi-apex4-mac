@@ -189,7 +189,20 @@ public final class DeviceSession: @unchecked Sendable {
 
     // MARK: Extra device commands (XInput; confirmed in Space Station 4's SDK, exercised on hardware via `apex4 dev`)
 
-    public struct ModuleVersions: Sendable { public var raw: [UInt8]; public var description: String { raw.map { String(format: "%02x", $0) }.joined(separator: " ") } }
+    /// Firmware versions of the secondary modules (`A5 30 01`, decoded like SS4's `ExtraInfoCommand`).
+    public struct ModuleVersions: Sendable, CustomStringConvertible {
+        public var raw: [UInt8]                       // r[17..26]
+        public var trigger: String?  { Self.v("0.\(raw[0]).", raw[0], raw[1]) }
+        public var screen: String?   { Self.v("0.\(raw[2]).", raw[2], raw[3]) }
+        public var `switch`: String? { raw[4] == 0 && raw[5] == 0 ? nil : "\(raw[4] >> 4).\(raw[4] & 0xF).\(raw[5] >> 4).\(raw[5] & 0xF)" }
+        public var adc: String?      { Self.v("0.\(raw[6]).", raw[6], raw[7]) }
+        public var nearLink: String? { raw[8] == 0 && raw[9] == 0 ? nil : "\(raw[8] >> 4).\(raw[8] & 0xF).\(raw[9] >> 4).\(raw[9] & 0xF)" }
+        private static func v(_ prefix: String, _ a: UInt8, _ b: UInt8) -> String? { a == 0 && b == 0 ? nil : prefix + "\(b >> 4).\(b & 0xF)" }
+        public var description: String {
+            [("trigger", trigger), ("screen", screen), ("switch", `switch`), ("adc", adc), ("nearlink", nearLink)]
+                .compactMap { n, v in v.map { "\(n) \($0)" } }.joined(separator: " · ")
+        }
+    }
 
     /// Sends an XInput command and returns the first reply whose r[15] == cmd (and r[16] == sub if given).
     func xinputQuery(_ cmd: UInt8, _ args: [UInt8], sub: UInt8? = nil, timeout: TimeInterval = 2) throws -> [UInt8] {
