@@ -46,8 +46,15 @@ public final class USBLink: Link, @unchecked Sendable {
             bcdDevice: nil, interfaceNumber: 0, configurationValue: nil, interfaceClass: nil, interfaceSubclass: nil,
             interfaceProtocol: nil, speed: nil, productIDArray: nil
         ).takeRetainedValue()
-        // Capturing terminates Apple's driver stack; the IOUSBHostInterface services are re-registered
-        // asynchronously, so poll for a few seconds instead of failing on the first miss.
+        // Capturing terminates Apple's driver stack and leaves the device unconfigured. Re-select
+        // configuration 1 *without* registering the interfaces for driver matching, so Apple's dext does
+        // not grab interface 0 back; the interface nubs then appear asynchronously — poll for them.
+        do {
+            try device.__configure(withValue: 1, matchInterfaces: false)
+        } catch {
+            device.destroy()
+            throw TransportError.io("set configuration failed: \(error.localizedDescription)")
+        }
         var ifService: io_service_t = IO_OBJECT_NULL
         let deadline = Date().addingTimeInterval(5)
         while ifService == IO_OBJECT_NULL && Date() < deadline {
