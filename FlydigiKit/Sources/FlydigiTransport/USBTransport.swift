@@ -40,28 +40,16 @@ public final class USBLink: Link, @unchecked Sendable {
         } catch {
             throw TransportError.io("device capture failed: \(error.localizedDescription)")
         }
-        // 2. Open interface 0 and its two interrupt pipes.
-        let ifMatch = IOUSBHostInterface.__createMatchingDictionary(
-            withVendorID: NSNumber(value: USBID.xinputVendor), productID: NSNumber(value: USBID.xinputProduct),
-            bcdDevice: nil, interfaceNumber: 0, configurationValue: nil, interfaceClass: nil, interfaceSubclass: nil,
-            interfaceProtocol: nil, speed: nil, productIDArray: nil
-        ).takeRetainedValue()
-        // Capturing terminates Apple's driver stack and leaves the device unconfigured. Re-select
-        // configuration 1 *without* registering the interfaces for driver matching, so Apple's dext does
-        // not grab interface 0 back; the interface nubs then appear asynchronously — poll for them.
-        do {
-            try device.__configure(withValue: 1, matchInterfaces: false)
-        } catch {
-            device.destroy()
-            throw TransportError.io("set configuration failed: \(error.localizedDescription)")
-        }
+        // 2. Open interface 0 and its two interrupt pipes. With matchInterfaces:false the interface nubs
+        // exist but are not registered for matching, so IOServiceGetMatchingService cannot see them:
+        // walk the device's children in the IORegistry instead.
         var ifService: io_service_t = IO_OBJECT_NULL
         let deadline = Date().addingTimeInterval(5)
         while ifService == IO_OBJECT_NULL && Date() < deadline {
-            ifService = IOServiceGetMatchingService(kIOMainPortDefault, (ifMatch as NSDictionary).mutableCopy() as! CFMutableDictionary)
+            ifService = Self.childInterface(of: devService, number: 0)
             if ifService == IO_OBJECT_NULL { Thread.sleep(forTimeInterval: 0.1) }
         }
-        guard ifService != IO_OBJECT_NULL else { device.destroy(); throw TransportError.io("interface 0 not found after capture (waited 5s)") }
+        guard ifService != IO_OBJECT_NULL else { device.destroy(); throw TransportError.io("interface 0 not published after capture (waited 5s)") }
         do {
             interface = try IOUSBHostInterface(__ioService: ifService, options: [], queue: queue, interestHandler: nil)
         } catch {
@@ -76,6 +64,22 @@ public final class USBLink: Link, @unchecked Sendable {
             throw TransportError.io("pipes: \(error.localizedDescription)")
         }
         armRead()
+    }
+
+    /// Finds the IOUSBHostInterface child of `device` with the given bInterfaceNumber (registered or not).
+    private static func childInterface(of device: io_service_t, number: Int) -> io_service_t {
+        var iter: io_iterator_t = 0
+        guard IORegistryEntryGetChildIterator(device, kIOServicePlane, &iter) == kIOReturnSuccess else { return IO_OBJECT_NULL }
+        defer { IOObjectRelease(iter) }
+        while case let child = IOIteratorNext(iter), child != IO_OBJECT_NULL {
+            if IOObjectConformsTo(child, "IOUSBHostInterface") != 0,
+               let n = IORegistryEntryCreateCFProperty(child, "bInterfaceNumber" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? Int,
+               n == number {
+                return child
+            }
+            IOObjectRelease(child)
+        }
+        return IO_OBJECT_NULL
     }
 
     /// Keeps one asynchronous read outstanding on the IN pipe; every completed report lands in `inbox`.
