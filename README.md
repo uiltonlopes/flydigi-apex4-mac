@@ -27,10 +27,21 @@ Details: [`docs/architecture.md`](docs/architecture.md) · [`docs/roadmap.md`](d
 ## Repository
 
 ```
+FlydigiKit/        Swift package: FlydigiKit (protocol), FlydigiTransport (IOHIDManager / IOUSBHost), apex4 CLI, tests
 docs/              protocol, architecture, roadmap
 research/python/   prototypes that proved the protocol (reference; not the app)
 ```
-The Swift package, app and CLI land here as they are built.
+The SwiftUI app and the privileged helper land here next.
+
+## Building the CLI
+
+```bash
+cd FlydigiKit && swift build
+.build/debug/apex4 info                 # DInput mode: no privileges needed
+.build/debug/apex4 led steady ff0000    # saved to flash
+sudo .build/debug/apex4 screen my.gif   # XInput mode: needs root (screen upload)
+swift test                              # needs Xcode (Swift Testing is not in the Command Line Tools)
+```
 
 ## Contributing
 
