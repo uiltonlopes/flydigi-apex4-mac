@@ -28,7 +28,7 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 - [ ] Shortcuts / URL scheme / CLI automation.
 
 ## Later / research
-- [x] ✅ 2.4 GHz dongle: same XInput protocol via the base's receiver (LED + screen verified).
+- [x] 2.4 GHz dongle: LED/config work over the base's receiver (same XInput protocol). ❌ Screen upload gets no ack wirelessly — cable only.
 - [ ] ❓ Firmware updates (MCU, dongle, trigger board, LCD via ESP32 bootloader). Highest risk; last.
 - [ ] 🚫 DualSense/DS-mode emulation, keyboard-mouse mapping driver — Windows kernel drivers; a macOS
       equivalent would need a virtual HID driver (DriverKit). Out of scope for now.

@@ -130,5 +130,6 @@ converge on it.
 - Bluetooth: Flydigi's BLE configuration service does not cover the Apex 4.
 - **2.4 GHz dongle (charging base): works.** The dongle enumerates as `045e:028e` "Flydigi VADER3"
   (4 interfaces, Xbox-360-receiver style); interface 0 has the same OUT ep5 / IN ep1 and speaks the
-  same XInput protocol — LED read/write and screen upload verified through it. `DeviceInfo.connection`
-  reports wireless. Root is needed exactly as in wired XInput.
+  same XInput protocol — **LED/config read/write verified** through it. **Screen upload does not**: the
+  `A5 D0` start command gets no `5A A5` ack over the dongle (the receiver firmware does not forward the
+  screen commands, or they are wired-only). Root is needed exactly as in wired XInput.
