@@ -203,19 +203,22 @@ struct AdaptiveTriggerPage: View {
 struct SettingsPage: View {
     let back: () -> Void
     @Environment(ControllerModel.self) private var model
-    @State private var firmwareNote: String?
     @State private var checking = false
+    @State private var dryRunning = false
+    @State private var language = AppLanguage.current
+    @State private var needsRestart = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             PageHeader(title: "Settings", back: back)
             HStack(alignment: .top, spacing: 0) {
                 VStack(alignment: .leading, spacing: 4) {
-                    navGroup("App Settings", ["Privileged helper", "About"])
-                    navGroup("Controller Settings", ["USB mode", "Firmware"])
+                    navGroup("Controller Settings", ["Firmware Update", "USB mode"])
+                    navGroup("App Settings", ["Language", "Privileged helper"])
+                    navGroup("About", [])
                     Spacer()
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Space Station for Mac \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")").font(.system(size: 11)).foregroundStyle(SS.n400)
+                        Text("Space Station for Mac \(appVersion)").font(.system(size: 11)).foregroundStyle(SS.n400)
                         if let i = model.info { Text("Device firmware: \(i.firmware)").font(.system(size: 11)).foregroundStyle(SS.n400) }
                     }
                 }
@@ -224,18 +227,37 @@ struct SettingsPage: View {
 
                 ScrollView {
                     VStack(alignment: .leading, spacing: 28) {
-                        Text("App Settings").font(.system(size: 18, weight: .semibold)).foregroundStyle(.white)
+                        Text("Controller Settings").font(.system(size: 18, weight: .semibold)).foregroundStyle(.white)
+                        section("Firmware Update") { firmware }
+                        section("USB mode") {
+                            Text(model.connection == .none ? "Not connected." : (model.connection == .xinput ? "XInput — what games expect; the screen and trigger previews need it." : "DInput — the app talks to the pad directly, no helper needed."))
+                                .font(.system(size: 13)).foregroundStyle(.white)
+                            GhostButton(title: model.connection == .xinput ? "Switch to DInput" : "Switch to XInput", icon: "arrow.left.arrow.right", enabled: model.connection != .none && !model.busy) { Task { await model.switchMode() } }
+                        }
+                        Text("App Settings").font(.system(size: 18, weight: .semibold)).foregroundStyle(.white).padding(.top, 8)
+                        section("Language") {
+                            Text("Choose a language").font(.system(size: 13)).foregroundStyle(SS.n300)
+                            DarkSelect(selection: $language, options: AppLanguage.allCases.map { ($0, $0.title) }, width: 260)
+                                .onChange(of: language) { _, l in l.apply(); needsRestart = true }
+                            if needsRestart {
+                                HStack(spacing: 10) {
+                                    Text("Takes effect after restarting the app").font(.system(size: 12)).foregroundStyle(SS.yellow)
+                                    GhostButton(title: "Restart now", icon: "arrow.clockwise") { AppLanguage.relaunch() }
+                                }
+                            }
+                        }
                         section("Privileged helper") {
                             Text(model.helperInstalled ? "Installed and registered with launchd." : "Not installed.").font(.system(size: 13)).foregroundStyle(.white)
-                            Text("Runs as root only while talking to the controller in XInput mode, because Apple's Xbox driver owns the USB interface. Required for screen uploads and trigger previews.")
+                            Text("Runs as root only while talking to the controller in XInput mode, because Apple's Xbox driver owns the USB interface. Required for screen uploads, trigger previews and key capture in XInput.")
                                 .font(.system(size: 12)).foregroundStyle(SS.n300)
                             HStack(spacing: 8) {
                                 PrimaryButton(title: "Install helper", enabled: !model.helperInstalled) { model.installHelper() }
                                 GhostButton(title: "Remove helper", enabled: model.helperInstalled, destructive: true) { model.uninstallHelper() }
                             }
                         }
-                        section("About") {
-                            Text("Space Station for Mac \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "") — open-source (MIT), unofficial. Ported to macOS by Uilton Lopes.")
+                        Text("About").font(.system(size: 18, weight: .semibold)).foregroundStyle(.white).padding(.top, 8)
+                        section("Space Station for Mac") {
+                            Text("Version \(appVersion) — open-source (MIT), unofficial. Ported to macOS by Uilton Lopes.")
                                 .font(.system(size: 13)).foregroundStyle(.white)
                             HStack(spacing: 10) {
                                 Link(destination: URL(string: "https://github.com/uiltonlopes/flydigi-space-station-mac")!) { Label("Source on GitHub", systemImage: "chevron.left.forwardslash.chevron.right") }
@@ -246,50 +268,103 @@ struct SettingsPage: View {
                             Text("Not affiliated with Flydigi. Controller artwork and app icon © Flydigi, used for interoperability (see NOTICE.md in the app bundle).")
                                 .font(.system(size: 12)).foregroundStyle(SS.n300)
                         }
-                        Text("Controller Settings").font(.system(size: 18, weight: .semibold)).foregroundStyle(.white).padding(.top, 8)
-                        section("USB mode") {
-                            Text(model.connection == .none ? "Not connected." : (model.connection == .xinput ? "XInput — what games expect; the screen and trigger previews need it." : "DInput — the app talks to the pad directly, no helper needed."))
-                                .font(.system(size: 13)).foregroundStyle(.white)
-                            GhostButton(title: model.connection == .xinput ? "Switch to DInput" : "Switch to XInput", icon: "arrow.left.arrow.right", enabled: model.connection != .none && !model.busy) { Task { await model.switchMode() } }
-                        }
-                        section("Firmware") {
-                            Text("Installed: \(model.info?.firmware ?? "—")").font(.system(size: 13)).foregroundStyle(.white)
-                            if let firmwareNote { Text(firmwareNote).font(.system(size: 12)).foregroundStyle(SS.n300) }
-                            GhostButton(title: checking ? "Checking…" : "Check Flydigi for updates", icon: "arrow.down.circle", enabled: model.info != nil && !checking) { Task { await checkFirmware() } }
-                            Text("Flashing is not implemented yet: updating still requires Space Station on Windows.").font(.system(size: 12)).foregroundStyle(SS.n400)
-                        }
                     }
-                    .padding(28).frame(maxWidth: 720, alignment: .leading)
+                    .padding(28).frame(maxWidth: 760, alignment: .leading)
                 }
             }
         }
     }
 
+    private var appVersion: String { Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "" }
+
+    @ViewBuilder private var firmware: some View {
+        if let i = model.info {
+            HStack(spacing: 14) {
+                Text("Device Firmware").font(.system(size: 13)).foregroundStyle(SS.n300)
+                Text(i.firmware).font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+                if let u = model.firmwareUpdate {
+                    Text("Update available: \(u.version)").font(.system(size: 12, weight: .semibold)).foregroundStyle(.white)
+                        .padding(.horizontal, 8).frame(height: 22).background(SS.brand500, in: Capsule())
+                } else if model.firmwareChecked {
+                    Text("Up to date").font(.system(size: 12)).foregroundStyle(SS.green)
+                }
+            }
+            if let u = model.firmwareUpdate {
+                DarkCard(padding: 16) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("New firmware available, please update the firmware").font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+                        if !u.info.isEmpty {
+                            Text("Note:").font(.system(size: 12)).foregroundStyle(SS.n300)
+                            Text(u.info).font(.system(size: 12)).foregroundStyle(.white)
+                        }
+                        Text("How to update today").font(.system(size: 12, weight: .semibold)).foregroundStyle(.white).padding(.top, 4)
+                        Text("Flashing from the Mac is being validated step by step (see the dry run below). Until it ships, update with Flydigi Space Station on a Windows PC: connect the controller with the USB cable, open Settings → Firmware Update → Update. Keep it plugged in until it restarts.")
+                            .font(.system(size: 12)).foregroundStyle(SS.n300)
+                        HStack(spacing: 8) {
+                            GhostButton(title: dryRunning ? "Verifying…" : "Download and verify (dry run)", icon: "checkmark.shield", enabled: !dryRunning) {
+                                dryRunning = true
+                                Task { await model.firmwareDryRun(); dryRunning = false }
+                            }
+                            PrimaryButton(title: "Update", icon: "arrow.up.circle", enabled: false) {}
+                                .help("Flashing is not enabled yet")
+                        }
+                        if !model.firmwareReport.isEmpty {
+                            VStack(alignment: .leading, spacing: 3) {
+                                ForEach(Array(model.firmwareReport.enumerated()), id: \.offset) { _, line in
+                                    Text(line).font(.system(size: 11, design: .monospaced)).foregroundStyle(SS.n300).textSelection(.enabled)
+                                }
+                            }
+                            .padding(10).frame(maxWidth: .infinity, alignment: .leading)
+                            .background(SS.n800, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                        }
+                    }
+                }
+            }
+            HStack(spacing: 8) {
+                GhostButton(title: checking ? "Checking…" : "Check for updates", icon: "arrow.down.circle", enabled: !checking) {
+                    checking = true; Task { await model.checkFirmware(); checking = false }
+                }
+                Text("Checked automatically when the controller connects.").font(.system(size: 12)).foregroundStyle(SS.n400)
+            }
+        } else {
+            Text("Connect the controller to see its firmware.").font(.system(size: 13)).foregroundStyle(SS.n300)
+        }
+    }
+
     private func navGroup(_ title: String, _ items: [String]) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(title).font(.system(size: 12, weight: .semibold)).foregroundStyle(.white).padding(.vertical, 8)
-            ForEach(items, id: \.self) { Text($0).font(.system(size: 12)).foregroundStyle(SS.n300).padding(.vertical, 5) }
+            Text(LocalizedStringKey(title)).font(.system(size: 12, weight: .semibold)).foregroundStyle(.white).padding(.vertical, 8)
+            ForEach(items, id: \.self) { Text(LocalizedStringKey($0)).font(.system(size: 12)).foregroundStyle(SS.n300).padding(.vertical, 5) }
         }
         .padding(.bottom, 8)
     }
 
     private func section<C: View>(_ title: String, @ViewBuilder content: () -> C) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(title).font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+            Text(LocalizedStringKey(title)).font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
             content()
         }
     }
+}
 
-    private func checkFirmware() async {
-        guard let fw = model.info?.firmware else { return }
-        checking = true; defer { checking = false }
-        let r: Result<[String: FlydigiAPI.FirmwareChip], Error> = await Task.detached { Result { try FlydigiAPI.firmwareUpdates(mainChip: fw) } }.value
-        switch r {
-        case .success(let chips):
-            if let main = chips["main_chip"], main.version != fw { firmwareNote = "Flydigi offers \(main.version). \(main.info.replacingOccurrences(of: "\n", with: " "))" }
-            else { firmwareNote = "You are on the latest firmware Flydigi publishes." }
-        case .failure: firmwareNote = "Could not reach Flydigi's update service."
-        }
+/// In-app language override (SS4 has the same setting). Stored in `AppleLanguages`; needs a relaunch.
+enum AppLanguage: String, CaseIterable, Hashable {
+    case system, en, ptBR = "pt-BR", zhHans = "zh-Hans"
+    var title: String {
+        switch self { case .system: "System"; case .en: "English"; case .ptBR: "Português (Brasil)"; case .zhHans: "简体中文" }
+    }
+    static var current: AppLanguage {
+        guard let first = UserDefaults.standard.array(forKey: "AppleLanguages")?.first as? String, UserDefaults.standard.bool(forKey: "LanguageOverride") else { return .system }
+        return AppLanguage(rawValue: first) ?? (first.hasPrefix("pt") ? .ptBR : first.hasPrefix("zh") ? .zhHans : first.hasPrefix("en") ? .en : .system)
+    }
+    func apply() {
+        if self == .system { UserDefaults.standard.removeObject(forKey: "AppleLanguages"); UserDefaults.standard.set(false, forKey: "LanguageOverride") }
+        else { UserDefaults.standard.set([rawValue], forKey: "AppleLanguages"); UserDefaults.standard.set(true, forKey: "LanguageOverride") }
+    }
+    static func relaunch() {
+        let url = Bundle.main.bundleURL
+        let cfg = NSWorkspace.OpenConfiguration(); cfg.createsNewApplicationInstance = true
+        NSWorkspace.shared.openApplication(at: url, configuration: cfg) { _, _ in DispatchQueue.main.async { NSApp.terminate(nil) } }
     }
 }
 

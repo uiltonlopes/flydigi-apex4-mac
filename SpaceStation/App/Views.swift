@@ -152,7 +152,7 @@ struct Sidebar: View {
         VStack(alignment: .leading, spacing: 0) {
             row("Mode", model.connection == .none ? "—" : (model.connection == .xinput ? "XInput" : "DInput"))
             row("Link", model.info == nil ? "—" : (model.info!.wired ? "USB cable" : "2.4 GHz receiver"))
-            row("Firmware", model.info?.firmware ?? "—")
+            row("Firmware", model.info.map { $0.firmware + (model.firmwareUpdate != nil ? "  ↑" : "") } ?? "—")
             if let i = model.info { let b = Battery(raw: i.batteryRaw, system: live.battery); if b.known { row("Battery", b.description) } }
             row("Helper", model.helperInstalled ? "Installed" : "Not installed")
             if let d = profiles.draft {

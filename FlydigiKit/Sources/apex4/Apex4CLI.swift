@@ -11,7 +11,7 @@ import XPC
 struct Apex4: ParsableCommand {
     static let configuration = CommandConfiguration(
         abstract: "Configure a Flydigi Apex 4 from macOS (LEDs, screen, profiles).",
-        subcommands: [Info.self, LED.self, ScreenCmd.self, Config.self, Mode.self, Helper.self, API.self, Dev.self],
+        subcommands: [Firmware.self, Info.self, LED.self, ScreenCmd.self, Config.self, Mode.self, Helper.self, API.self, Dev.self],
         defaultSubcommand: Info.self)
 }
 
@@ -268,6 +268,48 @@ struct API: ParsableCommand {
             let chips = try FlydigiAPI.firmwareUpdates(mainChip: cur)
             if chips.isEmpty { print("firmware \(cur): up to date (no chips offered)"); return }
             for (chip, c) in chips { print("\(chip): \(c.version) available (you have \(cur))\n  \(c.url)\n  min app \(c.min_app_version) · \(c.info.replacingOccurrences(of: "\n", with: " "))") }
+        }
+    }
+}
+
+
+// MARK: - Firmware (read-only)
+
+struct Firmware: ParsableCommand {
+    static let configuration = CommandConfiguration(abstract: "Firmware: check Flydigi for updates, download and verify the image, probe the OTA interface. Never flashes.",
+                                                    subcommands: [Check.self, Verify.self, OTAVersion.self], defaultSubcommand: Check.self)
+    struct Check: ParsableCommand {
+        @Option(help: "Installed main-chip version, e.g. 6.8.3.0 (default: read from the pad).") var installed: String?
+        @OptionGroup var ch: ChannelOption
+        func run() throws {
+            let fw: String
+            if let installed { fw = installed } else { let s = try DeviceSession.open(preferring: ch.channel); defer { s.close() }; fw = try s.deviceInfo().firmware }
+            let chips = try FlydigiAPI.firmwareUpdates(mainChip: fw)
+            print("installed \(fw)")
+            for (k, v) in chips.sorted(by: { $0.key < $1.key }) { print("\(k): \(v.version)\(FirmwareVersion.isNewer(v.version, than: fw) && k == "main_chip" ? "  ← newer" : "")  \(v.url.lastPathComponent)") }
+        }
+    }
+    struct Verify: ParsableCommand {
+        static let configuration = CommandConfiguration(abstract: "Download (or open) a firmware image and validate header, size and CRC32.")
+        @Argument(help: "URL or local path of the .bin") var source: String
+        func run() throws {
+            let data: Data
+            if let u = URL(string: source), u.scheme?.hasPrefix("http") == true { data = try FlydigiAPI.download(u) } else { data = try Data(contentsOf: URL(fileURLWithPath: source)) }
+            let img = try FirmwareImage(data: data)
+            print(String(format: "file %d bytes · payload %d · version field 0x%08x · boot mark %@", data.count, img.payloadSize, img.versionField, img.hasBootMark ? "KNLT" : "none"))
+            print(String(format: "crc32 stored %08x computed %08x %@", img.storedCRC, img.computedCRC, img.crcMatches ? "OK" : "MISMATCH"))
+            try img.validate(); print("valid · \(img.packetCount) OTA packets")
+        }
+    }
+    struct OTAVersion: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "ota-version", abstract: "Read the version through the OTA interface (DInput, read-only).")
+        func run() throws {
+            guard OTALink.isPresent() else { print("OTA interface not present (pad must be in DInput over the cable)"); return }
+            let ota = try OTALink(); defer { ota.close() }
+            print("report sizes: \(ota.reportSizes)")
+            let v = try ota.queryVersion()
+            print("raw: " + v.raw.prefix(20).map { String(format: "%02x", $0) }.joined(separator: " "))
+            if let ver = v.version { print(String(format: "version 0x%08x crc 0x%08x", ver, v.crc ?? 0)) }
         }
     }
 }

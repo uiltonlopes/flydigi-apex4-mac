@@ -23,6 +23,10 @@ final class ControllerModel {
     var busy = false
     var lastError: String?
     var uploadProgress: Double?   // 0…1 while a screen upload runs
+    var firmwareUpdate: FlydigiAPI.FirmwareChip?      // newer main-chip firmware Flydigi offers, nil = up to date / unknown
+    var firmwareChecked = false
+    var firmwareReport: [String] = []                 // dry-run log shown in Settings
+    private var firmwareCheckedFor: String?
 
     private var monitor: USBMonitor?
     /// Staged profile edits (four on-board slots). Created in `init` (needs `self`); it is @Observable itself.
@@ -78,6 +82,60 @@ final class ControllerModel {
                 throw HelperError.transport("no controller")
             }
         } onSuccess: { (i: HelperDeviceInfo, l: LEDConfig) in self.info = i; self.led = l }
+        if let fw = info?.firmware, firmwareCheckedFor != fw { firmwareCheckedFor = fw; Task { await checkFirmware() } }
+    }
+
+    // MARK: Firmware (read-only for now — docs/firmware-update.md)
+
+    /// Asks Flydigi whether a newer main-chip firmware exists for the installed one. Network only.
+    func checkFirmware() async {
+        guard let fw = info?.firmware, let id = info?.deviceId else { return }
+        let r: Result<[String: FlydigiAPI.FirmwareChip], Error> = await Task.detached { Result { try FlydigiAPI.firmwareUpdates(deviceId: Int(id), mainChip: fw) } }.value
+        firmwareChecked = true
+        if case .success(let chips) = r, let main = chips["main_chip"], FirmwareVersion.isNewer(main.version, than: fw) { firmwareUpdate = main } else { firmwareUpdate = nil }
+    }
+
+    /// Downloads the offered image, validates it (size field, CRC32, boot mark) and, in DInput mode, reads
+    /// the version the OTA interface reports. Writes nothing to the controller.
+    func firmwareDryRun() async {
+        guard let update = firmwareUpdate else { return }
+        firmwareReport = ["Downloading \(update.url.lastPathComponent)…"]
+        let conn = connection
+        let r: Result<[String], Error> = await Task.detached {
+            Result {
+                var log: [String] = []
+                let data = try FlydigiAPI.download(update.url)
+                let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Space Station/firmware", isDirectory: true)
+                try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+                let file = dir.appendingPathComponent(update.url.lastPathComponent)
+                try data.write(to: file)
+                log.append("Downloaded \(data.count) bytes → \(file.path)")
+                let img = try FirmwareImage(data: data)
+                log.append(String(format: "Header: payload %d bytes, version field 0x%08x, boot mark %@", img.payloadSize, img.versionField, img.hasBootMark ? "KNLT ✓" : "missing"))
+                log.append(String(format: "CRC32: file %08x, computed %08x → %@", img.storedCRC, img.computedCRC, img.crcMatches ? "match ✓" : "MISMATCH"))
+                try img.validate()
+                log.append("Image valid · \(img.packetCount) OTA packets of 16 bytes")
+                if conn == .dinput {
+                    if OTALink.isPresent() {
+                        let ota = try OTALink(); defer { ota.close() }
+                        let sizes = ota.reportSizes
+                        log.append("OTA interface found (usage page FFEF) · report sizes in \(sizes.input) / out \(sizes.output)")
+                        let v = try ota.queryVersion()
+                        if let ver = v.version { log.append(String(format: "OTA version query → 0x%08x (crc 0x%08x)", ver, v.crc ?? 0)) }
+                        else { log.append("OTA version query → unexpected reply: " + v.raw.prefix(16).map { String(format: "%02x", $0) }.joined(separator: " ")) }
+                    } else {
+                        log.append("OTA interface (usage page FFEF) not present in this enumeration")
+                    }
+                } else {
+                    log.append("Switch to DInput mode to probe the OTA interface (read-only)")
+                }
+                return log
+            }
+        }.value
+        switch r {
+        case .success(let log): firmwareReport = log + ["Dry run complete — nothing was written."]
+        case .failure(let e): firmwareReport.append("Failed: \(e)")
+        }
     }
 
     // MARK: Actions

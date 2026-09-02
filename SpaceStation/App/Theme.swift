@@ -35,7 +35,7 @@ struct SectionTitle: View {
     var body: some View {
         HStack(spacing: 8) {
             Image(systemName: icon).font(.system(size: 15)).foregroundStyle(.white)
-            Text(title).font(.system(size: 14, weight: .semibold)).foregroundStyle(.white)
+            Text(LocalizedStringKey(title)).font(.system(size: 14, weight: .semibold)).foregroundStyle(.white)
         }
         .frame(height: 36)
     }
@@ -48,7 +48,7 @@ struct Field<Content: View>: View {
     init(_ label: String, @ViewBuilder content: () -> Content) { self.label = label; self.content = content() }
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(label).font(.system(size: 13)).foregroundStyle(SS.n300)
+            Text(LocalizedStringKey(label)).font(.system(size: 13)).foregroundStyle(SS.n300)
             content
         }
     }
@@ -58,7 +58,7 @@ struct Notice: View {
     let text: String
     init(_ text: String) { self.text = text }
     var body: some View {
-        Text(text).font(.system(size: 12)).foregroundStyle(SS.brand500).frame(maxWidth: .infinity).multilineTextAlignment(.center)
+        Text(LocalizedStringKey(text)).font(.system(size: 12)).foregroundStyle(SS.brand500).frame(maxWidth: .infinity).multilineTextAlignment(.center)
     }
 }
 
@@ -69,7 +69,7 @@ struct PageHeader: View {
         HStack(spacing: 10) {
             Button(action: back) { Image(systemName: "chevron.left").font(.system(size: 14, weight: .semibold)).foregroundStyle(SS.n300).frame(width: 24, height: 24) }
                 .buttonStyle(.plain)
-            Text(title).font(.system(size: 20, weight: .semibold)).foregroundStyle(.white)
+            Text(LocalizedStringKey(title)).font(.system(size: 20, weight: .semibold)).foregroundStyle(.white)
             Spacer()
         }
         .padding(.horizontal, 16).padding(.top, 14).frame(height: 52)
@@ -114,12 +114,12 @@ struct DarkSelect<T: Hashable>: View {
         Menu {
             ForEach(options, id: \.0) { o in
                 Button { selection = o.0 } label: {
-                    if o.0 == selection { Label(o.1, systemImage: "checkmark") } else { Text(o.1) }
+                    if o.0 == selection { Label(LocalizedStringKey(o.1), systemImage: "checkmark") } else { Text(LocalizedStringKey(o.1)) }
                 }
             }
         } label: {
             HStack {
-                Text(options.first { $0.0 == selection }?.1 ?? "—").font(.system(size: 13)).foregroundStyle(.white).lineLimit(1)
+                Text(LocalizedStringKey(options.first { $0.0 == selection }?.1 ?? "—")).font(.system(size: 13)).foregroundStyle(.white).lineLimit(1)
                 Spacer(minLength: 8)
                 Image(systemName: "chevron.down").font(.system(size: 10, weight: .semibold)).foregroundStyle(SS.n300)
             }
@@ -143,7 +143,7 @@ struct PillSegmented<T: Hashable>: View {
             ForEach(options, id: \.0) { o in
                 let on = o.0 == selection
                 Button { withAnimation(.easeOut(duration: 0.15)) { selection = o.0 } } label: {
-                    Text(o.1).font(.system(size: 13, weight: on ? .semibold : .regular))
+                    Text(LocalizedStringKey(o.1)).font(.system(size: 13, weight: on ? .semibold : .regular))
                         .foregroundStyle(on ? .white : SS.n300)
                         .padding(.horizontal, 16).frame(height: 28)
                         .background(on ? SS.n500 : .clear, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
@@ -195,7 +195,7 @@ struct RadioList<T: Hashable>: View {
                             Circle().strokeBorder(on ? SS.brand500 : SS.n400, lineWidth: 1.5).frame(width: 14, height: 14)
                             if on { Circle().fill(SS.brand500).frame(width: 7, height: 7) }
                         }
-                        Text(o.1).font(.system(size: 13, weight: on ? .medium : .regular)).foregroundStyle(.white)
+                        Text(LocalizedStringKey(o.1)).font(.system(size: 13, weight: on ? .medium : .regular)).foregroundStyle(.white)
                         Spacer()
                     }
                     .padding(.horizontal, 12).frame(height: 36)
@@ -213,7 +213,7 @@ struct SwitchRow: View {
     @Binding var isOn: Bool
     var body: some View {
         HStack {
-            Text(title).font(.system(size: 13)).foregroundStyle(SS.n300)
+            Text(LocalizedStringKey(title)).font(.system(size: 13)).foregroundStyle(SS.n300)
             Spacer()
             Toggle("", isOn: $isOn).labelsHidden().toggleStyle(.switch).tint(SS.brand).controlSize(.small)
         }
@@ -231,7 +231,7 @@ struct PrimaryButton: View {
         Button(action: action) {
             HStack(spacing: 6) {
                 if let icon { Image(systemName: icon).font(.system(size: 12, weight: .semibold)) }
-                Text(title).font(.system(size: 13, weight: .semibold))
+                Text(LocalizedStringKey(title)).font(.system(size: 13, weight: .semibold))
             }
             .foregroundStyle(.white).padding(.horizontal, 14).frame(height: 32)
             .background(enabled ? SS.brand500 : SS.n500, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
@@ -252,7 +252,7 @@ struct GhostButton: View {
         Button(action: action) {
             HStack(spacing: 6) {
                 if let icon { Image(systemName: icon).font(.system(size: 12, weight: .semibold)) }
-                Text(title).font(.system(size: 13))
+                Text(LocalizedStringKey(title)).font(.system(size: 13))
             }
             .foregroundStyle(destructive ? SS.red : .white).padding(.horizontal, 14).frame(height: 32)
             .background(SS.n700, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
@@ -291,9 +291,9 @@ struct RailButton: View {
         Button(action: action) {
             Group {
                 if wide {
-                    HStack(spacing: 8) { Image(systemName: icon).font(.system(size: 13)); Text(title).font(.system(size: 13)) }
+                    HStack(spacing: 8) { Image(systemName: icon).font(.system(size: 13)); Text(LocalizedStringKey(title)).font(.system(size: 13)) }
                 } else {
-                    VStack(spacing: 8) { Image(systemName: icon).font(.system(size: 18)); Text(title).font(.system(size: 12)).lineLimit(1).minimumScaleFactor(0.8) }
+                    VStack(spacing: 8) { Image(systemName: icon).font(.system(size: 18)); Text(LocalizedStringKey(title)).font(.system(size: 12)).lineLimit(1).minimumScaleFactor(0.8) }
                 }
             }
             .foregroundStyle(active ? .white : SS.n300)
@@ -332,7 +332,7 @@ struct TabBarView<T: Hashable>: View {
                     VStack(spacing: 0) {
                         HStack(spacing: 6) {
                             Image(systemName: t.2).font(.system(size: 12))
-                            Text(t.1).font(.system(size: 13, weight: on ? .semibold : .regular))
+                            Text(LocalizedStringKey(t.1)).font(.system(size: 13, weight: on ? .semibold : .regular))
                         }
                         .foregroundStyle(on ? .white : SS.n300)
                         .frame(height: 40)

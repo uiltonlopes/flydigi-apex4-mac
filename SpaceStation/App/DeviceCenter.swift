@@ -95,7 +95,11 @@ struct DeviceCenterPage: View {
                 Spacer(minLength: 24)
                 Text(model.info.map { "Firmware \($0.firmware) · \(model.connection == .xinput ? "XInput" : "DInput")" } ?? "")
                     .font(.system(size: 12)).foregroundStyle(SS.n300)
-                    .padding(.bottom, 18)
+                if let u = model.firmwareUpdate {
+                    Text("Firmware update available: \(u.version)").font(.system(size: 11, weight: .semibold)).foregroundStyle(.white)
+                        .padding(.horizontal, 8).frame(height: 20).background(SS.brand500, in: Capsule()).padding(.top, 6)
+                }
+                Spacer().frame(height: 18)
             }
             .frame(width: 360, height: 450)
             .background(LinearGradient(colors: [SS.n700.opacity(0.95), SS.n800.opacity(0.9)], startPoint: .top, endPoint: .bottom), in: RoundedRectangle(cornerRadius: 12, style: .continuous))

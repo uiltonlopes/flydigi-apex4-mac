@@ -50,3 +50,41 @@ struct InputReportTests {
         #expect(ControllerState(dinputReport: [0x04, 0xfe]) == nil)
     }
 }
+
+struct FirmwareImageTests {
+    /// Synthetic Telink-style image: size field at 0x18, KNLT at 0x08, CRC32 appended.
+    static func image(size: Int) -> Data {
+        var d = Data(repeating: 0xAB, count: size)
+        d.replaceSubrange(8..<12, with: "KNLT".utf8)
+        let n = UInt32(size)
+        d[0x18] = UInt8(n & 0xFF); d[0x19] = UInt8(n >> 8 & 0xFF); d[0x1A] = UInt8(n >> 16 & 0xFF); d[0x1B] = UInt8(n >> 24)
+        let crc = FirmwareImage.crc32(d.subdata(in: 0..<(size - 4)))
+        d[size - 4] = UInt8(crc & 0xFF); d[size - 3] = UInt8(crc >> 8 & 0xFF); d[size - 2] = UInt8(crc >> 16 & 0xFF); d[size - 1] = UInt8(crc >> 24)
+        return d
+    }
+
+    @Test func validImagePasses() throws {
+        let img = try FirmwareImage(data: Self.image(size: 1000))
+        try img.validate()
+        #expect(img.packetCount == 63)
+        #expect(img.block(62).suffix(8).allSatisfy { $0 == 0xFF })   // 1000 = 62*16 + 8 → padded
+    }
+
+    @Test func corruptedImageFails() throws {
+        var d = Self.image(size: 512); d[100] ^= 0xFF
+        let img = try FirmwareImage(data: d)
+        #expect(throws: FirmwareImage.Problem.self) { try img.validate() }
+    }
+
+    @Test func knownCRCs() {
+        #expect(FirmwareImage.crc32(Data("123456789".utf8)) == 0xCBF4_3926)          // CRC-32/IEEE check value
+        #expect(FirmwareImage.crc16Modbus(Array("123456789".utf8)) == 0x4B37)         // CRC-16/MODBUS check value
+    }
+
+    @Test func versions() {
+        #expect(FirmwareVersion.string(hi: 0x68, lo: 0x37) == "6.8.3.7")
+        #expect(FirmwareVersion.isNewer("6.8.3.7", than: "6.8.3.0"))
+        #expect(!FirmwareVersion.isNewer("6.8.3.0", than: "6.8.3.7"))
+        #expect(!FirmwareVersion.isNewer("6.8.3.0", than: "6.8.3.0"))
+    }
+}
