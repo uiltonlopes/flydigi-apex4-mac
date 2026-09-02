@@ -7,6 +7,8 @@ the official tool does:
 | File | Origin in Space Station 4.2.2.3 | Use in this app |
 |---|---|---|
 | `apex4-hero.png` | `assets/images/product/Controller/k2/84/main.png` | Product picture on the Status page |
+| `AppIcon.icns` | `assets/icons/mac/icon.icns` | App icon |
+| `products/k2-<id>.png` | `assets/images/product/Controller/k2/<id>/main.png` | Device card / hero picture per Apex 4 variant (84, 86, 87, 92, 93, 102, 103, 104) |
 | `apex4-wireframe.svg` | `assets/device_wireframe_k2-*.js` (React SVG, serialised back to plain SVG) | Outline the button hotspots are drawn over |
 
 The hotspot geometry in `Apex4/App/Stage/Apex4Render.swift` is transcribed from `device_config_k2-*.js`

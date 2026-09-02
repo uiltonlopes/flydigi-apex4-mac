@@ -23,7 +23,7 @@ struct Apex4App: App {
     @State private var live = LiveInput()
 
     var body: some Scene {
-        Window("Apex 4", id: "main") {
+        Window("Space Station", id: "main") {
             MainWindow()
                 .environment(model)
                 .environment(model.profiles)

@@ -5,7 +5,7 @@ import FlydigiTransport
 
 // MARK: - Routes
 
-enum Route: Hashable { case home, screen, adaptiveTrigger, settings }
+enum Route: Hashable { case deviceCenter, home, screen, adaptiveTrigger, settings }
 
 enum HomeTab: String, CaseIterable, Identifiable {
     case common, button, joystick, gyro, trigger, macros
@@ -24,16 +24,17 @@ struct MainWindow: View {
     @Environment(ControllerModel.self) private var model
     @Environment(ProfileStore.self) private var profiles
     @Environment(LiveInput.self) private var live
-    @State private var route: Route = .home
+    @State private var route: Route = .deviceCenter
     @State private var tab: HomeTab = .common
     @State private var pendingSlot: UInt8?
 
     var body: some View {
         HStack(spacing: 0) {
-            Sidebar(route: $route)
+            if route != .deviceCenter { Sidebar(route: $route) }
             ZStack {
                 SS.n800
                 switch route {
+                case .deviceCenter: DeviceCenterPage(route: $route)
                 case .home: HomeView(tab: $tab, pendingSlot: $pendingSlot)
                 case .screen: ScreenPage { route = .home }
                 case .adaptiveTrigger: AdaptiveTriggerPage { route = .home }
@@ -70,15 +71,21 @@ struct MainWindow: View {
 struct Sidebar: View {
     @Environment(ControllerModel.self) private var model
     @Environment(ProfileStore.self) private var profiles
+    @Environment(LiveInput.self) private var live
     @Binding var route: Route
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Title row sits to the right of the traffic lights.
-            HStack(spacing: 8) {
-                Image(systemName: "gamecontroller.fill").font(.system(size: 13)).foregroundStyle(SS.brand500)
-                Text("Apex 4 for Mac").font(.system(size: 13)).foregroundStyle(SS.n300)
+            // Title row sits to the right of the traffic lights; like SS4, it goes back to the device center.
+            Button { route = .deviceCenter } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "chevron.left").font(.system(size: 11, weight: .semibold)).foregroundStyle(SS.n400)
+                    Image(systemName: "gamecontroller.fill").font(.system(size: 13)).foregroundStyle(SS.brand500)
+                    Text("Space Station for Mac").font(.system(size: 13)).foregroundStyle(SS.n300)
+                }
+                .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
             .padding(.leading, 78).frame(height: 36).padding(.top, 8)
 
             deviceCard.padding(.horizontal, 12).padding(.top, 14)
@@ -114,7 +121,7 @@ struct Sidebar: View {
                 if connected, let i = model.info {
                     Image(systemName: i.wired ? "cable.connector" : "dot.radiowaves.left.and.right")
                         .font(.system(size: 11)).foregroundStyle(SS.n400)
-                    let b = Battery(raw: i.batteryRaw)
+                    let b = Battery(raw: i.batteryRaw, system: live.battery)
                     Image(systemName: b.symbol).font(.system(size: 11)).foregroundStyle(b.charging ? SS.green : SS.n400)
                         .help(b.description)
                 }
@@ -146,7 +153,7 @@ struct Sidebar: View {
             row("Mode", model.connection == .none ? "—" : (model.connection == .xinput ? "XInput" : "DInput"))
             row("Link", model.info == nil ? "—" : (model.info!.wired ? "USB cable" : "2.4 GHz receiver"))
             row("Firmware", model.info?.firmware ?? "—")
-            if let i = model.info, !i.wired || Battery(raw: i.batteryRaw).charging { row("Battery", Battery(raw: i.batteryRaw).description) }
+            if let i = model.info { let b = Battery(raw: i.batteryRaw, system: live.battery); if b.known { row("Battery", b.description) } }
             row("Helper", model.helperInstalled ? "Installed" : "Not installed")
             if let d = profiles.draft {
                 row("Profile", "Slot \(profiles.activeSlot + 1)\(d.title.isEmpty ? "" : " · \(d.title)")")
@@ -852,16 +859,19 @@ struct TriggerTab: View {
 }
 
 
-/// Battery byte from the device-info reply, decoded the way Space Station does
-/// (`HeartBeatCommandFactory`: high nibble 1 → charging, otherwise low nibble = 0…5 bars).
+/// Battery: prefers what macOS reports through GameController (Apple's driver polls it), otherwise the
+/// byte from the device-info reply decoded the way Space Station does (`HeartBeatCommandFactory`:
+/// high nibble 1 → charging, low nibble = 0…5 bars; 0 right after connecting means "not read yet").
 struct Battery: CustomStringConvertible {
     let raw: UInt8
-    var charging: Bool { raw >> 4 == 1 }
-    var bars: Int { min(5, Int(raw & 0xF)) }
-    var percent: Int { bars * 20 }
+    var system: LiveInput.BatteryInfo? = nil
+    var charging: Bool { system?.charging ?? (raw >> 4 == 1) }
+    var known: Bool { system != nil || raw != 0 }
+    var percent: Int { if let s = system { return Int((s.level * 100).rounded()) }; return min(5, Int(raw & 0xF)) * 20 }
     var symbol: String {
         if charging { return "battery.100percent.bolt" }
-        switch bars { case 0: return "battery.0percent"; case 1: return "battery.25percent"; case 2, 3: return "battery.50percent"; case 4: return "battery.75percent"; default: return "battery.100percent" }
+        guard known else { return "battery.0percent" }
+        switch percent { case 0..<13: return "battery.0percent"; case 13..<38: return "battery.25percent"; case 38..<63: return "battery.50percent"; case 63..<88: return "battery.75percent"; default: return "battery.100percent" }
     }
-    var description: String { charging ? "Charging" : "\(percent) %" }
+    var description: String { charging ? "Charging" : (known ? "\(percent) %" : "—") }
 }

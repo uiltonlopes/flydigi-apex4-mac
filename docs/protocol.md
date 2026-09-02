@@ -1,7 +1,7 @@
 # Flydigi Apex 4 — USB protocol (reverse-engineered)
 
 Everything here was verified against a real Apex 4 (`deviceId 84`, firmware 6.8.3.0) on macOS 26,
-using the scripts in [`research/python`](../research/python). Where a fact comes only from reading
+using Python prototypes (since replaced by the `FlydigiKit` package and the `apex4` CLI). Where a fact comes only from reading
 Flydigi's Windows software and was **not** exercised on hardware, it is marked *(unverified)*.
 
 The Apex 4 is Flydigi's internal model **`k2`** (Apex 3 = `k1`). Device IDs in the k2 family:

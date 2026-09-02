@@ -46,13 +46,14 @@ targets:
     info:
       path: App/Info.plist
       properties:
-        CFBundleDisplayName: Apex 4
+        CFBundleDisplayName: Space Station
+        CFBundleIconFile: AppIcon
         CFBundleName: Apex4
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSMinimumSystemVersion: "15.0"
         LSApplicationCategoryType: public.app-category.utilities
-        NSHumanReadableCopyright: MIT — github.com/uiltonlopes/flydigi-apex4-mac
+        NSHumanReadableCopyright: MIT — github.com/uiltonlopes/flydigi-space-station-mac
     entitlements:
       path: App/Apex4.entitlements
       properties: {}                     # no sandbox: the app talks to the pad over HID directly

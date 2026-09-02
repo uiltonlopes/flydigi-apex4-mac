@@ -1,6 +1,3 @@
-.venv/
-__pycache__/
-*.pyc
 .DS_Store
 # Xcode / Swift
 .build/
@@ -9,7 +6,7 @@ DerivedData/
 xcuserdata/
 *.xcworkspace/xcshareddata/swiftpm/Package.resolved
 # nunca versionar: binários/fontes da Flydigi (copyright)
-research/spacestation/
+tools/spacestation/
 *.exe
 *.dll
 # gerado por xcodegen a partir de Apex4/project.yml

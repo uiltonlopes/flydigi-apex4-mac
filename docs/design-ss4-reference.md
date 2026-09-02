@@ -87,7 +87,7 @@ Home, Back/Select, Start, Turbo) — that is what users search for.
 
 ## Verified against the running renderer (2026-09-01)
 
-Using `research/ss4-harness/`, the real SS4 4.2.2.3 UI was rendered at 1440 × 900 with a simulated Apex 4:
+Using `tools/ss4-harness/`, the real SS4 4.2.2.3 UI was rendered at 1440 × 900 with a simulated Apex 4:
 
 - **Shell**: 248 px sidebar (`--neutral-700` #212225) holding the app title, a "My Device" card
   (name, green dot, cable/battery glyphs, chevron) and a bottom rail with two square buttons

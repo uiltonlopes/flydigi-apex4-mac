@@ -248,7 +248,7 @@ struct SettingsPage: View {
                     navGroup("Controller Settings", ["USB mode", "Firmware"])
                     Spacer()
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Apex 4 for Mac").font(.system(size: 11)).foregroundStyle(SS.n400)
+                        Text("Space Station for Mac \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "")").font(.system(size: 11)).foregroundStyle(SS.n400)
                         if let i = model.info { Text("Device firmware: \(i.firmware)").font(.system(size: 11)).foregroundStyle(SS.n400) }
                     }
                 }
@@ -268,7 +268,15 @@ struct SettingsPage: View {
                             }
                         }
                         section("About") {
-                            Text("Open-source, MIT. Protocol reverse-engineered and documented at github.com/uiltonlopes/flydigi-apex4-mac. Not affiliated with Flydigi; controller artwork © Flydigi (see NOTICE).")
+                            Text("Space Station for Mac \(Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "") — open-source (MIT), unofficial. Ported to macOS by Uilton Lopes.")
+                                .font(.system(size: 13)).foregroundStyle(.white)
+                            HStack(spacing: 10) {
+                                Link(destination: URL(string: "https://github.com/uiltonlopes/flydigi-space-station-mac")!) { Label("Source on GitHub", systemImage: "chevron.left.forwardslash.chevron.right") }
+                                Link(destination: URL(string: "https://github.com/uiltonlopes")!) { Label("@uiltonlopes", systemImage: "person.crop.circle") }
+                                Link(destination: URL(string: "https://www.linkedin.com/in/uiltonlopes")!) { Label("LinkedIn", systemImage: "link") }
+                            }
+                            .font(.system(size: 12)).tint(SS.brand500)
+                            Text("Not affiliated with Flydigi. Controller artwork and app icon © Flydigi, used for interoperability (see NOTICE.md in the app bundle).")
                                 .font(.system(size: 12)).foregroundStyle(SS.n300)
                         }
                         Text("Controller Settings").font(.system(size: 18, weight: .semibold)).foregroundStyle(.white).padding(.top, 8)

@@ -86,5 +86,4 @@ FlydigiKit/        Swift package: protocol, blobs, LVGL, state machines, tests
 Apex4/             Xcode project: app + helper targets
 apex4-cli/         command-line tool
 docs/              protocol.md · architecture.md · roadmap.md
-research/python/   the prototypes that proved the protocol (reference only)
 ```

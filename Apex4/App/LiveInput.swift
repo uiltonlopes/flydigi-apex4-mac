@@ -17,6 +17,9 @@ final class LiveInput {
     var rightTrigger: Float = 0
     var pressed: Set<String> = []
     var connected = false
+    struct BatteryInfo: Equatable { var level: Float; var charging: Bool }
+    var battery: BatteryInfo?
+    private var batteryTimer: Timer?
 
     /// Raw state from the DInput vendor interface (paddles, Fn, Home — things the system driver never sees).
     var raw: ControllerState?
@@ -73,6 +76,15 @@ final class LiveInput {
         let all = GCController.controllers()
         let pad = all.first { ($0.vendorName ?? "").localizedCaseInsensitiveContains("flydigi") } ?? all.first { $0.extendedGamepad != nil }
         connected = pad != nil
+        batteryTimer?.invalidate(); batteryTimer = nil; battery = nil
+        if let pad, let b = pad.battery {
+            let read: () -> Void = { [weak self] in
+                guard let self else { return }
+                if b.batteryLevel >= 0 { self.battery = BatteryInfo(level: b.batteryLevel, charging: b.batteryState == .charging || b.batteryState == .full) }
+            }
+            read()
+            batteryTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { _ in Task { @MainActor in read() } }
+        }
         if let pad {
             let names = pad.physicalInputProfile.elements.keys.sorted().joined(separator: ", ")
             Logger(subsystem: "com.uiltonlopes.apex4", category: "live").notice("GameController pad \(pad.vendorName ?? "?", privacy: .public) [\(pad.productCategory, privacy: .public)] elements: \(names, privacy: .public)")
