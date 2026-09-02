@@ -7,7 +7,7 @@ import FlydigiTransport
 
 struct Dev: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Developer experiments (protocol re-tests).", shouldDisplay: false,
-                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, DualOpen.self, DInputSlots.self, DInputCursor.self, DInputApply.self, HWStatus.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self])
+                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, DualOpen.self, DInputSlots.self, DInputCursor.self, DInputApply.self, HWStatus.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self, InfoWatch.self])
 
     /// XInput (captured) version of hid-diff: optionally sends Space Station's "enable raw data"
     /// (`A5 50`) first, then prints changing bytes for N seconds. Needs root (USB capture).
@@ -420,4 +420,37 @@ extension Dev {
             if n == 0 { print("no reply") }
         }
     }
+    /// Polls the query replies (`A5 10`, `A5 30 01/02/04`, `A5 50 07`) for N seconds and prints any reply that
+    /// changes — used to find out whether the pad exposes its on-screen trigger-mode choice anywhere.
+    struct InfoWatch: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "info-watch")
+        @Option var seconds: Double = 40
+        func run() throws {
+            let s = try DeviceSession.open(preferring: .xinput); defer { s.close() }
+            let queries: [(String, [UInt8])] = [("info A5 10", XInput.command(XInput.Cmd.deviceInfo)),
+                                               ("extra A5 30 01", XInput.command(XInput.Cmd.module, 0x01)),
+                                               ("screen A5 30 02", XInput.command(XInput.Cmd.module, 0x02)),
+                                               ("sleep A5 30 04", XInput.command(XInput.Cmd.module, 0x04)),
+                                               ("sub07 A5 50 07", XInput.command(XInput.Cmd.subFunc, 0x07))]
+            var last: [String: [UInt8]] = [:]
+            let t0 = Date()
+            print("polling for \(Int(seconds)) s — change the trigger mode on the pad's screen meanwhile…")
+            while Date().timeIntervalSince(t0) < seconds {
+                for (name, cmd) in queries {
+                    s.link.discardPending()
+                    try? s.link.write(cmd)
+                    let r: [UInt8]? = try? s.link.waitForReport(timeout: 0.6) { (r: [UInt8]) -> [UInt8]? in (r.count > 15 && r[15] != 0) ? r : nil }   // replies carry the command in r[15]; input reports have 0 there
+                    guard let r else { continue }
+                    if last[name].map({ Array($0.prefix(30)) }) != Array(r.prefix(30)) {      // bytes 30–31 are a rolling checksum
+                        let diff = last[name].map { prev in zip(prev, r).enumerated().filter { $0.element.0 != $0.element.1 }.map { "[\($0.offset)] \(String(format: "%02x→%02x", $0.element.0, $0.element.1))" }.joined(separator: " ") } ?? "first"
+                        print(String(format: "%6.1fs  %@: ", Date().timeIntervalSince(t0), name) + r.map { String(format: "%02x", $0) }.joined(separator: " ") + "   (\(diff))")
+                        last[name] = r
+                    }
+                    Thread.sleep(forTimeInterval: 0.15)
+                }
+                Thread.sleep(forTimeInterval: 1.0)
+            }
+        }
+    }
+
 }

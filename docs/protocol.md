@@ -121,6 +121,12 @@ zone is "past the floor". Proof: SS4's `ForceTriggerConfigCommon` zeroes the fla
 lock always sends 1. Flydigi's own per-game presets (`/game/list`, `vibType 2`) are all "sync with grip":
 `[side, 2, filter, scale=10, stroke, 1, strength, frequency]`, e.g. Need for Speed `stroke 0, strength 255,
 frequency 70, filter 20`.
+**The pad's own "Trig mode" screen menu (Normal/Race/Sniper/Recoil/Trig Lock/Vibration) is not readable.**
+Tested 2026-09-02 (fw 6.8.3.0): switching it changes nothing in the profile blob (adapter block stays type 0),
+nothing in the 32-byte input report, and nothing in the `A5 10`, `A5 30 01/02/04`, `A5 50 07` replies
+(`apex4 dev info-watch`). Space Station 4 has no read command for it either (only `SetForceTrigger` /
+`TestForceTrigger` exist in its SDK); the presets are tables inside the firmware.
+
 The Apex 4 has no trigger motors of its own (`IsSupportTriggerVibration` is false for k2), so SS4's
 "vibration test" for the Vibration mode is simply a full grip rumble (`A5 12 FF FF`) for 5 s — the trigger
 follows the grip. SS4 has no per-mode defaults: a newly picked mode starts from whatever the profile held.
