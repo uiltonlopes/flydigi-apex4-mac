@@ -178,3 +178,24 @@ converge on it.
   same XInput protocol — **LED/config read/write verified** through it. **Screen upload does not**: the
   `A5 D0` start command gets no `5A A5` ack over the dongle (the receiver firmware does not forward the
   screen commands, or they are wired-only). Root is needed exactly as in wired XInput.
+
+## 9. Live input in DInput mode (report id 4)
+
+The vendor interface streams a 32-byte status report (`04 FE …`) continuously; the layout is Space
+Station's `OperatorDataParser` (classic branch) shifted by one because IOHIDManager keeps the report id
+in byte 0. Verified on an Apex 4 on 2026-09-01 (`apex4 dev hid-diff`):
+
+| Byte | Bits |
+|---|---|
+| 7 | b0 C, b1 Z, b2 M1, b3 M2, b4 M3, b5 M4, b6 M5, b7 M6 |
+| 8 | b0 Fn/Menu, b1 Turbo, b3 Home, b4 Back |
+| 9 | b0 Up, b1 Right, b2 Down, b3 Left, b4 A, b5 B, b6 Select, b7 X |
+| 10 | b0 Y, b1 Start, b2 LB, b3 RB, b4 LT, b5 RT, b6 L-stick click, b7 R-stick click |
+| 17 / 19 | left stick X / Y (0…255, centre 0x7F, Y grows downwards) |
+| 21 / 22 | right stick X / Y |
+| 23 / 24 | LT / RT (0…255) |
+| 4–6, 11–15, 18, 20, 26, 29 | motion sensor (changes when the pad moves; not decoded) |
+
+This is how the app lights up paddles, Fn and Home, which Apple's Xbox driver never reports in XInput
+mode (`FlydigiKit/Sources/FlydigiKit/InputReport.swift`). Reply frames on the same interface use
+`04 FF …` and are ignored by the parser.

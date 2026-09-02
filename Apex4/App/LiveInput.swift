@@ -5,6 +5,7 @@ import Foundation
 import GameController
 import Observation
 import FlydigiKit
+import FlydigiTransport
 
 @MainActor @Observable
 final class LiveInput {
@@ -16,12 +17,38 @@ final class LiveInput {
     var pressed: Set<String> = []
     var connected = false
 
-    /// Same information as `pressed`, as firmware key ids (triggers count as pressed past 50 %).
+    /// Raw state from the DInput vendor interface (paddles, Fn, Home — things the system driver never sees).
+    var raw: DInputState?
+    private var rawTask: Task<Void, Never>?
+
+    /// Same information as `pressed`, as firmware key ids (triggers count as pressed past 50 %),
+    /// merged with the raw DInput report when we have one.
     var pressedKeys: Set<ControllerKey> {
         var s = Set(pressed.compactMap { Self.keyForLabel[$0] })
         if leftTrigger > 0.5 { s.insert(.lt) }
         if rightTrigger > 0.5 { s.insert(.rt) }
+        if let raw { s.formUnion(raw.pressed) }
         return s
+    }
+
+    /// Start/stop reading the vendor interface directly. Only possible in DInput mode; harmless to call twice.
+    func setRawMonitoring(_ on: Bool) {
+        if !on { rawTask?.cancel(); rawTask = nil; raw = nil; return }
+        guard rawTask == nil else { return }
+        rawTask = Task.detached(priority: .utility) { [weak self] in
+            guard let link = try? HIDLink() else { return }
+            defer { link.close() }
+            var last: DInputState?
+            var connectedSeen = false
+            while !Task.isCancelled {
+                let state: DInputState? = try? link.waitForReport(timeout: 0.25) { (r: [UInt8]) -> DInputState? in DInputState(report: r) }
+                guard let state else { continue }
+                if state != last || !connectedSeen {
+                    last = state; connectedSeen = true
+                    await MainActor.run { [weak self] in self?.raw = state; self?.connected = true }
+                }
+            }
+        }
     }
     private static let keyForLabel: [String: ControllerKey] = [
         "A": .a, "B": .b, "X": .x, "Y": .y, "LB": .lb, "RB": .rb, "LS": .thumbL, "RS": .thumbR,

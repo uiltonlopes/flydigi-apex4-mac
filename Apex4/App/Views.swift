@@ -23,6 +23,7 @@ enum HomeTab: String, CaseIterable, Identifiable {
 struct MainWindow: View {
     @Environment(ControllerModel.self) private var model
     @Environment(ProfileStore.self) private var profiles
+    @Environment(LiveInput.self) private var live
     @State private var route: Route = .home
     @State private var tab: HomeTab = .common
     @State private var pendingSlot: UInt8?
@@ -57,7 +58,10 @@ struct MainWindow: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .task(id: model.connection) { await profiles.loadAll() }
+        .task(id: model.connection) {
+            live.setRawMonitoring(model.connection == .dinput)
+            await profiles.loadAll()
+        }
     }
 }
 
@@ -537,6 +541,7 @@ struct KeyEditor: View {
     @Binding var tab: HomeTab
     @Environment(ProfileStore.self) private var profiles
     @Environment(LiveInput.self) private var live
+    @Environment(ControllerModel.self) private var model
     @State private var armed = false          // waiting for a pad press (or a pick) to set the target
 
     enum Kind: Hashable { case click, turbo, macro, special }
@@ -581,7 +586,7 @@ struct KeyEditor: View {
                 }
                 .frame(width: 240, height: 100)
                 if armed {
-                    Text("Press the button on the controller or pick one")
+                    Text(model.connection == .dinput ? "Press the button on the controller or pick one" : "Press a button on the controller or pick one (paddles need DInput mode)")
                         .font(.system(size: 11, weight: .medium)).foregroundStyle(.white).multilineTextAlignment(.center)
                         .padding(.horizontal, 10).padding(.vertical, 6)
                         .background(SS.brand500, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
@@ -708,6 +713,10 @@ struct JoystickTab: View {
 
     private var stick: GamepadConfig.Stick { profiles.draft![stick: side] }
     private func set(_ f: (inout GamepadConfig.Stick) -> Void) { var s = stick; f(&s); profiles.draft?[stick: side] = s }
+    private var liveStick: LiveInput.Stick {
+        if let r = live.raw { return side == .left ? .init(x: r.leftX, y: r.leftY) : .init(x: r.rightX, y: r.rightY) }
+        return side == .left ? live.left : live.right
+    }
 
     var body: some View {
         VStack(spacing: 28) {
@@ -738,7 +747,7 @@ struct JoystickTab: View {
                 .frame(width: 300)
                 VStack(spacing: 8) {
                     Text("Live").font(.system(size: 13)).foregroundStyle(SS.n300)
-                    StickGauge(title: side == .left ? "Left stick" : "Right stick", stick: side == .left ? live.left : live.right, config: stick)
+                    StickGauge(title: side == .left ? "Left stick" : "Right stick", stick: liveStick, config: stick)
                     if !live.connected { Text("No game controller visible to the system.").font(.system(size: 11)).foregroundStyle(SS.n400) }
                 }
             }
@@ -821,7 +830,7 @@ struct TriggerTab: View {
                 .frame(width: 300)
                 VStack(spacing: 8) {
                     Text("Live").font(.system(size: 13)).foregroundStyle(SS.n300)
-                    TriggerGauge(title: side == .left ? "LT" : "RT", value: side == .left ? live.leftTrigger : live.rightTrigger, config: trig)
+                    TriggerGauge(title: side == .left ? "LT" : "RT", value: live.raw.map { side == .left ? $0.leftTrigger : $0.rightTrigger } ?? (side == .left ? live.leftTrigger : live.rightTrigger), config: trig)
                 }
             }
         }
