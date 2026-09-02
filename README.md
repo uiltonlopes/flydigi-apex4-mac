@@ -55,6 +55,17 @@ sudo .build/debug/apex4 screen my.gif   # XInput mode: needs root (screen upload
 swift test                              # needs Xcode (Swift Testing is not in the Command Line Tools)
 ```
 
+## Supported hardware
+
+| Controller | Device id | Firmware tested | Status |
+|---|---|---|---|
+| Flydigi Apex 4 (`k2`) | 84 | 6.8.3.0 (2026-09) | supported — LED, screen, profiles, macros, ForceAdapt, settings |
+| Apex 4 EVA / STN / AC / GS / SRS / HSH | 86, 87, 92, 93, 102, 103, 104 | — | same family, untested |
+| Apex 3, Vader 3 / 3 Pro, older | see catalogue | — | classic protocol, unsupported (help wanted) |
+| Apex 5 / 6, Vader 4 Pro, Vader 5 | 128+ | — | new protocol (VID 0x37D7), unsupported |
+
+Want yours added? Read [`docs/adding-a-controller.md`](docs/adding-a-controller.md).
+
 ## Contributing
 
 Issues and PRs welcome — especially from Apex 4 owners who can test on different firmware

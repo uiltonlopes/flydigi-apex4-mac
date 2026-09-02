@@ -33,7 +33,8 @@ struct Info: ParsableCommand {
         let i = try s.deviceInfo()
         print("""
         channel      \(s.channel)
-        device id    \(i.deviceId) \(i.isApex4Family ? "(Apex 4 family)" : "")
+        model        \(i.modelName)\(i.descriptor.map { " · \($0.support.rawValue)" } ?? " · unknown id")
+        device id    \(i.deviceId)
         firmware     \(i.firmware)
         mac          \(i.mac.map { String(format: "%02x", $0) }.joined(separator: ":"))
         connection   \(i.isWired ? "wired" : "wireless (\(i.connection))")

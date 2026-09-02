@@ -11,7 +11,7 @@ public struct DeviceInfo: Sendable, Hashable {
     public var connection: UInt8      // 1 = wired
     public var motionSensor: UInt8
 
-    public var isApex4Family: Bool { [84, 86, 87, 92, 93, 102, 103, 104].contains(deviceId) }
+    public var isApex4Family: Bool { descriptor?.family == .apex4 }
     public var isWired: Bool { connection == 1 }
 
     static func firmwareString(low: UInt8, high: UInt8) -> String {

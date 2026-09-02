@@ -42,7 +42,7 @@ struct StatusView: View {
                 }
             }
             if let i = model.info {
-                LabeledContent("Model", value: i.deviceId == 84 ? "Flydigi Apex 4" : "Flydigi (id \(i.deviceId))")
+                LabeledContent("Model", value: DeviceCatalog.descriptor(for: i.deviceId)?.name ?? "Flydigi controller (id \(i.deviceId))")
                 LabeledContent("Firmware", value: i.firmware)
                 LabeledContent("Link", value: i.wired ? "USB cable" : "2.4 GHz receiver")
                 LabeledContent("MAC", value: i.mac)
