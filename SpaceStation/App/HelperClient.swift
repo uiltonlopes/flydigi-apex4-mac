@@ -38,20 +38,27 @@ final class HelperClient: @unchecked Sendable {
     func send(_ request: HelperRequest) throws -> HelperReply {
         try queue.sync {
             guard status == .enabled else { throw HelperError.notInstalled }
-            if session == nil {
-                session = try XPCSession(machService: HelperConstants.machService, targetQueue: nil, options: [], cancellationHandler: nil)
+            var lastError: Error?
+            // The daemon restarts itself when its binary changes (dev builds) and launchd may recycle it when
+            // idle; a cached session then fails with "canceled session". Reconnect once before giving up.
+            for attempt in 0..<2 {
+                if session == nil {
+                    session = try XPCSession(machService: HelperConstants.machService, targetQueue: nil, options: [], cancellationHandler: nil)
+                }
+                do {
+                    let received = try session!.sendSync(request)
+                    let reply = try received.decode(as: HelperReply.self)
+                    if case let .error(msg) = reply { throw HelperError.remote(msg) }
+                    return reply
+                } catch let e as HelperError {
+                    throw e
+                } catch {
+                    dropSession()
+                    lastError = error
+                    if attempt == 0 { Thread.sleep(forTimeInterval: 0.3) }
+                }
             }
-            do {
-                let received = try session!.sendSync(request)
-                let reply = try received.decode(as: HelperReply.self)
-                if case let .error(msg) = reply { throw HelperError.remote(msg) }
-                return reply
-            } catch let e as HelperError {
-                throw e
-            } catch {
-                dropSession()
-                throw HelperError.transport("\(error)")
-            }
+            throw HelperError.transport("\(lastError!)")
         }
     }
 
