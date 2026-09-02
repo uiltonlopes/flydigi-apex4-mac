@@ -108,13 +108,19 @@ type 2 `Sniper` is labelled "Machine gun", type 3 `Recoil` is labelled "Sniper")
 | type | SS4 label | live params after side | blob params[10..14] | UI ranges |
 |---|---|---|---|---|
 | 0 | Normal | `0` | start, end | — |
-| 1 | Racing | `1 start damping 1` | start, damping, 0, 0, 0 | start 0–192, damping 1–255 |
-| 2 | Machine gun | `2 start startForce strength freq out` | start, startForce, strength, freq, out | start 0–192, others 1–255 |
+| 1 | Racing | `1 start damping out` (SS4: out=1, forced 0 when start=0) | start, damping, 0, 0, 0 | start 0–192, damping 1–255 |
+| 2 | Recoil (机枪) | `2 start startForce strength freq out` | start, startForce, strength, freq, out | start 0–192, others 1–255 |
 | 3 | Sniper | `3 start stroke resistance 0 out` | start, stroke, resistance, 0, out | start 0–192, others 1–255 |
 | 4 | Trigger lock | `4 pos 255 1` | pos, 255, 1, 0, 0 | pos 20–200 |
 | 5 | Vibration (sync with grip) | **`A5 30 08 side 2 block scale stroke freq 1 90`** (no apply byte) | stroke, freq, 1, 90, 0; bind type 2, filter = block, scale, bind params `stroke 1 1 freq 0` | scale 0–200, block 1–255, stroke 1–200, freq 1–255 |
 
-"out" = "output data from the start position" (MatchStart). Racing and lock always send match = 1.
+"out" = "output data starting from the start position" (MatchStart / matchStroke): **the trigger reports a full
+press as soon as it reaches the start position**; the travel before it is the whole 0–100 % range and the effect
+zone is "past the floor". Proof: SS4's `ForceTriggerConfigCommon` zeroes the flag for Racing when start = 0
+(it would read 100 % all the time). Racing has it on and hidden in SS4; Recoil/Sniper expose it (default off);
+lock always sends 1. Flydigi's own per-game presets (`/game/list`, `vibType 2`) are all "sync with grip":
+`[side, 2, filter, scale=10, stroke, 1, strength, frequency]`, e.g. Need for Speed `stroke 0, strength 255,
+frequency 70, filter 20`.
 The Apex 4 has no trigger motors of its own (`IsSupportTriggerVibration` is false for k2), so SS4's
 "vibration test" for the Vibration mode is simply a full grip rumble (`A5 12 FF FF`) for 5 s — the trigger
 follows the grip. SS4 has no per-mode defaults: a newly picked mode starts from whatever the profile held.

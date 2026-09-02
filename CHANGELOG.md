@@ -1,7 +1,7 @@
 # Changelog
 
 ## Unreleased
-- Triggers: ForceAdapt modes now match Space Station for the Apex 4 — Normal, Racing, Machine gun, Sniper, Trigger lock, Vibration — with SS4's parameters and ranges (0–255 raw, not 1–10), the vibration mode sent as the "sync with grip" command, and the same layout in the profile blob. Game-profile presets use the same editor.
+- Triggers: ForceAdapt modes now match Space Station for the Apex 4 — General, Racing, Recoil, Sniper, Trigger lock, Vibration (SS4's own labels and tooltips) — with SS4's parameters and ranges (0–255 raw, not 1–10), the vibration mode sent as the "sync with grip" command, and the same layout in the profile blob. Game-profile presets use the same editor.
 - Receiver (charging dock): "waiting for controller" state while the pad is off, automatic reconnection when it comes back or when the receiver re-enumerates, battery read correctly over the receiver, no stale errors when it is unplugged.
 - Welcome screen: Space Station's own "add device" silhouette when nothing is connected; special-edition card artwork (EVA-01, Assassin's Creed, Black Myth Wukong, Genshin, Honkai Star Rail).
 - Sidebar: device card without the dropdown (refresh icon, short firmware-update button, mode switch on the Mode row), title on its own line.

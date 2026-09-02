@@ -321,6 +321,16 @@
         }
       }
     },
+    "Breakthrough travel": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curso do rompimento"
+          }
+        }
+      }
+    },
     "Breathing": {
       "localizations": {
         "pt-BR": {
@@ -741,6 +751,16 @@
         }
       }
     },
+    "Damping feedback strength.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intensidade do amortecimento."
+          }
+        }
+      }
+    },
     "Damping force": {
       "localizations": {
         "pt-BR": {
@@ -757,6 +777,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Posição inicial do amortecimento"
+          }
+        }
+      }
+    },
+    "Damping strength": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Força de amortecimento"
           }
         }
       }
@@ -1251,6 +1281,26 @@
         }
       }
     },
+    "Force required to push through once the trigger reaches the breakthrough start position.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Força necessária para atravessar depois que o gatilho chega no início do rompimento."
+          }
+        }
+      }
+    },
+    "Force required to trigger vibration once the trigger reaches the start position.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Força necessária para acionar a vibração depois que o gatilho chega na posição inicial."
+          }
+        }
+      }
+    },
     "Frame interval": {
       "localizations": {
         "pt-BR": {
@@ -1267,6 +1317,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Frequência"
+          }
+        }
+      }
+    },
+    "Full press at the damping start": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pressão total no início do amortecimento"
           }
         }
       }
@@ -1316,7 +1376,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Normal"
+            "value": "Geral"
           }
         }
       }
@@ -1497,6 +1557,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Instalado e registrado no launchd."
+          }
+        }
+      }
+    },
+    "Intensity coefficient": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coeficiente de intensidade"
           }
         }
       }
@@ -2211,6 +2281,16 @@
         }
       }
     },
+    "On (Space Station's setting): the trigger reports 100 % when it reaches the damping start, so the travel before it is your whole throttle — keep the start high for a gradual pedal. Off: the full travel maps 0–100 % and the damping is only feel.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ligado (como no Space Station): o gatilho reporta 100 % ao chegar no início do amortecimento, então o curso antes dele é todo o seu acelerador — deixe o início alto para um pedal gradual. Desligado: o curso inteiro vai de 0 a 100 % e o amortecimento é só sensação."
+          }
+        }
+      }
+    },
     "On the controller": {
       "localizations": {
         "pt-BR": {
@@ -2291,12 +2371,42 @@
         }
       }
     },
+    "Output data starting from the breakthrough start position": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dados de saída a partir do início do rompimento"
+          }
+        }
+      }
+    },
+    "Output data starting from the vibration start position": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Dados de saída a partir da posição inicial da vibração"
+          }
+        }
+      }
+    },
     "Pick one on the left or press + to bind a new macro to a button. Steps play on the pad itself, so they work in any game and on any platform.": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Escolha uma à esquerda ou use + para vincular uma nova macro a um botão. Os passos rodam no próprio controle, então funcionam em qualquer jogo e plataforma."
+          }
+        }
+      }
+    },
+    "Plain linear trigger: no motor effect.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gatilho linear comum: sem efeito do motor."
           }
         }
       }
@@ -3221,6 +3331,26 @@
         }
       }
     },
+    "Start intensity": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intensidade inicial"
+          }
+        }
+      }
+    },
+    "Start position": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posição inicial"
+          }
+        }
+      }
+    },
     "Status": {
       "localizations": {
         "pt-BR": {
@@ -3531,12 +3661,52 @@
         }
       }
     },
+    "The trigger gets hard to push past this point, like a shorter trigger.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O gatilho fica duro a partir deste ponto, como um gatilho mais curto."
+          }
+        }
+      }
+    },
+    "The trigger reports a full press once it reaches the breakthrough — the shot fires at the wall.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O gatilho reporta pressão total ao chegar no rompimento — o tiro sai na parede."
+          }
+        }
+      }
+    },
+    "The trigger reports a full press once it reaches the start position.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O gatilho reporta pressão total ao chegar na posição inicial."
+          }
+        }
+      }
+    },
     "The trigger stops here, like a shorter trigger.": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "O gatilho para aqui, como um gatilho mais curto."
+          }
+        }
+      }
+    },
+    "The trigger vibrates together with the grip motors (game rumble).": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O gatilho vibra junto com os motores da empunhadura (vibração do jogo)."
           }
         }
       }
@@ -3577,6 +3747,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Traduzindo…"
+          }
+        }
+      }
+    },
+    "Travel range": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faixa de curso"
           }
         }
       }
@@ -3637,6 +3817,56 @@
           "stringUnit": {
             "state": "translated",
             "value": "Curso do gatilho ao longo do qual ele vibra."
+          }
+        }
+      }
+    },
+    "Trigger travel range for sustained breakthrough feedback.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faixa de curso em que o rompimento se mantém."
+          }
+        }
+      }
+    },
+    "Trigger travel range for sustained vibration feedback.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Faixa de curso em que a vibração se mantém."
+          }
+        }
+      }
+    },
+    "Trigger travel required to activate breakthrough feedback.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curso do gatilho necessário para ativar o rompimento."
+          }
+        }
+      }
+    },
+    "Trigger travel required to activate damping feedback.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curso do gatilho necessário para ativar o amortecimento."
+          }
+        }
+      }
+    },
+    "Trigger travel required to activate vibration feedback.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curso do gatilho necessário para ativar a vibração."
           }
         }
       }
@@ -3951,6 +4181,26 @@
         }
       }
     },
+    "Vibration intensity": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intensidade da vibração"
+          }
+        }
+      }
+    },
+    "Vibration intensity of the trigger.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intensidade da vibração do gatilho."
+          }
+        }
+      }
+    },
     "Vibration start force": {
       "localizations": {
         "pt-BR": {
@@ -3987,6 +4237,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Testar vibração"
+          }
+        }
+      }
+    },
+    "Vibration threshold": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limiar de vibração"
           }
         }
       }
@@ -4037,6 +4297,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quando um desses apps vem pra frente, o controle muda para o slot de perfil e o preset de gatilho escolhidos, e volta ao normal quando o app sai."
+          }
+        }
+      }
+    },
+    "When the grip vibration value is below this threshold, the trigger does not vibrate.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quando a vibração da empunhadura fica abaixo deste limiar, o gatilho não vibra."
           }
         }
       }

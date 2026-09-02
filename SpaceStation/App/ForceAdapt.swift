@@ -2,8 +2,14 @@
 // same labels, parameters and ranges. Reference: SS4's `SetForceTriggerCommandFactory` (live command),
 // `SaveTriggerAdapterConfig` (profile blob) and the renderer's trigger tab (labels, min/max).
 //
-// Note the naming trap in SS4: its enum value `Sniper` (type 2) is *labelled* "Machine gun" in the UI and its
-// enum value `Recoil` (type 3) is labelled "Sniper". We use the UI names; the byte values are the enum's.
+// Note the naming trap in SS4: its enum value `Sniper` (type 2) is *labelled* "Recoil" (机枪, machine gun) in
+// the UI and its enum value `Recoil` (type 3) is labelled "Sniper" (狙击). We use the UI names (SS4's English
+// locale); the byte values are the enum's.
+//
+// "Output data starting from the start position" (SS4's MatchStart / matchStroke byte): when on, the trigger
+// reports a full press as soon as it reaches the effect's start position — the travel before it is the whole
+// 0–100 % range, the effect zone is "past the floor". SS4 always sends it on for Racing (and zeroes it when
+// the start is 0, because that would mean 100 % all the time); for Recoil/Sniper it is a checkbox, off by default.
 
 import SwiftUI
 import FlydigiKit
@@ -11,7 +17,7 @@ import FlydigiTransport
 
 struct ForceAdapt: Codable, Hashable {
     enum Mode: Int, Codable, CaseIterable, Hashable {
-        case normal = 0, race = 1, machineGun = 2, sniper = 3, lock = 4, vibration = 5
+        case normal = 0, race = 1, recoil = 2, sniper = 3, lock = 4, vibration = 5
     }
     var mode: Mode = .normal
     /// Race / machine gun / sniper: trigger travel where the effect starts (0…192). Lock: lock position
@@ -27,10 +33,11 @@ struct ForceAdapt: Codable, Hashable {
     var frequency = 100
     /// Vibration only: grip-rumble values below this do not move the trigger (1…255).
     var block = 50
-    /// Machine gun / sniper: "output data from the start position" (SS4's MatchStart).
-    var outputFromStart = true
+    /// "Output data starting from the start position" (SS4's MatchStart): full press reported at the start
+    /// position. Racing: on in SS4 (hidden). Recoil / sniper: checkbox, off by default.
+    var outputFromStart = false
 
-    static let labels: [(Mode, String)] = [(.normal, "Normal"), (.race, "Racing"), (.machineGun, "Machine gun"), (.sniper, "Sniper"), (.lock, "Trigger lock"), (.vibration, "Vibration")]
+    static let labels: [(Mode, String)] = [(.normal, "General"), (.race, "Racing"), (.recoil, "Recoil"), (.sniper, "Sniper"), (.lock, "Trigger lock"), (.vibration, "Vibration")]
 
     /// Starting point for a mode. Space Station has no per-mode defaults of its own (a freshly picked mode
     /// starts from whatever the profile held, zeros included); these are sensible mid-range values, the
@@ -39,9 +46,10 @@ struct ForceAdapt: Codable, Hashable {
         var c = ForceAdapt(); c.mode = mode
         switch mode {
         case .normal: break
-        case .race: c.start = 60; c.level = 128
-        case .machineGun: c.start = 60; c.level = 128; c.strength = 128; c.frequency = 100; c.outputFromStart = true
-        case .sniper: c.start = 60; c.level = 128; c.strength = 128; c.outputFromStart = true
+        // Racing reports 100 % at the damping start (see header), so the start sits near the end of the travel.
+        case .race: c.start = 150; c.level = 128; c.outputFromStart = true
+        case .recoil: c.start = 60; c.level = 128; c.strength = 128; c.frequency = 100; c.outputFromStart = false
+        case .sniper: c.start = 90; c.level = 60; c.strength = 150; c.outputFromStart = false
         case .lock: c.start = 100
         case .vibration: c.strength = 50; c.block = 10; c.start = 100; c.frequency = 90
         }
@@ -62,7 +70,7 @@ struct ForceAdapt: Codable, Hashable {
         strength = (try? c.decode(Int.self, forKey: .strength)) ?? 128
         frequency = (try? c.decode(Int.self, forKey: .frequency)) ?? 100
         block = (try? c.decode(Int.self, forKey: .block)) ?? 50
-        outputFromStart = (try? c.decode(Bool.self, forKey: .outputFromStart)) ?? true
+        outputFromStart = (try? c.decode(Bool.self, forKey: .outputFromStart)) ?? (mode == .race)
     }
     func encode(to encoder: Encoder) throws {
         var c = encoder.container(keyedBy: Keys.self)
@@ -80,8 +88,8 @@ struct ForceAdapt: Codable, Hashable {
     var liveParams: [UInt8] {
         switch mode {
         case .normal: return [0]
-        case .race: return [1, b(start, max: 192), b(level, min: 1), 1]
-        case .machineGun: return [2, b(start, max: 192), b(level, min: 1), b(strength, min: 1), b(frequency, min: 1), outputFromStart ? 1 : 0]
+        case .race: return [1, b(start, max: 192), b(level, min: 1), (outputFromStart && start > 0) ? 1 : 0]   // SS4 zeroes match at start 0
+        case .recoil: return [2, b(start, max: 192), b(level, min: 1), b(strength, min: 1), b(frequency, min: 1), outputFromStart ? 1 : 0]
         case .sniper: return [3, b(start, max: 192), b(level, min: 1), b(strength, min: 1), 0, outputFromStart ? 1 : 0]
         case .lock: return [4, b(start, min: 20, max: 200), 255, 1]
         case .vibration: return [5, b(block, min: 1), b(strength, max: 200), b(start, min: 1, max: 200), b(frequency, min: 1)]
@@ -97,8 +105,8 @@ struct ForceAdapt: Codable, Hashable {
         var params: [UInt8]
         switch mode {
         case .normal: params = [previous.count >= 20 ? previous[10] : 0, previous.count >= 20 ? previous[11] : 255, 0, 0, 0]
-        case .race: params = [b(start, max: 192), b(level, min: 1), 0, 0, 0]
-        case .machineGun: params = [b(start, max: 192), b(level, min: 1), b(strength, min: 1), b(frequency, min: 1), outputFromStart ? 1 : 0]
+        case .race: params = [b(start, max: 192), b(level, min: 1), 0, 0, outputFromStart ? 1 : 0]
+        case .recoil: params = [b(start, max: 192), b(level, min: 1), b(strength, min: 1), b(frequency, min: 1), outputFromStart ? 1 : 0]
         case .sniper: params = [b(start, max: 192), b(level, min: 1), b(strength, min: 1), 0, outputFromStart ? 1 : 0]
         case .lock: params = [b(start, min: 20, max: 200), 255, 1, 0, 0]
         case .vibration:
@@ -119,8 +127,8 @@ struct ForceAdapt: Codable, Hashable {
         let q = Array(p[10..<15]).map { Int($0) }
         switch m {
         case .normal: break
-        case .race: start = q[0]; level = q[1]
-        case .machineGun: start = q[0]; level = q[1]; strength = q[2]; frequency = q[3]; outputFromStart = q[4] == 1
+        case .race: start = q[0]; level = q[1]; outputFromStart = q[4] != 0 || p[14] == 0xFF   // SS4 writes 0 here but always sends match on
+        case .recoil: start = q[0]; level = q[1]; strength = q[2]; frequency = q[3]; outputFromStart = q[4] == 1
         case .sniper: start = q[0]; level = q[1]; strength = q[2]; outputFromStart = q[4] == 1
         case .lock: start = q[0]
         case .vibration: start = q[0]; frequency = q[1]; block = Int(p[2]); strength = Int(p[3])
@@ -139,28 +147,29 @@ struct ForceAdaptEditor: View {
             Field("Trigger mode") { DarkSelect(selection: Binding(get: { cfg.mode }, set: { m in if m != cfg.mode { cfg = .defaults(for: m) } }), options: ForceAdapt.labels, width: width) }
             switch cfg.mode {
             case .normal:
-                Text("Plain trigger: no motor effect.").font(.system(size: 12)).foregroundStyle(SS.n400)
+                Text("Plain linear trigger: no motor effect.").font(.system(size: 12)).foregroundStyle(SS.n400)
             case .race:
-                slider("Damping start position", "Trigger travel where the damping starts.", $cfg.start, 0...192)
-                slider("Damping force", "How hard the trigger resists past that point.", $cfg.level, 1...255)
-            case .machineGun:
-                slider("Vibration start position", "Trigger travel where the vibration starts.", $cfg.start, 0...192)
-                slider("Vibration start force", "Force needed, past the start position, to make it vibrate.", $cfg.level, 1...255)
-                slider("Vibration strength", nil, $cfg.strength, 1...255)
+                slider("Damping start position", "Trigger travel required to activate damping feedback.", $cfg.start, 0...192)
+                slider("Damping strength", "Damping feedback strength.", $cfg.level, 1...255)
+                toggle("Full press at the damping start", "On (Space Station's setting): the trigger reports 100 % when it reaches the damping start, so the travel before it is your whole throttle — keep the start high for a gradual pedal. Off: the full travel maps 0–100 % and the damping is only feel.", $cfg.outputFromStart)
+            case .recoil:
+                slider("Start position", "Trigger travel required to activate vibration feedback.", $cfg.start, 0...192)
+                slider("Start intensity", "Force required to trigger vibration once the trigger reaches the start position.", $cfg.level, 1...255)
+                slider("Vibration intensity", nil, $cfg.strength, 1...255)
                 slider("Vibration frequency", nil, $cfg.frequency, 1...255)
-                SwitchRow(title: "Output data from the start position", isOn: $cfg.outputFromStart)
+                toggle("Output data starting from the vibration start position", "The trigger reports a full press once it reaches the start position.", $cfg.outputFromStart)
             case .sniper:
-                slider("Breakthrough start position", "Trigger travel where the resistance wall begins.", $cfg.start, 0...192)
-                slider("Breakthrough stroke", "How long the wall lasts.", $cfg.level, 1...255)
-                slider("Breakthrough resistance", "Force needed to push through it.", $cfg.strength, 1...255)
-                SwitchRow(title: "Output data from the start position", isOn: $cfg.outputFromStart)
+                slider("Breakthrough start position", "Trigger travel required to activate breakthrough feedback.", $cfg.start, 0...192)
+                slider("Breakthrough travel", "Trigger travel range for sustained breakthrough feedback.", $cfg.level, 1...255)
+                slider("Breakthrough resistance", "Force required to push through once the trigger reaches the breakthrough start position.", $cfg.strength, 1...255)
+                toggle("Output data starting from the breakthrough start position", "The trigger reports a full press once it reaches the breakthrough — the shot fires at the wall.", $cfg.outputFromStart)
             case .lock:
-                slider("Lock position", "The trigger stops here, like a shorter trigger.", $cfg.start, 20...200)
+                slider("Lock position", "The trigger gets hard to push past this point, like a shorter trigger.", $cfg.start, 20...200)
             case .vibration:
-                Text("The trigger vibrates together with the grip motors.").font(.system(size: 12)).foregroundStyle(SS.n400)
-                slider("Strength coefficient", nil, $cfg.strength, 0...200)
-                slider("Shield value", "Grip vibration below this value does not move the trigger.", $cfg.block, 1...255)
-                slider("Stroke", "Trigger travel over which it vibrates.", $cfg.start, 1...200)
+                Text("The trigger vibrates together with the grip motors (game rumble).").font(.system(size: 12)).foregroundStyle(SS.n400)
+                slider("Intensity coefficient", "Vibration intensity of the trigger.", $cfg.strength, 0...200)
+                slider("Vibration threshold", "When the grip vibration value is below this threshold, the trigger does not vibrate.", $cfg.block, 1...255)
+                slider("Travel range", "Trigger travel range for sustained vibration feedback.", $cfg.start, 1...200)
                 slider("Frequency", nil, $cfg.frequency, 1...255)
             }
             if !cfg.isNormal {
@@ -168,6 +177,13 @@ struct ForceAdaptEditor: View {
             }
         }
         .frame(width: width)
+    }
+
+    private func toggle(_ title: String, _ help: String, _ value: Binding<Bool>) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            SwitchRow(title: title, isOn: value)
+            Text(LocalizedStringKey(help)).font(.system(size: 11)).foregroundStyle(SS.n400)
+        }
     }
 
     private func slider(_ title: String, _ help: String?, _ value: Binding<Int>, _ range: ClosedRange<Int>) -> some View {
