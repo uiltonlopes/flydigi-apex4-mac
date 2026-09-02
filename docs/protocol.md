@@ -182,6 +182,13 @@ converge on it.
   same XInput protocol — **LED/config read/write verified** through it. **Screen upload does not**: the
   `A5 D0` start command gets no `5A A5` ack over the dongle (the receiver firmware does not forward the
   screen commands, or they are wired-only). Root is needed exactly as in wired XInput.
+  Observed behaviour of the receiver (2026-09-02, fw 6.8.3.0): it announces itself as "Flydigi VADER3" in
+  the USB product string (the wired pad does not); it stays enumerated for a while after the pad turns
+  off and then **drops off the bus by itself**, re-enumerating when the pad comes back; roughly every
+  other request times out (retry once); and right after the pad powers on the device-info battery byte
+  reads 0 for several seconds — Space Station keeps re-sending `A5 10` every second until it is non-zero,
+  the app polls every 2 s for up to 30 s. macOS's GameController battery object for the receiver is
+  state "unknown" / level 0 and must be ignored.
 
 ## 9. Live input in DInput mode (report id 4)
 

@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+- Receiver (charging dock): "waiting for controller" state while the pad is off, automatic reconnection when it comes back or when the receiver re-enumerates, battery read correctly over the receiver, no stale errors when it is unplugged.
+- Welcome screen: Space Station's own "add device" silhouette when nothing is connected; special-edition card artwork (EVA-01, Assassin's Creed, Black Myth Wukong, Genshin, Honkai Star Rail).
+- Sidebar: device card without the dropdown (refresh icon, short firmware-update button, mode switch on the Mode row), title on its own line.
 - Screen: GIPHY search next to Flydigi's library (shared beta key, or your own in Settings) and an "On the controller" card showing the last animation sent from this Mac, or the factory animation for the connected variant (the pad cannot be read back).
 - App renamed **Space Station for Mac** (repo `flydigi-space-station-mac`), Space Station's app icon.
 - Fix: the Screen editor crashed when a shorter GIF/image replaced a longer one (filmstrip indexed stale frames).
