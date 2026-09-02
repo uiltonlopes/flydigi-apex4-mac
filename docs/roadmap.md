@@ -20,7 +20,7 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 - [~] Profiles: read/apply config slot verified (`A5 20`, `A5 50 05`); per-slot read/write + import/export pending.
 - [x] Button mapping, turbo, macros in the app: Click / Turbo / Macro / Special editor with "press the button on the pad" capture; Macros tab with step editor, timeline and recording from the pad. Remap + macro write/read-back verified on hardware.
 - [~] Joystick tab: curve (Default/Quick/Slow/Custom with draggable points), dead zone, edge, live gauge. Resolution/return rate/centre sensitivity/rebounce/round type commands known (`A5 50 0A/0B/0D…`), untested.
-- [ ] **Calibration wizard** (`A5 14 01/02` start/stop, `A5 F6 06` stick test): only as a guided flow with live stick readout — starting/stopping blindly can leave sticks with a bogus range.
+- [x] **Calibration wizard** (`A5 14 01/02`): timed guided flow in the Joystick tab (the pad reports no input while the window is open); verified on hardware 2026-09-02.
 - [x] Trigger tab: ForceAdapt modes with live preview and "keep in profile", start/end, live gauge (parameter layout partly inferred — see `Controls.swift`).
 - [x] Common tab: lighting (debounced live apply) and grip vibration with motor test; Gyro tab: mapping, activation key/type, sensitivity, dead zone, use mode.
 - [x] Live input: GameController framework in both modes, plus the **raw DInput status report** (paddles M1–M4, Fn, Home, sticks, triggers — `protocol.md` §9) so the hero lights every key and capture/recording see the paddles.

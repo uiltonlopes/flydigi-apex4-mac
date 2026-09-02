@@ -7,6 +7,7 @@
 - Screen editor: drag / pinch / scroll to frame the image in a 2:1 viewport, Fit / Fill, GIF trimming with
   filmstrip, frame interval, exact 160 × 80 preview; long GIFs are thinned evenly to 35 frames.
 - Key capture in XInput borrows the pad for a few seconds so paddles and Fn work everywhere.
+- Stick / trigger calibration wizard (Joystick tab): timed, guided, with the controller's own "Calibrating" window.
 - Credits, social links and Buy Me a Coffee in Settings → About, the welcome screen, the menu bar and the About panel.
 - Firmware: automatic update check on connect, update badges (welcome screen, sidebar, Settings), Flydigi's
   note, how-to-update guidance, and a read-only dry run that downloads and validates the image (Telink CRC32)

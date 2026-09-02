@@ -225,8 +225,10 @@ press a key ("borrow the pad"), then hands the pad back to the system driver.
 
 - **ADC calibration window**: XInput `A5 14 01` opens, `A5 14 02` closes; DInput `05 E2 01` / `05 E2 02`.
   No acknowledgement. The pad learns centre and limits from whatever it sees in between, so the app only
-  sends `02` after every axis has been swept (guided wizard in the Joystick tab). Not yet exercised on
-  hardware by this project — the wizard is the first user of it.
+  sends `02` after every axis has been swept (guided wizard in the Joystick tab). **Verified 2026-09-02:**
+  after `A5 14 01` the LCD shows "Calibrating" and the pad stops reporting stick/trigger movement (both
+  through Apple's driver and the raw report) until `A5 14 02` closes the window, so the wizard is timed
+  (24 s sticks + 10 s triggers) rather than driven by live coverage.
 - **Hardware function switches** (`A5 50 07` read, `A5 50 08/09/0B/0D/0E <v>` set = joystick debounce,
   auto-calibration, precision, sensitivity, rebounce; DInput read `05 F2 03`): the Apex 4 (fw 6.8.3.0)
   **does not answer** `A5 50 07` in XInput, and in DInput `05 F2 03` returns `f2 03 0f ff` — usable bits
