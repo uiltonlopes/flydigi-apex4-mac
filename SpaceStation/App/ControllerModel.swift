@@ -118,20 +118,50 @@ final class ControllerModel {
         } onSuccess: { (i: HelperDeviceInfo, l: LEDConfig) in self.info = i; self.led = l }
         if let fw = info?.firmware, firmwareCheckedFor != fw { firmwareCheckedFor = fw; Task { await checkFirmware() } }
         if info == nil {
-            // Receiver plugged in with the pad off (or a pad that is still waking up): keep asking every few
-            // seconds instead of leaving a stale error on screen; it appears by itself once it answers.
-            firmwareUpdate = nil; firmwareCheckedFor = nil
-            lastError = looksLikeReceiver
-                ? String(localized: "Receiver connected. Turn the controller on (Home button) — it shows up by itself.")
-                : String(localized: "The controller did not answer in time. Turn it on or reconnect the cable — it shows up by itself.")
-            padPoll?.cancel()
-            padPoll = Task { @MainActor [weak self] in
-                try? await Task.sleep(for: .seconds(5))
-                guard !Task.isCancelled, let self, self.awaitingPad, !self.busy else { return }
-                await self.refresh()
-            }
+            padWentSilent()
         } else {
             padPoll?.cancel(); padPoll = nil
+            // Over the receiver the first answer often carries battery 0 ("unknown") until the dongle has
+            // asked the pad; Space Station re-sends its heartbeat after 1 s in that case — so do we.
+            if info?.batteryRaw == 0, info?.wired == false { scheduleBatteryReread(attempt: 1) }
+        }
+    }
+
+    /// The link is up but the pad stopped answering (turned off, out of range, still waking up): show the
+    /// "waiting" state and keep asking every few seconds; it comes back by itself.
+    func padWentSilent() {
+        guard connection != .none else { return }
+        info = nil; led = nil; firmwareUpdate = nil; firmwareCheckedFor = nil
+        lastError = looksLikeReceiver
+            ? String(localized: "Receiver connected. Turn the controller on (Home button) — it shows up by itself.")
+            : String(localized: "The controller did not answer in time. Turn it on or reconnect the cable — it shows up by itself.")
+        padPoll?.cancel()
+        padPoll = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(5))
+            guard !Task.isCancelled, let self, self.awaitingPad, !self.busy else { return }
+            await self.refresh()
+        }
+    }
+
+    private var batteryReread: Task<Void, Never>?
+    private func scheduleBatteryReread(attempt: Int) {
+        batteryReread?.cancel()
+        batteryReread = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(1.5))
+            guard !Task.isCancelled, let self, self.info != nil, !self.busy else { return }
+            let conn = self.connection, installed = self.helperInstalled
+            await self.run {
+                switch conn {
+                case .dinput:
+                    let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }
+                    return HelperDeviceInfo(try s.deviceInfo())
+                case .xinput:
+                    guard installed, #available(macOS 14.0, *) else { throw HelperError.notInstalled }
+                    return try HelperClient.shared.deviceInfo()
+                case .none: throw HelperError.transport("no controller")
+                }
+            } onSuccess: { (i: HelperDeviceInfo) in self.info = i }
+            if self.info?.batteryRaw == 0, attempt < 3 { self.scheduleBatteryReread(attempt: attempt + 1) }
         }
     }
 
@@ -363,7 +393,12 @@ final class ControllerModel {
         case .success(let v): onSuccess(v)
         case .failure(let e):
             let text = "\(e)"
-            lastError = text.contains("no matching report") || text.contains("timeout") ? String(localized: "The controller did not answer in time. Press refresh to try again.") : text
+            if text.contains("no matching report") || text.contains("timeout") {
+                lastError = String(localized: "The controller did not answer in time. Press refresh to try again.")
+                if info != nil { padWentSilent() }       // it was there a moment ago: turned off / out of range
+            } else {
+                lastError = text
+            }
         }
     }
 }

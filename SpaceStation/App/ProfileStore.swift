@@ -29,9 +29,8 @@ final class ProfileStore {
     /// Same wording as ControllerModel for timeouts, so the banner never shows raw transport text.
     private func report(_ e: Error) {
         let text = "\(e)"
-        lastError = text.contains("no matching report") || text.contains("timeout")
-            ? String(localized: "The controller did not answer in time. Turn it on or reconnect the cable — it shows up by itself.")
-            : text
+        if text.contains("no matching report") || text.contains("timeout") { lastError = nil; controller.padWentSilent() }
+        else { lastError = text }
     }
 
 
