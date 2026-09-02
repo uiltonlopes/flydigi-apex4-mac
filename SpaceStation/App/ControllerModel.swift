@@ -131,6 +131,7 @@ final class ControllerModel {
     /// "waiting" state and keep asking every few seconds; it comes back by itself.
     func padWentSilent() {
         guard connection != .none else { return }
+        batteryReread?.cancel(); batteryReread = nil
         info = nil; led = nil; firmwareUpdate = nil; firmwareCheckedFor = nil
         lastError = looksLikeReceiver
             ? String(localized: "Receiver connected. Turn the controller on (Home button) — it shows up by itself.")
@@ -144,24 +145,33 @@ final class ControllerModel {
     }
 
     private var batteryReread: Task<Void, Never>?
+    /// Space Station keeps re-sending its heartbeat every second until the battery is non-zero; the receiver
+    /// can take a while after the pad powers on. We ask every 2 s for up to ~30 s, quietly (no busy state,
+    /// no error banner — a missed answer over the dongle is normal).
     private func scheduleBatteryReread(attempt: Int) {
         batteryReread?.cancel()
         batteryReread = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(1.5))
+            try? await Task.sleep(for: .seconds(2))
             guard !Task.isCancelled, let self, self.info != nil, !self.busy else { return }
             let conn = self.connection, installed = self.helperInstalled
-            await self.run {
-                switch conn {
-                case .dinput:
-                    let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }
-                    return HelperDeviceInfo(try s.deviceInfo())
-                case .xinput:
-                    guard installed, #available(macOS 14.0, *) else { throw HelperError.notInstalled }
-                    return try HelperClient.shared.deviceInfo()
-                case .none: throw HelperError.transport("no controller")
+            self.suppressNotificationsUntil = .distantFuture
+            let r: Result<HelperDeviceInfo, Error> = await Task.detached {
+                Result {
+                    switch conn {
+                    case .dinput:
+                        let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }
+                        return HelperDeviceInfo(try s.deviceInfo())
+                    case .xinput:
+                        guard installed, #available(macOS 14.0, *) else { throw HelperError.notInstalled }
+                        return try HelperClient.shared.deviceInfo()
+                    case .none: throw HelperError.transport("no controller")
+                    }
                 }
-            } onSuccess: { (i: HelperDeviceInfo) in self.info = i }
-            if self.info?.batteryRaw == 0, attempt < 3 { self.scheduleBatteryReread(attempt: attempt + 1) }
+            }.value
+            self.suppressNotificationsUntil = Date().addingTimeInterval(4)
+            guard !Task.isCancelled, self.info != nil else { return }
+            if case .success(let i) = r { self.info = i }
+            if self.info?.batteryRaw == 0, attempt < 15 { self.scheduleBatteryReread(attempt: attempt + 1) }
         }
     }
 
