@@ -31,6 +31,23 @@ struct ForceAdapt: Codable, Hashable {
     var outputFromStart = true
 
     static let labels: [(Mode, String)] = [(.normal, "Normal"), (.race, "Racing"), (.machineGun, "Machine gun"), (.sniper, "Sniper"), (.lock, "Trigger lock"), (.vibration, "Vibration")]
+
+    /// Starting point for a mode. Space Station has no per-mode defaults of its own (a freshly picked mode
+    /// starts from whatever the profile held, zeros included); these are sensible mid-range values, the
+    /// vibration ones taken from the Apex 4 factory profile (block 10, scale 50, frequency 90).
+    static func defaults(for mode: Mode) -> ForceAdapt {
+        var c = ForceAdapt(); c.mode = mode
+        switch mode {
+        case .normal: break
+        case .race: c.start = 60; c.level = 128
+        case .machineGun: c.start = 60; c.level = 128; c.strength = 128; c.frequency = 100; c.outputFromStart = true
+        case .sniper: c.start = 60; c.level = 128; c.strength = 128; c.outputFromStart = true
+        case .lock: c.start = 100
+        case .vibration: c.strength = 50; c.block = 10; c.start = 100; c.frequency = 90
+        }
+        return c
+    }
+    var isDefault: Bool { self == ForceAdapt.defaults(for: mode) }
     static func label(_ m: Mode) -> String { labels.first { $0.0 == m }?.1 ?? "Normal" }
     var isNormal: Bool { mode == .normal }
 
@@ -118,7 +135,8 @@ struct ForceAdaptEditor: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            Field("Trigger mode") { DarkSelect(selection: $cfg.mode, options: ForceAdapt.labels, width: width) }
+            // Picking a mode starts it from its defaults (values of another mode mean nothing to it).
+            Field("Trigger mode") { DarkSelect(selection: Binding(get: { cfg.mode }, set: { m in if m != cfg.mode { cfg = .defaults(for: m) } }), options: ForceAdapt.labels, width: width) }
             switch cfg.mode {
             case .normal:
                 Text("Plain trigger: no motor effect.").font(.system(size: 12)).foregroundStyle(SS.n400)
@@ -144,6 +162,9 @@ struct ForceAdaptEditor: View {
                 slider("Shield value", "Grip vibration below this value does not move the trigger.", $cfg.block, 1...255)
                 slider("Stroke", "Trigger travel over which it vibrates.", $cfg.start, 1...200)
                 slider("Frequency", nil, $cfg.frequency, 1...255)
+            }
+            if !cfg.isNormal {
+                GhostButton(title: "Restore defaults", icon: "arrow.counterclockwise", enabled: !cfg.isDefault) { cfg = .defaults(for: cfg.mode) }
             }
         }
         .frame(width: width)

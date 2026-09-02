@@ -89,6 +89,8 @@ struct ForceAdaptPanel: View {
     @Environment(ControllerModel.self) private var model
     @State private var cfg = ForceAdapt()
     @State private var previewing = false
+    @State private var pendingApply: Task<Void, Never>?
+    @State private var rumbling = false
 
     private var trig: GamepadConfig.Trigger { profiles.draft![trigger: side] }
 
@@ -96,12 +98,33 @@ struct ForceAdaptPanel: View {
         VStack(alignment: .leading, spacing: 20) {
             ForceAdaptEditor(cfg: $cfg)
             HStack(spacing: 8) {
-                GhostButton(title: previewing ? "Stop preview" : "Preview on controller", icon: "play.fill", enabled: model.connection == .xinput && !model.busy) { Task { await preview(!previewing) } }
+                GhostButton(title: previewing ? "Stop preview" : "Preview on controller", icon: previewing ? "stop.fill" : "play.fill", enabled: model.connection == .xinput && !model.busy) { Task { await preview(!previewing) } }
+                if cfg.mode == .vibration {
+                    // The trigger only moves when the grip rumbles; SS4's "vibration test" is a 5 s full rumble.
+                    GhostButton(title: rumbling ? "Rumbling…" : "Test vibration", icon: "waveform", enabled: previewing && !rumbling) { Task { await rumble() } }
+                        .help("Runs the grip motors for 3 s so you can feel the trigger follow them")
+                }
                 PrimaryButton(title: "Keep in profile", enabled: cfg != ForceAdapt(adapterBlock: trig.adapterParams)) { store() }
             }
             if model.connection != .xinput { Text("Preview needs XInput mode.").font(.system(size: 12)).foregroundStyle(SS.n400) }
+            else if previewing { Text("Live: every change is sent to the controller as you adjust it.").font(.system(size: 12)).foregroundStyle(SS.n400) }
         }
         .onAppear { cfg = ForceAdapt(adapterBlock: trig.adapterParams) }
+        .onChange(of: cfg) { _, _ in
+            guard previewing else { return }
+            pendingApply?.cancel()
+            pendingApply = Task { try? await Task.sleep(for: .milliseconds(250)); guard !Task.isCancelled else { return }; await preview(true) }
+        }
+        .onDisappear { if previewing { Task { await preview(false) } } }
+    }
+
+    private func rumble() async {
+        rumbling = true
+        defer { rumbling = false }
+        guard #available(macOS 14.0, *) else { return }
+        _ = await Task.detached { Result { try HelperClient.shared.motorTest(left: 255, right: 255) } }.value
+        try? await Task.sleep(for: .seconds(3))
+        _ = await Task.detached { Result { try HelperClient.shared.motorTest(left: 0, right: 0) } }.value
     }
 
     /// Persist into the profile blob the way SS4's `SaveTriggerAdapterConfig` does.

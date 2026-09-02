@@ -115,6 +115,9 @@ type 2 `Sniper` is labelled "Machine gun", type 3 `Recoil` is labelled "Sniper")
 | 5 | Vibration (sync with grip) | **`A5 30 08 side 2 block scale stroke freq 1 90`** (no apply byte) | stroke, freq, 1, 90, 0; bind type 2, filter = block, scale, bind params `stroke 1 1 freq 0` | scale 0–200, block 1–255, stroke 1–200, freq 1–255 |
 
 "out" = "output data from the start position" (MatchStart). Racing and lock always send match = 1.
+The Apex 4 has no trigger motors of its own (`IsSupportTriggerVibration` is false for k2), so SS4's
+"vibration test" for the Vibration mode is simply a full grip rumble (`A5 12 FF FF`) for 5 s — the trigger
+follows the grip. SS4 has no per-mode defaults: a newly picked mode starts from whatever the profile held.
 ```
 225..226 2     dataVersion — the random id (`A5 50 02` returns the same two bytes)
 230..767 538   macros: [count][offsets… (maxMacros+1 header)] then per macro: key, actionCount LE16, enable(0 none,1 once,2 press,3 click), N × (t LE16 ×10 ms cumulative, key, event 0 release/1 press) — verified: 4-action macro on M1 round-trips

@@ -1711,6 +1711,16 @@
         }
       }
     },
+    "Live: every change is sent to the controller as you adjust it.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ao vivo: cada ajuste é enviado ao controle na hora."
+          }
+        }
+      }
+    },
     "Load this animation into the preview": {
       "localizations": {
         "pt-BR": {
@@ -2416,7 +2426,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Testar no controle"
+            "value": "Pré-visualizar no controle"
           }
         }
       }
@@ -2681,6 +2691,16 @@
         }
       }
     },
+    "Restore defaults": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar padrão"
+          }
+        }
+      }
+    },
     "Results": {
       "localizations": {
         "pt-BR": {
@@ -2791,6 +2811,16 @@
         }
       }
     },
+    "Rumbling…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vibrando…"
+          }
+        }
+      }
+    },
     "Running apps": {
       "localizations": {
         "pt-BR": {
@@ -2807,6 +2837,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Roda como root só enquanto fala com o controle em modo XInput, porque o driver Xbox da Apple é dono da interface USB. Necessário para enviar à tela, testar gatilhos e capturar teclas em XInput."
+          }
+        }
+      }
+    },
+    "Runs the grip motors for 3 s so you can feel the trigger follow them": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Liga os motores da empunhadura por 3 s para você sentir o gatilho acompanhar"
           }
         }
       }
@@ -3246,7 +3286,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Parar teste"
+            "value": "Parar pré-visualização"
           }
         }
       }
@@ -3377,6 +3417,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Testar"
+          }
+        }
+      }
+    },
+    "Test vibration": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Testar vibração"
           }
         }
       }
