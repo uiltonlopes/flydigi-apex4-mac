@@ -284,7 +284,9 @@ public final class DeviceSession: @unchecked Sendable {
 
     public func motorTest(left: UInt8, right: UInt8) throws {
         switch channel {
-        case .xinput: try link.write(XInput.command(XInput.Cmd.motorTest, left, right))
+        // The Xbox 360 rumble packet games send (goes to the same OUT endpoint); unlike Flydigi's `A5 12`
+        // test command it is what the triggers' grip-sync mode follows (verified 2026-09-02).
+        case .xinput: try link.write([0x00, 0x08, 0x00, left, right, 0x00, 0x00, 0x00])
         case .dinput: try link.write(DInput.command(0x0F, left, right))          // `05 0F <L> <R>` (SS4)
         }
     }

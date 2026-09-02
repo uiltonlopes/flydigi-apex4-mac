@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Triggers: Vibration (grip-sync) mode now really engages in the live preview (written through the profile, as Space Station does); the vibration test and the grip vibration test use the Xbox rumble packet games send, which the triggers follow.
 - Triggers: per-mode defaults are now the Apex 4's own presets, read back from the pad after picking each mode in its screen menu (Race = light damping over the whole travel, Recoil, Sniper, Trigger lock levels 1–3, Vibration). "Controller preset" button restores them.
 - Triggers: ForceAdapt modes now match Space Station for the Apex 4 — General, Racing, Recoil, Sniper, Trigger lock, Vibration (SS4's own labels and tooltips) — with SS4's parameters and ranges (0–255 raw, not 1–10), the vibration mode sent as the "sync with grip" command, and the same layout in the profile blob. Game-profile presets use the same editor.
 - Receiver (charging dock): "waiting for controller" state while the pad is off, automatic reconnection when it comes back or when the receiver re-enumerates, battery read correctly over the receiver, no stale errors when it is unplugged.

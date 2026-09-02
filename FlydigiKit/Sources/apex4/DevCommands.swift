@@ -7,7 +7,7 @@ import FlydigiTransport
 
 struct Dev: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Developer experiments (protocol re-tests).", shouldDisplay: false,
-                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, DualOpen.self, DInputSlots.self, DInputCursor.self, DInputApply.self, HWStatus.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self, InfoWatch.self, VibTest.self, RumbleTest.self])
+                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, DualOpen.self, DInputSlots.self, DInputCursor.self, DInputApply.self, HWStatus.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self, InfoWatch.self, VibTest.self, RumbleTest.self, RumbleVariants.self])
 
     /// XInput (captured) version of hid-diff: optionally sends Space Station's "enable raw data"
     /// (`A5 50`) first, then prints changing bytes for N seconds. Needs root (USB capture).
@@ -489,8 +489,35 @@ extension Dev {
             // Wired pad: 8-byte X360 rumble. Through the receiver the wireless-receiver format is expected.
             let on: [UInt8] = receiver ? [0x00, 0x01, 0x0F, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00] : [0x00, 0x08, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00]
             let off: [UInt8] = receiver ? [0x00, 0x01, 0x0F, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00] : [0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
-            print("2) Xbox 360 rumble packet (\(receiver ? "receiver" : "wired") format) for \(seconds) s")
-            do { try s.link.write(on); Thread.sleep(forTimeInterval: seconds); try s.link.write(off) } catch { print("   write failed: \(error)") }
+            guard let usb = s.link as? USBLink else { print("not a USB link"); return }
+            print("endpoints: \(usb.endpointSummary)")
+            print("2) Xbox 360 rumble packet (\(receiver ? "receiver" : "wired") format) on the XInput OUT endpoint for \(seconds) s")
+            do { try usb.writeXbox(on); Thread.sleep(forTimeInterval: seconds); try usb.writeXbox(off) } catch { print("   write failed: \(error)") }
+            print("done")
+        }
+    }
+
+    /// Sends several Xbox-360-style rumble packet variants on the Flydigi OUT endpoint (the only OUT the dongle
+    /// exposes), 2 s each with a 3 s pause, announcing each one — the user reports which made the grip rumble.
+    struct RumbleVariants: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "rumble-variants")
+        @Flag var setMode = false
+        func run() throws {
+            let s = try DeviceSession.open(preferring: .xinput); defer { s.close() }
+            if setMode { for side in [DeviceSession.TriggerSide.left, .right] { try s.setForceTriggerRaw([5, 10, 50, 1, 90], side: side); Thread.sleep(forTimeInterval: 0.1) }; print("live vibration mode set") }
+            func pad(_ a: [UInt8], _ n: Int) -> [UInt8] { a + [UInt8](repeating: 0, count: max(0, n - a.count)) }
+            let wiredOn: [UInt8] = [0x00, 0x08, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00], wiredOff: [UInt8] = [0x00, 0x08, 0x00, 0, 0, 0, 0, 0]
+            let rxOn: [UInt8] = [0x00, 0x01, 0x0F, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00], rxOff: [UInt8] = [0x00, 0x01, 0x0F, 0xC0, 0, 0, 0, 0, 0, 0, 0, 0]
+            let variants: [(String, [UInt8], [UInt8])] = [
+                ("A: wired 8 B", wiredOn, wiredOff), ("B: wired padded to 15 B", pad(wiredOn, 15), pad(wiredOff, 15)),
+                ("C: wired padded to 32 B", pad(wiredOn, 32), pad(wiredOff, 32)),
+                ("D: receiver 12 B", rxOn, rxOff), ("E: receiver padded to 32 B", pad(rxOn, 32), pad(rxOff, 32)),
+            ]
+            for (name, on, off) in variants {
+                print("\(name) — ON for 2 s")
+                do { try s.link.write(on); Thread.sleep(forTimeInterval: 2); try s.link.write(off) } catch { print("   write failed: \(error)") }
+                Thread.sleep(forTimeInterval: 3)
+            }
             print("done")
         }
     }

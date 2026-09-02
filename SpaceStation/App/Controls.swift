@@ -102,7 +102,7 @@ struct ForceAdaptPanel: View {
                 if cfg.mode == .vibration {
                     // The trigger only moves when the grip rumbles; SS4's "vibration test" is a full rumble.
                     GhostButton(title: rumbling ? "Rumbling…" : "Test vibration", icon: "waveform", enabled: live && !rumbling) { Task { await rumble() } }
-                        .help("Runs the grip motors for 3 s so you can feel the trigger follow them")
+                        .help("Rumbles the grip for 3 s the way a game does, so you can feel the trigger follow it")
                 }
             }
             HStack(spacing: 6) {
@@ -125,8 +125,21 @@ struct ForceAdaptPanel: View {
         }
     }
 
+    @State private var vibrationOnPad = false
+
     private func send(_ c: ForceAdapt) async {
         guard live, #available(macOS 14.0, *) else { return }
+        if c.mode == .vibration {
+            // The grip-sync mode only engages through the profile (see ProfileStore.previewTrigger).
+            await profiles.previewTrigger(side: side, adapterType: 5, adapterBlock: c.adapterBlock(previous: trig.adapterParams))
+            vibrationOnPad = true
+            return
+        }
+        if vibrationOnPad {
+            // Leaving vibration: put the profile's own block back before the live command takes over.
+            await profiles.previewTrigger(side: side, adapterType: trig.adapterType, adapterBlock: trig.adapterParams)
+            vibrationOnPad = false
+        }
         let params = c.liveParams
         let sideByte: UInt8 = side == .left ? 1 : 2
         _ = await Task.detached { Result { try HelperClient.shared.setForceTrigger(side: sideByte, params: params) } }.value

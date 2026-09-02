@@ -138,6 +138,13 @@ The bind block the firmware keeps for the non-vibration modes is `filter 10, sca
 params 100 1 255 70 0, mixed border 255`. The trigger "kind" byte (blob 123/130) stays 0 — the firmware
 does not need it set to 1 for the adapter block to be active.
 
+**Vibration (grip-sync) mode only engages through the profile.** Verified 2026-09-02: `A5 30 06 … 05 …` followed
+by `A5 30 08 …` leaves the trigger in its previous mode; writing the adapter block (type 5, bind type 2) into
+the active profile (`config restore` / write blob, even without save-to-flash) makes the triggers follow the
+grip. They follow the **Xbox 360 rumble output packet** `00 08 00 <L> <R> 00 00 00` written on OUT ep5 (the
+pad's only OUT endpoint in XInput, wired or via the receiver) — i.e. game rumble; the padded 15/32-byte and
+receiver-format variants were accepted too. Space Station reaches mode 5 the same way (profile write).
+
 The Apex 4 has no trigger motors of its own (`IsSupportTriggerVibration` is false for k2), so SS4's
 "vibration test" for the Vibration mode is simply a full grip rumble (`A5 12 FF FF`) for 5 s — the trigger
 follows the grip. SS4 has no per-mode defaults: a newly picked mode starts from whatever the profile held.

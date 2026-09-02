@@ -159,6 +159,24 @@ final class ProfileStore {
         }
     }
 
+    /// Sends the draft with one trigger's adapter block replaced, **without** saving to flash. This is how the
+    /// Vibration (grip-sync) mode has to be previewed: the live `A5 30 06/08` commands do not switch the pad
+    /// into it, only a profile write does (verified 2026-09-02 — Space Station does the same).
+    func previewTrigger(side: Side, adapterType: UInt8, adapterBlock: [UInt8]) async {
+        guard var cfg = draft, controller.connection == .xinput else { return }
+        var t = cfg[trigger: side]
+        t.adapterType = adapterType; t.adapterParams = adapterBlock; t.kind = adapterType == 0 ? .normal : .adapter
+        cfg[trigger: side] = t
+        let slot = activeSlot, bytes = cfg.bytes
+        let r: Result<Void, Error> = await Task.detached {
+            Result {
+                guard #available(macOS 14.0, *) else { throw HelperError.notInstalled }
+                try HelperClient.shared.writeConfig(slot: slot, bytes: bytes, persist: false)
+            }
+        }.value
+        if case .failure(let e) = r { report(e) }
+    }
+
     private func activateOnPad(_ slot: UInt8) async {
         let conn = controller.connection
         _ = await Task.detached {
