@@ -15,7 +15,9 @@ final class ProfileStore {
     var slots: [Slot] = []
     /// The slot the pad should run. Remembered per controller because `A5 20` reports the last slot *read*
     /// (a cursor), not the active one — trusting it after reads would silently activate the wrong profile.
-    var activeSlot: UInt8 = 0 { didSet { UserDefaults.standard.set(Int(activeSlot), forKey: "activeSlot") } }
+    var activeSlot: UInt8 = 0 { didSet { UserDefaults.standard.set(Int(activeSlot), forKey: "activeSlot"); temporarySlot = nil } }
+    /// Slot currently on the pad (a game rule may have moved it temporarily).
+    var shownSlot: UInt8 { temporarySlot ?? activeSlot }
     var draft: GamepadConfig?                 // edited copy of the active slot
     var isDirty: Bool { guard let d = draft, let s = slots.first(where: { $0.index == activeSlot }) else { return false }; return d.bytes != s.config.bytes }
     var lastError: String?
@@ -73,6 +75,14 @@ final class ProfileStore {
     }
 
     func revert() { draft = slots.first { $0.index == activeSlot }?.config }
+
+    /// Reflect a slot the game-profile watcher activated without changing the remembered choice.
+    func showTemporary(slot: UInt8) {
+        guard !isDirty else { return }
+        temporarySlot = slot
+        draft = slots.first { $0.index == slot }?.config
+    }
+    var temporarySlot: UInt8?
 
     func setMapping(_ key: ControllerKey, _ mapping: GamepadConfig.KeyMapping) { draft?.keys[key] = mapping }
 

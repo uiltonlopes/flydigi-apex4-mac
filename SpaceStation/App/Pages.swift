@@ -141,16 +141,21 @@ struct ScreenPage: View {
 
 struct AdaptiveTriggerPage: View {
     let back: () -> Void
+    @Environment(GameProfileStore.self) private var store
     @State private var games: [FlydigiAPI.GamePreset] = []
     @State private var error: String?
     @State private var query = ""
+    @State private var baseRule: GameRule?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             PageHeader(title: "Adaptive Trigger", back: back)
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Flydigi's per-game trigger presets. Automatic switching when a game launches is planned; for now this is the reference list.")
+                    GameRulesSection()
+                    HDivider().padding(.vertical, 6)
+                    SectionTitle("Flydigi's game list", icon: "list.star")
+                    Text("Space Station's per-game presets. On Windows most of them rely on a mod injected into the game (not possible on macOS); here they are a starting point: press “Use as base” to create your own profile with that name.")
                         .font(.system(size: 12)).foregroundStyle(SS.n300)
                     TextField("Search games", text: $query).textFieldStyle(.roundedBorder).frame(width: 280)
                     if games.isEmpty && error == nil {
@@ -183,16 +188,25 @@ struct AdaptiveTriggerPage: View {
                 .frame(height: 100).clipped().clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
             Text(g.enGameName.isEmpty ? g.gameName : g.enGameName).font(.system(size: 13, weight: .medium)).foregroundStyle(.white).lineLimit(1)
             HStack(spacing: 4) {
-                ForEach(g.platforms.prefix(4), id: \.self) { p in
+                ForEach(g.platforms.prefix(3), id: \.self) { p in
                     Text(p.capitalized).font(.system(size: 10)).foregroundStyle(SS.n300)
                         .padding(.horizontal, 5).frame(height: 16).background(SS.n500, in: RoundedRectangle(cornerRadius: 4))
                 }
+                if g.isMod == 1 { Text("mod").font(.system(size: 10)).foregroundStyle(SS.yellow).padding(.horizontal, 5).frame(height: 16).background(SS.n500, in: RoundedRectangle(cornerRadius: 4)).help("Uses a Windows-only game mod in Space Station") }
                 Spacer()
-                if g.isVibration == 1 { Image(systemName: "waveform").font(.system(size: 10)).foregroundStyle(SS.brand500) }
+                Button("Use as base") {
+                    var r = GameRule(name: g.enGameName.isEmpty ? g.gameName : g.enGameName)
+                    r.flydigiId = g.id
+                    r.processName = (g.enGameName.isEmpty ? g.gameName : g.enGameName).components(separatedBy: CharacterSet(charactersIn: "™®:")).first?.trimmingCharacters(in: .whitespaces)
+                    if g.isVibration == 1 { r.left.mode = 5; r.right.mode = 5 }
+                    baseRule = r
+                }
+                .buttonStyle(.plain).font(.system(size: 11, weight: .semibold)).foregroundStyle(SS.brand500)
             }
         }
         .padding(10)
         .background(SS.n700, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+        .sheet(item: $baseRule) { r in GameRuleEditor(rule: r) { store.rules.append($0) } }
     }
 }
 
@@ -443,6 +457,7 @@ struct MenuBarView: View {
     @Environment(ControllerModel.self) private var model
     @Environment(ProfileStore.self) private var profiles
     @Environment(LiveInput.self) private var live
+    @Environment(GameProfileStore.self) private var games
     @Environment(\.openWindow) private var openWindow
 
     private var connected: Bool { model.connection != .none }
@@ -486,6 +501,7 @@ struct MenuBarView: View {
                     GridRow { Text("Firmware").foregroundStyle(.secondary); Text(verbatim: i.firmware) }
                     if let l = model.led { GridRow { Text("Lighting").foregroundStyle(.secondary); Text(verbatim: "\(NSLocalizedString(lightingName(l.mode), comment: "")) · \(l.brightness) %") } }
                     GridRow { Text("Helper").foregroundStyle(.secondary); Text(model.helperInstalled ? "Installed" : "Not installed") }
+                    if let r = games.activeRule { GridRow { Text("Game profile").foregroundStyle(.secondary); Text(verbatim: r.name).foregroundStyle(.green) } }
                 }
                 .font(.caption)
             }

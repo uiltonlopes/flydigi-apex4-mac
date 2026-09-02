@@ -21,6 +21,8 @@ enum AppSection: String, CaseIterable, Identifiable {
 struct SpaceStationApp: App {
     @State private var model = ControllerModel()
     @State private var live = LiveInput()
+    @State private var games: GameProfileStore
+    init() { let m = ControllerModel(); _model = State(initialValue: m); _games = State(initialValue: GameProfileStore(model: m)) }
 
     var body: some Scene {
         Window("Space Station", id: "main") {
@@ -28,6 +30,7 @@ struct SpaceStationApp: App {
                 .environment(model)
                 .environment(model.profiles)
                 .environment(live)
+                .environment(games)
                 .frame(minWidth: 1100, minHeight: 720)
         }
         .windowStyle(.hiddenTitleBar)
@@ -50,7 +53,7 @@ struct SpaceStationApp: App {
         }
 
         MenuBarExtra {
-            MenuBarView().environment(model).environment(model.profiles).environment(live)
+            MenuBarView().environment(model).environment(model.profiles).environment(live).environment(games)
         } label: {
             Image(systemName: model.connection == .none ? "gamecontroller" : "gamecontroller.fill")
         }

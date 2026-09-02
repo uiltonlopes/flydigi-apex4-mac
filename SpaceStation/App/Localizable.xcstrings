@@ -51,6 +51,16 @@
         }
       }
     },
+    "Active now: %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ativo agora: %@"
+          }
+        }
+      }
+    },
     "Acts as": {
       "localizations": {
         "pt-BR": {
@@ -77,6 +87,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Adicionar dispositivo"
+          }
+        }
+      }
+    },
+    "Add game profile": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicionar perfil de jogo"
           }
         }
       }
@@ -111,6 +131,16 @@
         }
       }
     },
+    "App to watch": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "App a observar"
+          }
+        }
+      }
+    },
     "Apply": {
       "localizations": {
         "pt-BR": {
@@ -137,6 +167,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aplicando…"
+          }
+        }
+      }
+    },
+    "Automatic switching": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Troca automática"
+          }
+        }
+      }
+    },
+    "Back to normal now": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voltar ao normal agora"
           }
         }
       }
@@ -337,6 +387,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Escolher outro…"
+          }
+        }
+      }
+    },
+    "Choose app…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolher app…"
           }
         }
       }
@@ -741,6 +801,16 @@
         }
       }
     },
+    "Edit": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editar"
+          }
+        }
+      }
+    },
     "Edit macro": {
       "localizations": {
         "pt-BR": {
@@ -941,6 +1011,16 @@
         }
       }
     },
+    "Flydigi's game list": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lista de jogos da Flydigi"
+          }
+        }
+      }
+    },
     "Flydigi's per-game trigger presets. Automatic switching when a game launches is planned; for now this is the reference list.": {
       "localizations": {
         "pt-BR": {
@@ -997,6 +1077,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Lista de jogos indisponível sem internet."
+          }
+        }
+      }
+    },
+    "Game name": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nome do jogo"
+          }
+        }
+      }
+    },
+    "Game profile": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perfil de jogo"
           }
         }
       }
@@ -1177,6 +1277,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Continuar calibrando"
+          }
+        }
+      }
+    },
+    "Keep current": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manter o atual"
           }
         }
       }
@@ -1501,6 +1611,26 @@
         }
       }
     },
+    "My game profiles": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meus perfis de jogo"
+          }
+        }
+      }
+    },
+    "Name": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nome"
+          }
+        }
+      }
+    },
     "Needed for anything that has to happen while you are not looking at the app — per-game trigger presets, the menu bar status. You can close the window; the app keeps running in the menu bar.": {
       "localizations": {
         "pt-BR": {
@@ -1541,6 +1671,16 @@
         }
       }
     },
+    "New game profile": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novo perfil de jogo"
+          }
+        }
+      }
+    },
     "New macro": {
       "localizations": {
         "pt-BR": {
@@ -1567,6 +1707,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nenhum controle visível para o sistema."
+          }
+        }
+      }
+    },
+    "No game profiles yet. Add one, or pick a game from Flydigi's list below and press “Use as base”.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhum perfil de jogo ainda. Adicione um, ou escolha um jogo da lista da Flydigi abaixo e clique em “Usar como base”."
           }
         }
       }
@@ -1971,6 +2121,16 @@
         }
       }
     },
+    "Profile slot": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Slot de perfil"
+          }
+        }
+      }
+    },
     "Quick": {
       "localizations": {
         "pt-BR": {
@@ -2281,12 +2441,32 @@
         }
       }
     },
+    "Running apps": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apps abertos"
+          }
+        }
+      }
+    },
     "Runs as root only while talking to the controller in XInput mode, because Apple's Xbox driver owns the USB interface. Required for screen uploads, trigger previews and key capture in XInput.": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Roda como root só enquanto fala com o controle em modo XInput, porque o driver Xbox da Apple é dono da interface USB. Necessário para enviar à tela, testar gatilhos e capturar teclas em XInput."
+          }
+        }
+      }
+    },
+    "Save": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salvar"
           }
         }
       }
@@ -2511,6 +2691,16 @@
         }
       }
     },
+    "Space Station's per-game presets. On Windows most of them rely on a mod injected into the game (not possible on macOS); here they are a starting point: press “Use as base” to create your own profile with that name.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Presets por jogo do Space Station. No Windows a maioria depende de um mod injetado no jogo (impossível no macOS); aqui servem de ponto de partida: clique em “Usar como base” para criar seu perfil com esse nome."
+          }
+        }
+      }
+    },
     "Special": {
       "localizations": {
         "pt-BR": {
@@ -2567,6 +2757,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fixa"
+          }
+        }
+      }
+    },
+    "Steam and Epic games run as their own app on the Mac; launch the game once, then pick it from Running apps.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Jogos da Steam e Epic rodam como apps próprios no Mac; abra o jogo uma vez e escolha em Apps abertos."
           }
         }
       }
@@ -2741,6 +2941,16 @@
         }
       }
     },
+    "Test": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Testar"
+          }
+        }
+      }
+    },
     "The controller did not accept the command.": {
       "localizations": {
         "pt-BR": {
@@ -2837,6 +3047,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Modo do gatilho"
+          }
+        }
+      }
+    },
+    "Trigger presets apply in XInput mode only.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Presets de gatilho valem só em modo XInput."
           }
         }
       }
@@ -3001,6 +3221,16 @@
         }
       }
     },
+    "Use as base": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar como base"
+          }
+        }
+      }
+    },
     "Use mode": {
       "localizations": {
         "pt-BR": {
@@ -3017,6 +3247,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Use o cabo USB para calibrar."
+          }
+        }
+      }
+    },
+    "Uses a Windows-only game mod in Space Station": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usa um mod de jogo só para Windows no Space Station"
           }
         }
       }
@@ -3081,6 +3321,16 @@
         }
       }
     },
+    "When one of these apps comes to the front, the controller switches to the chosen profile slot and trigger preset, and goes back to normal when the app leaves.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quando um desses apps vem pra frente, o controle muda para o slot de perfil e o preset de gatilho escolhidos, e volta ao normal quando o app sai."
+          }
+        }
+      }
+    },
     "Working…": {
       "localizations": {
         "pt-BR": {
@@ -3137,6 +3387,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zoom"
+          }
+        }
+      }
+    },
+    "active": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ativo"
+          }
+        }
+      }
+    },
+    "or match by window/app name containing": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "ou casar pelo nome do app contendo"
           }
         }
       }

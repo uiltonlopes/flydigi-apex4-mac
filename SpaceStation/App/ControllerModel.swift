@@ -252,6 +252,29 @@ final class ControllerModel {
         return ok
     }
 
+    // MARK: Game profiles (temporary changes that do not touch the user's remembered slot)
+
+    func applySlot(_ slot: UInt8) async {
+        let conn = connection
+        await run({
+            switch conn {
+            case .dinput: let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }; try s.applyConfig(slot: slot)
+            case .xinput: try HelperClient.shared.applySlot(slot)
+            case .none: throw HelperError.transport("no controller")
+            }
+        }, onSuccess: { (_: Void) in })
+        profiles.showTemporary(slot: slot)
+    }
+
+    /// ForceAdapt on both triggers (XInput only — the DInput form of `A5 30 06` is not known).
+    func setForceAdapt(left: [UInt8], right: [UInt8]) async {
+        guard connection == .xinput else { return }
+        await run({
+            try HelperClient.shared.setForceTrigger(side: 1, params: left)
+            try HelperClient.shared.setForceTrigger(side: 2, params: right)
+        }, onSuccess: { (_: Void) in })
+    }
+
     func installHelper() {
         guard #available(macOS 14.0, *) else { return }
         do { try HelperClient.shared.install() } catch { lastError = "\(error)" }
