@@ -31,6 +31,7 @@ public enum HelperRequest: Codable, Sendable {
     case writeConfig(slot: UInt8, bytes: [UInt8], persist: Bool)
     case setForceTrigger(side: UInt8, mode: [UInt8])          // raw params (see DeviceSession.ForceTrigger)
     case motorTest(left: UInt8, right: UInt8)
+    case captureKey(timeoutMs: Int)                            // wait for a key press on the pad (raw report), nil on timeout
 }
 
 public enum BlobKindCode: Codable, Sendable { case config, led }
@@ -50,5 +51,6 @@ public enum HelperReply: Codable, Sendable {
     case blob([UInt8])
     case frameDone(index: Int)
     case slot(UInt8)
+    case key(UInt8?)
     case error(String)
 }

@@ -223,6 +223,24 @@ public final class DeviceSession: @unchecked Sendable {
     public func setScreenStatusBar(_ on: Bool) throws { try link.write(XInput.command(XInput.Cmd.module, 0x03, on ? 0 : 1)) }
     public func screenSleepTime() throws -> UInt8 { try xinputQuery(XInput.Cmd.module, [0x04], sub: 0x04)[17] }
     public func setScreenSleepTime(_ t: UInt8) throws { try link.write(XInput.command(XInput.Cmd.module, 0x05, t)) }
+    /// Waits for a key to be pressed on the pad (edge versus the first report seen) and returns its id.
+    /// Works in both channels; in XInput it needs the captured link, so the pad is invisible to games meanwhile.
+    public func captureKey(timeout: TimeInterval, ignoring: Set<ControllerKey> = [.lt, .rt]) throws -> ControllerKey? {
+        let deadline = Date().addingTimeInterval(timeout)
+        var baseline: Set<ControllerKey>? = nil
+        let xinput = channel == .xinput
+        while Date() < deadline {
+            let state: ControllerState? = try? link.waitForReport(timeout: 0.3) { (r: [UInt8]) -> ControllerState? in
+                xinput ? ControllerState(xinputReport: r) : ControllerState(dinputReport: r)
+            }
+            guard let state else { continue }
+            guard let base = baseline else { baseline = state.pressed; continue }
+            if let k = state.pressed.subtracting(base).subtracting(ignoring).min(by: { $0.rawValue < $1.rawValue }) { return k }
+            baseline = state.pressed.intersection(base)      // released keys leave the baseline
+        }
+        return nil
+    }
+
     public func motorTest(left: UInt8, right: UInt8) throws {
         switch channel {
         case .xinput: try link.write(XInput.command(XInput.Cmd.motorTest, left, right))

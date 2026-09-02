@@ -7,7 +7,41 @@ import FlydigiTransport
 
 struct Dev: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Developer experiments (protocol re-tests).", shouldDisplay: false,
-                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self])
+                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self])
+
+    /// XInput (captured) version of hid-diff: optionally sends Space Station's "enable raw data"
+    /// (`A5 50`) first, then prints changing bytes for N seconds. Needs root (USB capture).
+    struct XInputRaw: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "xinput-raw")
+        @Option(name: .long) var seconds: Double = 12
+        @Flag(name: .long, help: "Do not send A5 50 before listening") var noEnable = false
+        func run() throws {
+            let s = try DeviceSession.open(preferring: .xinput); defer { s.close() }
+            if !noEnable { try s.link.write(XInput.command(0x50)); print("sent A5 50 (enable raw data)") }
+            var last: [UInt8: [UInt8]] = [:]          // keyed by r[15] tag / length so different report kinds don't mix
+            var tags: [String: Int] = [:]
+            let t0 = Date()
+            print("watching for \(Int(seconds)) s — press one button at a time…")
+            while Date().timeIntervalSince(t0) < seconds {
+                guard let r: [UInt8] = try? s.link.waitForReport(timeout: 0.5, { (r: [UInt8]) -> [UInt8]? in r }) else { continue }
+                let tag = r.count > 15 ? r[15] : UInt8(r.count)
+                tags["\(r.count)B/\(String(format: "%02x", tag))", default: 0] += 1
+                guard let prev = last[tag], prev.count == r.count else {
+                    last[tag] = r; print(String(format: "%6.2fs  first %dB tag %02x: ", Date().timeIntervalSince(t0), r.count, tag) + r.map { String(format: "%02x", $0) }.joined(separator: " ")); continue
+                }
+                var changes: [String] = []
+                for i in 0..<r.count where r[i] != prev[i] {
+                    if abs(Int(r[i]) - Int(prev[i])) < 6 && ((r[i] ^ prev[i]) & 0xF0) == 0 && prev[i] != 0 { continue }
+                    let diff = r[i] ^ prev[i]
+                    let bits = (0..<8).filter { diff & (1 << $0) != 0 }.map { "b\($0)" }.joined(separator: ",")
+                    changes.append(String(format: "[%d] %02x→%02x (%@)", i, prev[i], r[i], bits))
+                }
+                if !changes.isEmpty { print(String(format: "%6.2fs  tag %02x  ", Date().timeIntervalSince(t0), tag) + changes.joined(separator: "  ")) }
+                last[tag] = r
+            }
+            print("report kinds: \(tags.sorted { $0.key < $1.key })")
+        }
+    }
 
     /// Watches DInput input reports for N seconds and prints every byte/bit that changes versus the idle
     /// report, with timestamps — press buttons one at a time to map them.

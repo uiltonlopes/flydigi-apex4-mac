@@ -543,6 +543,7 @@ struct KeyEditor: View {
     @Environment(LiveInput.self) private var live
     @Environment(ControllerModel.self) private var model
     @State private var armed = false          // waiting for a pad press (or a pick) to set the target
+    @State private var capture: Task<Void, Never>?
 
     enum Kind: Hashable { case click, turbo, macro, special }
     private var kind: Kind { switch mapping { case .identity, .key: .click; case .turbo: .turbo; case .macro: .macro; case .keyboardMouse: .special } }
@@ -566,6 +567,17 @@ struct KeyEditor: View {
             guard armed, let k = new.subtracting(old).first, Apex4Render.mappableKeys.contains(k) else { return }
             setTarget(k); armed = false
         }
+        .onChange(of: armed) { _, on in
+            capture?.cancel(); capture = nil
+            // In XInput the system driver hides paddles/Fn, so borrow the pad through the helper for a few seconds.
+            guard on, model.connection == .xinput, live.raw == nil else { return }
+            capture = Task { @MainActor in
+                let k = await model.captureKey(seconds: 6)
+                guard !Task.isCancelled, armed else { return }
+                if let k, Apex4Render.mappableKeys.contains(k) { setTarget(k) }
+                armed = false
+            }
+        }
         .onChange(of: key) { _, _ in armed = false }
     }
 
@@ -586,7 +598,7 @@ struct KeyEditor: View {
                 }
                 .frame(width: 240, height: 100)
                 if armed {
-                    Text(model.connection == .dinput ? "Press the button on the controller or pick one" : "Press a button on the controller or pick one (paddles need DInput mode)")
+                    Text(model.connection == .xinput ? "Listening on the controller for 6 s — press a button (paddles too), or pick one" : "Press the button on the controller or pick one")
                         .font(.system(size: 11, weight: .medium)).foregroundStyle(.white).multilineTextAlignment(.center)
                         .padding(.horizontal, 10).padding(.vertical, 6)
                         .background(SS.brand500, in: RoundedRectangle(cornerRadius: 6, style: .continuous))

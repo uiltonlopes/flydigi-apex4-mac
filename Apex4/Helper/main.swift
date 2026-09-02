@@ -117,6 +117,9 @@ final class HelperService: @unchecked Sendable {
             case let .motorTest(l, r):
                 try withSession { try $0.motorTest(left: l, right: r) }
                 releaseIfIdle(); return .ok
+            case .captureKey(let ms):
+                let k = try withSession { try $0.captureKey(timeout: Double(ms) / 1000) }
+                return .key(k?.rawValue)
             case .switchMode:
                 let s = try (session ?? DeviceSession.open(preferring: .xinput))
                 session = nil                                   // switchMode() closes the link itself, without reset

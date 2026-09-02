@@ -19,7 +19,7 @@ final class LiveInput {
     var connected = false
 
     /// Raw state from the DInput vendor interface (paddles, Fn, Home — things the system driver never sees).
-    var raw: DInputState?
+    var raw: ControllerState?
     private var rawTask: Task<Void, Never>?
 
     /// Same information as `pressed`, as firmware key ids (triggers count as pressed past 50 %),
@@ -39,10 +39,10 @@ final class LiveInput {
         rawTask = Task.detached(priority: .utility) { [weak self] in
             guard let link = try? HIDLink() else { return }
             defer { link.close() }
-            var last: DInputState?
+            var last: ControllerState?
             var connectedSeen = false
             while !Task.isCancelled {
-                let state: DInputState? = try? link.waitForReport(timeout: 0.25) { (r: [UInt8]) -> DInputState? in DInputState(report: r) }
+                let state: ControllerState? = try? link.waitForReport(timeout: 0.25) { (r: [UInt8]) -> ControllerState? in ControllerState(dinputReport: r) }
                 guard let state else { continue }
                 if state != last || !connectedSeen {
                     last = state; connectedSeen = true

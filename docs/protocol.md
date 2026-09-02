@@ -199,3 +199,11 @@ in byte 0. Verified on an Apex 4 on 2026-09-01 (`apex4 dev hid-diff`):
 This is how the app lights up paddles, Fn and Home, which Apple's Xbox driver never reports in XInput
 mode (`FlydigiKit/Sources/FlydigiKit/InputReport.swift`). Reply frames on the same interface use
 `04 FF …` and are ignored by the parser.
+
+**XInput carries the same state.** The interrupt report Apple's driver reads is 32 bytes, not the Xbox
+360's 20: bytes 0…13 are the standard report (`00 14`, buttons, triggers, 16-bit sticks) and bytes
+14…26 are Flydigi's appended state with the *same bit layout as above* at 17 (dpad/A/B/Select/X),
+18 (Y/Start/LB/RB/LT/RT/thumbs), 19 (C/Z/M1…M6), 20 (Fn/Turbo/Home/Back), sticks 21…24 (centre 0x80),
+triggers 25/26 (verified 2026-09-02 with `apex4 dev xinput-raw`; no enable command needed). Reading it
+requires capturing interface 0, so the app only does that for a few seconds while the user is asked to
+press a key ("borrow the pad"), then hands the pad back to the system driver.

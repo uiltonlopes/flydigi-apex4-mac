@@ -133,6 +133,24 @@ final class ControllerModel {
         if lastError != nil { try? await Task.sleep(for: .seconds(2)); await refresh() }
     }
 
+    /// Borrow the pad for up to `seconds` and return the first key pressed (paddles included). In XInput the
+    /// helper captures the USB interface, so games lose the pad for those seconds; in DInput it is read directly.
+    func captureKey(seconds: Double = 5) async -> ControllerKey? {
+        let conn = connection
+        var result: ControllerKey? = nil
+        await run({
+            switch conn {
+            case .none: return nil as UInt8?
+            case .dinput:
+                let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }
+                return try s.captureKey(timeout: seconds)?.rawValue
+            case .xinput:
+                return try HelperClient.shared.captureKey(timeoutMs: Int(seconds * 1000))
+            }
+        }, onSuccess: { raw in result = raw.flatMap(ControllerKey.init(rawValue:)) })
+        return result
+    }
+
     func installHelper() {
         guard #available(macOS 14.0, *) else { return }
         do { try HelperClient.shared.install() } catch { lastError = "\(error)" }

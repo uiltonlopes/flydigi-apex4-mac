@@ -93,6 +93,7 @@ final class HelperClient: @unchecked Sendable {
     func writeConfig(slot: UInt8, bytes: [UInt8], persist: Bool = true) throws { _ = try send(.writeConfig(slot: slot, bytes: bytes, persist: persist)) }
     func setForceTrigger(side: UInt8, params: [UInt8]) throws { _ = try send(.setForceTrigger(side: side, mode: params)) }
     func motorTest(left: UInt8, right: UInt8) throws { _ = try send(.motorTest(left: left, right: right)) }
+    func captureKey(timeoutMs: Int) throws -> UInt8? { guard case let .key(k) = try send(.captureKey(timeoutMs: timeoutMs)) else { throw HelperError.transport("unexpected reply") }; return k }
 
     private func dropSession() { session?.cancel(reason: "reset"); session = nil }
 }
