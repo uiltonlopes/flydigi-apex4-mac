@@ -87,74 +87,36 @@ struct ForceAdaptPanel: View {
     let side: Side
     @Environment(ProfileStore.self) private var profiles
     @Environment(ControllerModel.self) private var model
-    @State private var mode: Int = 0            // 0 normal 1 race 2 sniper 3 recoil 4 lock 5 vibration
-    @State private var stroke: Double = 50
-    @State private var strength: Double = 8
-    @State private var pressure: Double = 5
-    @State private var frequency: Double = 5
-    @State private var matchStroke = true
+    @State private var cfg = ForceAdapt()
     @State private var previewing = false
 
     private var trig: GamepadConfig.Trigger { profiles.draft![trigger: side] }
-    private let modes: [(Int, String)] = [(0, "General"), (1, "Race"), (2, "Sniper"), (3, "Recoil"), (4, "Lock"), (5, "Vibration")]
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Field("Trigger mode") { DarkSelect(selection: $mode, options: modes) }
-            if mode != 0 {
-                Field("Stroke") { StepSlider(value: $stroke, range: 10...100) }
-                Field(mode == 1 ? "Resistance" : "Strength") { StepSlider(value: $strength, range: 1...10) }
-                if mode == 2 || mode == 5 {
-                    Field("Pressure level") { StepSlider(value: $pressure, range: 1...10) }
-                    Field("Frequency") { StepSlider(value: $frequency, range: 1...10) }
-                }
-                SwitchRow(title: "Match stroke", isOn: $matchStroke)
-            }
+            ForceAdaptEditor(cfg: $cfg)
             HStack(spacing: 8) {
                 GhostButton(title: previewing ? "Stop preview" : "Preview on controller", icon: "play.fill", enabled: model.connection == .xinput && !model.busy) { Task { await preview(!previewing) } }
-                PrimaryButton(title: "Keep in profile", enabled: !(mode == Int(trig.adapterType) && mode == 0)) { store() }
+                PrimaryButton(title: "Keep in profile", enabled: cfg != ForceAdapt(adapterBlock: trig.adapterParams)) { store() }
             }
             if model.connection != .xinput { Text("Preview needs XInput mode.").font(.system(size: 12)).foregroundStyle(SS.n400) }
         }
-        .onAppear { mode = Int(trig.adapterType); load() }
+        .onAppear { cfg = ForceAdapt(adapterBlock: trig.adapterParams) }
     }
 
-    private var liveParams: [UInt8] {
-        let s = UInt8(stroke), st = UInt8(strength), p = UInt8(pressure), f = UInt8(frequency), m: UInt8 = matchStroke ? 1 : 0
-        switch mode {
-        case 1: return [1, s, st, m]
-        case 2: return [2, s, p, st, f, m]
-        case 3: return [3, s, s / 2, st, 0, m]
-        case 4: return [4, s, st, m]
-        case 5: return [5, s, p, st, f, m]
-        default: return [0]
-        }
-    }
-
-    private func load() {
-        let p = trig.adapterParams
-        guard p.count >= 20, trig.adapterType != 0 else { return }
-        stroke = Double(max(10, p[10])); strength = Double(max(1, p[11])); pressure = Double(max(1, p[12])); frequency = Double(max(1, p[13]))
-    }
-
-    /// Persist into the blob following SS4's `ParseTriggerConfigToArray` (type, bind type, filter, scale, bind params, mixed border, params).
+    /// Persist into the profile blob the way SS4's `SaveTriggerAdapterConfig` does.
     private func store() {
         var t = trig
-        var params = [UInt8](repeating: 0xFF, count: 20)
-        params[0] = UInt8(mode); params[1] = mode == 5 ? 2 : 0
-        params[2] = t.adapterParams.count >= 20 ? t.adapterParams[2] : 0xFF
-        params[3] = t.adapterParams.count >= 20 ? t.adapterParams[3] : 0xFF
-        let live = Array(liveParams.dropFirst())
-        for (i, v) in live.enumerated() where i < 10 { params[10 + i] = v }
-        t.adapterType = UInt8(mode); t.adapterParams = params
-        t.kind = mode == 0 ? .normal : .adapter
+        t.adapterParams = cfg.adapterBlock(previous: t.adapterParams)
+        t.adapterType = UInt8(cfg.mode.rawValue)
+        t.kind = cfg.isNormal ? .normal : .adapter
         profiles.draft?[trigger: side] = t
     }
 
     private func preview(_ on: Bool) async {
         previewing = on
         guard #available(macOS 14.0, *) else { return }
-        let params = on ? liveParams : [0]
+        let params = on ? cfg.liveParams : [0]
         let sideByte: UInt8 = side == .left ? 1 : 2
         _ = await Task.detached { Result { try HelperClient.shared.setForceTrigger(side: sideByte, params: params) } }.value
     }

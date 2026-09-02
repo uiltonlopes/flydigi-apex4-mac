@@ -291,6 +291,36 @@
         }
       }
     },
+    "Breakthrough resistance": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resistência do rompimento"
+          }
+        }
+      }
+    },
+    "Breakthrough start position": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posição inicial do rompimento"
+          }
+        }
+      }
+    },
+    "Breakthrough stroke": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curso do rompimento"
+          }
+        }
+      }
+    },
     "Breathing": {
       "localizations": {
         "pt-BR": {
@@ -707,6 +737,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "DInput — o app fala direto com o controle, sem helper."
+          }
+        }
+      }
+    },
+    "Damping force": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Força do amortecimento"
+          }
+        }
+      }
+    },
+    "Damping start position": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posição inicial do amortecimento"
           }
         }
       }
@@ -1181,6 +1231,26 @@
         }
       }
     },
+    "Force needed to push through it.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Força necessária para atravessá-la."
+          }
+        }
+      }
+    },
+    "Force needed, past the start position, to make it vibrate.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Força necessária, depois da posição inicial, para começar a vibrar."
+          }
+        }
+      }
+    },
     "Frame interval": {
       "localizations": {
         "pt-BR": {
@@ -1271,6 +1341,16 @@
         }
       }
     },
+    "Grip vibration below this value does not move the trigger.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vibração da empunhadura abaixo desse valor não move o gatilho."
+          }
+        }
+      }
+    },
     "Grip vibration intensity": {
       "localizations": {
         "pt-BR": {
@@ -1337,6 +1417,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Segurar para ativar"
+          }
+        }
+      }
+    },
+    "How hard the trigger resists past that point.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quanto o gatilho resiste depois desse ponto."
+          }
+        }
+      }
+    },
+    "How long the wall lasts.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Por quanto curso a parede dura."
           }
         }
       }
@@ -1671,12 +1771,32 @@
         }
       }
     },
+    "Lock position": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posição da trava"
+          }
+        }
+      }
+    },
     "Looking for controllers…": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Procurando controles…"
+          }
+        }
+      }
+    },
+    "Machine gun": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Metralhadora"
           }
         }
       }
@@ -1941,6 +2061,16 @@
         }
       }
     },
+    "Normal": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Normal"
+          }
+        }
+      }
+    },
     "Not affiliated with Flydigi. Controller artwork and app icon © Flydigi, used for interoperability (see NOTICE.md in the app bundle).": {
       "localizations": {
         "pt-BR": {
@@ -2121,12 +2251,32 @@
         }
       }
     },
+    "Output data from the start position": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enviar dados a partir da posição inicial"
+          }
+        }
+      }
+    },
     "Pick one on the left or press + to bind a new macro to a button. Steps play on the pad itself, so they work in any game and on any platform.": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Escolha uma à esquerda ou use + para vincular uma nova macro a um botão. Os passos rodam no próprio controle, então funcionam em qualquer jogo e plataforma."
+          }
+        }
+      }
+    },
+    "Plain trigger: no motor effect.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gatilho comum: sem efeito do motor."
           }
         }
       }
@@ -2851,6 +3001,16 @@
         }
       }
     },
+    "Shield value": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Valor de bloqueio"
+          }
+        }
+      }
+    },
     "Shooting": {
       "localizations": {
         "pt-BR": {
@@ -3111,6 +3271,16 @@
         }
       }
     },
+    "Strength coefficient": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Coeficiente de intensidade"
+          }
+        }
+      }
+    },
     "Stroke": {
       "localizations": {
         "pt-BR": {
@@ -3291,6 +3461,26 @@
         }
       }
     },
+    "The trigger stops here, like a shorter trigger.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O gatilho para aqui, como um gatilho mais curto."
+          }
+        }
+      }
+    },
+    "The trigger vibrates together with the grip motors.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O gatilho vibra junto com os motores da empunhadura."
+          }
+        }
+      }
+    },
     "Toggle on / off": {
       "localizations": {
         "pt-BR": {
@@ -3341,6 +3531,16 @@
         }
       }
     },
+    "Trigger lock": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trava do gatilho"
+          }
+        }
+      }
+    },
     "Trigger mode": {
       "localizations": {
         "pt-BR": {
@@ -3357,6 +3557,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Presets de gatilho valem só em modo XInput."
+          }
+        }
+      }
+    },
+    "Trigger travel over which it vibrates.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curso do gatilho ao longo do qual ele vibra."
+          }
+        }
+      }
+    },
+    "Trigger travel where the damping starts.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curso do gatilho em que o amortecimento começa."
+          }
+        }
+      }
+    },
+    "Trigger travel where the resistance wall begins.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curso do gatilho em que a parede de resistência começa."
+          }
+        }
+      }
+    },
+    "Trigger travel where the vibration starts.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curso do gatilho em que a vibração começa."
           }
         }
       }
@@ -3627,6 +3867,46 @@
           "stringUnit": {
             "state": "translated",
             "value": "Vibração"
+          }
+        }
+      }
+    },
+    "Vibration frequency": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frequência da vibração"
+          }
+        }
+      }
+    },
+    "Vibration start force": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Força inicial da vibração"
+          }
+        }
+      }
+    },
+    "Vibration start position": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Posição inicial da vibração"
+          }
+        }
+      }
+    },
+    "Vibration strength": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intensidade da vibração"
           }
         }
       }

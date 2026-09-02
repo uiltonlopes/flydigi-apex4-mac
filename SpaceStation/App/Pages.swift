@@ -320,7 +320,7 @@ struct AdaptiveTriggerPage: View {
                     var r = GameRule(name: g.enGameName.isEmpty ? g.gameName : g.enGameName)
                     r.flydigiId = g.id
                     r.processName = (g.enGameName.isEmpty ? g.gameName : g.enGameName).components(separatedBy: CharacterSet(charactersIn: "™®:")).first?.trimmingCharacters(in: .whitespaces)
-                    if g.isVibration == 1 { r.left.mode = 5; r.right.mode = 5 }
+                    if g.isVibration == 1 { r.left.mode = .vibration; r.right.mode = .vibration }
                     baseRule = r
                 }
                 .buttonStyle(.plain).font(.system(size: 11, weight: .semibold)).foregroundStyle(SS.brand500)

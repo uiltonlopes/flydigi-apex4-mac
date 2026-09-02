@@ -100,6 +100,22 @@ offset   size  field
 154..182 29    trigger vibration motors (linear/micro presets per side)
 183..184 2     "lunpan" (wheel)
 185..224 40    ForceAdapt per trigger: type(0 Normal,1 Race,2 Sniper,3 Recoil,4 Lock,5 Vibration), bind type/filter/scale, 5 bind params, mixed border, 10 params
+```
+
+**ForceAdapt modes as Space Station 4 shows them for the Apex 4** (its enum names differ from its labels —
+type 2 `Sniper` is labelled "Machine gun", type 3 `Recoil` is labelled "Sniper"). Ranges are the renderer's:
+
+| type | SS4 label | live params after side | blob params[10..14] | UI ranges |
+|---|---|---|---|---|
+| 0 | Normal | `0` | start, end | — |
+| 1 | Racing | `1 start damping 1` | start, damping, 0, 0, 0 | start 0–192, damping 1–255 |
+| 2 | Machine gun | `2 start startForce strength freq out` | start, startForce, strength, freq, out | start 0–192, others 1–255 |
+| 3 | Sniper | `3 start stroke resistance 0 out` | start, stroke, resistance, 0, out | start 0–192, others 1–255 |
+| 4 | Trigger lock | `4 pos 255 1` | pos, 255, 1, 0, 0 | pos 20–200 |
+| 5 | Vibration (sync with grip) | **`A5 30 08 side 2 block scale stroke freq 1 90`** (no apply byte) | stroke, freq, 1, 90, 0; bind type 2, filter = block, scale, bind params `stroke 1 1 freq 0` | scale 0–200, block 1–255, stroke 1–200, freq 1–255 |
+
+"out" = "output data from the start position" (MatchStart). Racing and lock always send match = 1.
+```
 225..226 2     dataVersion — the random id (`A5 50 02` returns the same two bytes)
 230..767 538   macros: [count][offsets… (maxMacros+1 header)] then per macro: key, actionCount LE16, enable(0 none,1 once,2 press,3 click), N × (t LE16 ×10 ms cumulative, key, event 0 release/1 press) — verified: 4-action macro on M1 round-trips
 770..789 20    title, UTF-16LE

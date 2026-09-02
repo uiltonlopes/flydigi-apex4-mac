@@ -99,9 +99,9 @@ struct Dev: ParsableCommand {
         static let configuration = CommandConfiguration(commandName: "force-test")
         func run() throws {
             let s = try DeviceSession.open(preferring: .xinput); defer { s.close() }
-            try s.setForceTrigger(.race(stroke: 50, resistance: 8, matchStroke: true), side: .both); print("Race (resistance 8) on both triggers — 8 s")
+            try s.setForceTrigger(.race(stroke: 60, resistance: 128, matchStroke: true), side: .both); print("Race (start 60, damping 128) on both triggers — 8 s")
             Thread.sleep(forTimeInterval: 8)
-            try s.setForceTrigger(.sniper(stroke: 60, pressure: 5, strength: 8, frequency: 5, matchStroke: true), side: .both); print("Sniper — 8 s")
+            try s.setForceTrigger(.sniper(stroke: 60, pressure: 128, strength: 128, frequency: 100, matchStroke: true), side: .both); print("Machine gun (SS4 type 2) — 8 s")
             Thread.sleep(forTimeInterval: 8)
             try s.setForceTrigger(.normal, side: .both); print("back to Normal")
         }

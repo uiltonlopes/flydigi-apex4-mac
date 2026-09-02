@@ -69,7 +69,7 @@ struct GameRulesSection: View {
         var parts: [String] = []
         if let b = r.bundleId { parts.append(b) } else if let p = r.processName { parts.append("“\(p)”") }
         if let s = r.slot { let t = profiles.slots.first { Int($0.index) == s }?.config.title ?? ""; parts.append("slot \(s + 1)\(t.isEmpty ? "" : " · \(t)")") }
-        if !r.left.isNormal || !r.right.isNormal { parts.append("triggers " + ForceAdaptPreset.modes.first { $0.0 == r.left.mode }!.1 + " / " + ForceAdaptPreset.modes.first { $0.0 == r.right.mode }!.1) }
+        if !r.left.isNormal || !r.right.isNormal { parts.append("triggers " + ForceAdapt.label(r.left.mode) + " / " + ForceAdapt.label(r.right.mode)) }
         if r.led != nil { parts.append("lighting") }
         return parts.joined(separator: " · ")
     }
@@ -179,19 +179,11 @@ struct GameRuleEditor: View {
         return out
     }
 
-    private func presetEditor(_ title: String, _ p: Binding<ForceAdaptPreset>) -> some View {
+    private func presetEditor(_ title: String, _ p: Binding<ForceAdapt>) -> some View {
         VStack(alignment: .leading, spacing: 10) {
-            Field(title) { DarkSelect(selection: p.mode, options: ForceAdaptPreset.modes, width: 320) }
-            if p.wrappedValue.mode != 0 {
-                Field("Stroke") { StepSlider(value: Binding(get: { Double(p.wrappedValue.stroke) }, set: { p.wrappedValue.stroke = Int($0) }), range: 10...100) }
-                Field(p.wrappedValue.mode == 1 ? "Resistance" : "Strength") { StepSlider(value: Binding(get: { Double(p.wrappedValue.strength) }, set: { p.wrappedValue.strength = Int($0) }), range: 1...10) }
-                if p.wrappedValue.mode == 2 || p.wrappedValue.mode == 5 {
-                    Field("Pressure level") { StepSlider(value: Binding(get: { Double(p.wrappedValue.pressure) }, set: { p.wrappedValue.pressure = Int($0) }), range: 1...10) }
-                    Field("Frequency") { StepSlider(value: Binding(get: { Double(p.wrappedValue.frequency) }, set: { p.wrappedValue.frequency = Int($0) }), range: 1...10) }
-                }
-            }
+            Text(LocalizedStringKey(title)).font(.system(size: 12, weight: .medium)).foregroundStyle(.white)
+            ForceAdaptEditor(cfg: p)
         }
-        .frame(width: 320)
     }
 
     private func chooseApp() {

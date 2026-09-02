@@ -298,8 +298,9 @@ public final class DeviceSession: @unchecked Sendable {
         case race(stroke: UInt8, resistance: UInt8, matchStroke: Bool)
         case sniper(stroke: UInt8, pressure: UInt8, strength: UInt8, frequency: UInt8, matchStroke: Bool)
         case recoil(stroke: UInt8, recoilStroke: UInt8, strength: UInt8, matchStroke: Bool)
-        case lock(stroke: UInt8, strength: UInt8, matchStroke: Bool)
-        case vibration(stroke: UInt8, pressure: UInt8, strength: UInt8, frequency: UInt8, matchStroke: Bool)
+        case lock(stroke: UInt8)
+        /// Trigger vibrates in sync with the grip motors (SS4 sends this one as `A5 30 08`, no apply byte).
+        case vibration(block: UInt8, scale: UInt8, stroke: UInt8, frequency: UInt8)
 
         func params(side: TriggerSide) -> [UInt8] {
             func nz(_ v: UInt8) -> UInt8 { max(1, v) }
@@ -308,22 +309,29 @@ public final class DeviceSession: @unchecked Sendable {
             case let .race(s, r, m): return [side.rawValue, 1, s, nz(r), m ? 1 : 0]
             case let .sniper(s, p, st, f, m): return [side.rawValue, 2, s, nz(p), nz(st), nz(f), m ? 1 : 0]
             case let .recoil(s, rs, st, m): return [side.rawValue, 3, s, rs, nz(st), 0, m ? 1 : 0]
-            case let .lock(s, st, m): return [side.rawValue, 4, s, st, m ? 1 : 0]
-            case let .vibration(s, p, st, f, m): return [side.rawValue, 5, s, nz(p), nz(st), nz(f), m ? 1 : 0]
+            case let .lock(s): return [side.rawValue, 4, s, 255, 1]                    // SS4: strength 255, match stroke
+            case let .vibration(bl, sc, s, f): return [side.rawValue, 5, nz(bl), sc, nz(s), nz(f)]
             }
         }
     }
 
-    /// Same as `setForceTrigger` but with a pre-built parameter list (used by the XPC helper).
+    /// Same as `setForceTrigger` but with a pre-built parameter list (used by the XPC helper). `params`
+    /// starts with the mode byte; mode 5 (vibration) carries `[5, block, scale, stroke, frequency]` and goes
+    /// out as SS4's "sync with grip" command `A5 30 08 <side> 02 <block> <scale> <stroke> <frequency> 01 5A`.
     public func setForceTriggerRaw(_ params: [UInt8], side: TriggerSide, apply: Bool = true) throws {
         guard channel == .xinput else { throw TransportError.protocolError("XInput only") }
-        try link.write(XInput.command(XInput.Cmd.module, args: [0x06, apply ? 1 : 0, side.rawValue] + params))
+        if params.first == 5, params.count >= 5 {
+            try link.write(XInput.command(XInput.Cmd.module, args: [0x08, side.rawValue, 2, params[1], params[2], params[3], params[4], 1, 90]))
+        } else {
+            try link.write(XInput.command(XInput.Cmd.module, args: [0x06, apply ? 1 : 0, side.rawValue] + params))
+        }
     }
 
     /// Applies (or previews) a ForceAdapt mode on the trigger(s). Live effect only; profile persistence goes through the config blob.
     public func setForceTrigger(_ mode: ForceTrigger, side: TriggerSide, apply: Bool = true) throws {
         guard channel == .xinput else { throw TransportError.protocolError("XInput only") }
-        try link.write(XInput.command(XInput.Cmd.module, args: [0x06, apply ? 1 : 0] + mode.params(side: side)))   // params(side:) already starts with the side byte
+        let p = mode.params(side: side)                       // starts with the side byte
+        try setForceTriggerRaw(Array(p.dropFirst()), side: side, apply: apply)
     }
 
     // MARK: Mode

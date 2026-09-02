@@ -7,25 +7,7 @@ import AppKit
 import FlydigiKit
 import FlydigiTransport
 
-/// A ForceAdapt preset expressed the way the Trigger tab does (see `ForceAdaptPanel`).
-struct ForceAdaptPreset: Codable, Hashable {
-    var mode = 0            // 0 general 1 race 2 sniper 3 recoil 4 lock 5 vibration
-    var stroke = 50, strength = 8, pressure = 5, frequency = 5
-    var matchStroke = true
-    static let modes: [(Int, String)] = [(0, "General"), (1, "Race"), (2, "Sniper"), (3, "Recoil"), (4, "Lock"), (5, "Vibration")]
-    var isNormal: Bool { mode == 0 }
-    var params: [UInt8] {
-        let s = UInt8(clamping: stroke), st = UInt8(clamping: strength), p = UInt8(clamping: pressure), f = UInt8(clamping: frequency), m: UInt8 = matchStroke ? 1 : 0
-        switch mode {
-        case 1: return [1, s, st, m]
-        case 2: return [2, s, p, st, f, m]
-        case 3: return [3, s, s / 2, st, 0, m]
-        case 4: return [4, s, st, m]
-        case 5: return [5, s, p, st, f, m]
-        default: return [0]
-        }
-    }
-}
+typealias ForceAdaptPreset = ForceAdapt
 
 /// Lighting to show while a game profile is active (not saved to the pad's flash; the normal lighting
 /// comes back when the app leaves).
@@ -56,8 +38,8 @@ struct GameRule: Codable, Hashable, Identifiable {
     var bundleId: String?               // matched against the frontmost app's bundle identifier
     var processName: String?            // fallback: frontmost app's localized name contains this (case-insensitive)
     var slot: Int?                      // profile slot 0…3 to activate, nil = keep current
-    var left = ForceAdaptPreset()
-    var right = ForceAdaptPreset()
+    var left = ForceAdapt()
+    var right = ForceAdapt()
     var enabled = true
     var flydigiId: Int?                 // origin in Flydigi's list, if any
 
@@ -118,7 +100,7 @@ final class GameProfileStore {
         lastEvent = "\(rule.name) → \(appName)"
         if let slot = rule.slot { await model.applySlot(UInt8(slot)) }
         if !rule.left.isNormal || !rule.right.isNormal {
-            await model.setForceAdapt(left: rule.left.params, right: rule.right.params)
+            await model.setForceAdapt(left: rule.left.liveParams, right: rule.right.liveParams)
         }
         if let preset = rule.led, let base = model.led {
             if savedLED == nil { savedLED = base }
