@@ -6,7 +6,8 @@
 import Foundation
 
 /// Physical buttons / virtual targets the firmware knows (Flydigi `ControllerKey`).
-public enum ControllerKey: UInt8, Sendable, Hashable, CaseIterable, CustomStringConvertible {
+public enum ControllerKey: UInt8, Sendable, Hashable, CaseIterable, CustomStringConvertible, Identifiable {
+    public var id: UInt8 { rawValue }
     case up = 0, right = 1, down = 2, left = 3, a = 4, b = 5, select = 6, x = 7, y = 8, start = 9
     case lb = 10, rb = 11, lt = 12, rt = 13, thumbL = 14, thumbR = 15, c = 16, z = 17
     case m1 = 18, m2 = 19, m3 = 20, m4 = 21, m5 = 22, m6 = 23, menu = 24, turbo = 25, home = 27, back = 28

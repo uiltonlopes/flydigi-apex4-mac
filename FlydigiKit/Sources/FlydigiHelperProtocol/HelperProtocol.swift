@@ -24,6 +24,13 @@ public enum HelperRequest: Codable, Sendable {
     case uploadScreenFrame(index: Int, lvgl: [UInt8])      // 1-based index
     case finishScreenUpload
     case switchMode
+    // profiles (config slots 0…3)
+    case currentSlot
+    case applySlot(UInt8)
+    case readConfig(slot: UInt8)
+    case writeConfig(slot: UInt8, bytes: [UInt8], persist: Bool)
+    case setForceTrigger(side: UInt8, mode: [UInt8])          // raw params (see DeviceSession.ForceTrigger)
+    case motorTest(left: UInt8, right: UInt8)
 }
 
 public enum BlobKindCode: Codable, Sendable { case config, led }
@@ -42,5 +49,6 @@ public enum HelperReply: Codable, Sendable {
     case deviceInfo(HelperDeviceInfo)
     case blob([UInt8])
     case frameDone(index: Int)
+    case slot(UInt8)
     case error(String)
 }

@@ -87,5 +87,12 @@ final class HelperClient: @unchecked Sendable {
 
     func switchMode() throws { _ = try send(.switchMode) }
 
+    func currentSlot() throws -> UInt8 { guard case let .slot(s) = try send(.currentSlot) else { throw HelperError.transport("unexpected reply") }; return s }
+    func applySlot(_ slot: UInt8) throws { _ = try send(.applySlot(slot)) }
+    func readConfig(slot: UInt8) throws -> [UInt8] { guard case let .blob(b) = try send(.readConfig(slot: slot)) else { throw HelperError.transport("unexpected reply") }; return b }
+    func writeConfig(slot: UInt8, bytes: [UInt8], persist: Bool = true) throws { _ = try send(.writeConfig(slot: slot, bytes: bytes, persist: persist)) }
+    func setForceTrigger(side: UInt8, params: [UInt8]) throws { _ = try send(.setForceTrigger(side: side, mode: params)) }
+    func motorTest(left: UInt8, right: UInt8) throws { _ = try send(.motorTest(left: left, right: right)) }
+
     private func dropSession() { session?.cancel(reason: "reset"); session = nil }
 }

@@ -25,12 +25,15 @@ final class ControllerModel {
     var uploadProgress: Double?   // 0…1 while a screen upload runs
 
     private var monitor: USBMonitor?
+    /// Staged profile edits (four on-board slots). Created in `init` (needs `self`); it is @Observable itself.
+    @ObservationIgnored private(set) var profiles: ProfileStore!
     /// Our own helper calls capture/release the pad, which re-enumerates it and fires USB notifications.
     /// Ignore notifications until this date so we never refresh in response to ourselves.
     private var suppressNotificationsUntil = Date.distantPast
     private var pendingNotification: Task<Void, Never>?
 
     init() {
+        profiles = ProfileStore(controller: self)
         refreshHelperStatus()
         monitor = USBMonitor { [weak self] in Task { @MainActor in self?.usbChanged() } }
         Task { await refresh() }

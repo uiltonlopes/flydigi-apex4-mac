@@ -250,10 +250,16 @@ public final class DeviceSession: @unchecked Sendable {
         }
     }
 
+    /// Same as `setForceTrigger` but with a pre-built parameter list (used by the XPC helper).
+    public func setForceTriggerRaw(_ params: [UInt8], side: TriggerSide, apply: Bool = true) throws {
+        guard channel == .xinput else { throw TransportError.protocolError("XInput only") }
+        try link.write(XInput.command(XInput.Cmd.module, args: [0x06, apply ? 1 : 0, side.rawValue] + params))
+    }
+
     /// Applies (or previews) a ForceAdapt mode on the trigger(s). Live effect only; profile persistence goes through the config blob.
     public func setForceTrigger(_ mode: ForceTrigger, side: TriggerSide, apply: Bool = true) throws {
         guard channel == .xinput else { throw TransportError.protocolError("XInput only") }
-        try link.write(XInput.command(XInput.Cmd.module, args: [0x06, apply ? 1 : 0] + mode.params(side: side)))
+        try link.write(XInput.command(XInput.Cmd.module, args: [0x06, apply ? 1 : 0] + mode.params(side: side)))   // params(side:) already starts with the side byte
     }
 
     // MARK: Mode

@@ -92,6 +92,31 @@ final class HelperService: @unchecked Sendable {
                 guard uploadFrames > 0 else { return .error("no upload in progress") }
                 try withSession { try $0.finishScreenUpload(frameCount: uploadFrames) }
                 uploadFrames = 0; releaseIfIdle(); return .ok
+            case .currentSlot:
+                let id = try withSession { try $0.currentConfigId() }
+                releaseIfIdle(); return .slot(id)
+            case let .applySlot(slot):
+                try withSession { try $0.applyConfig(slot: slot) }
+                releaseIfIdle(); return .ok
+            case let .readConfig(slot):
+                let b = try withSession { s in s.configId = slot; defer { s.configId = 0 }; return try s.readBlob(.config) }
+                releaseIfIdle(); return .blob(b)
+            case let .writeConfig(slot, bytes, persist):
+                try withSession { s in
+                    s.configId = slot; defer { s.configId = 0 }
+                    try s.writeBlob(bytes, kind: .config)
+                    if persist { try s.saveToFlash() }
+                }
+                releaseIfIdle(); return .ok
+            case let .setForceTrigger(side, params):
+                try withSession { s in
+                    guard let sd = DeviceSession.TriggerSide(rawValue: side) else { throw TransportError.protocolError("bad side") }
+                    try s.setForceTriggerRaw(params, side: sd)
+                }
+                releaseIfIdle(); return .ok
+            case let .motorTest(l, r):
+                try withSession { try $0.motorTest(left: l, right: r) }
+                releaseIfIdle(); return .ok
             case .switchMode:
                 let s = try (session ?? DeviceSession.open(preferring: .xinput))
                 session = nil                                   // switchMode() closes the link itself, without reset
