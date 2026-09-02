@@ -63,7 +63,7 @@ is unprivileged (no Apple driver claims VID `0x37D7`), so it may not even need t
 The UI never checks device ids. It reads `DeviceDescriptor.capabilities` to show/hide sections
 (no screen → no Screen page), sizes previews from `capabilities.screen`, and uses the marketing name
 from the descriptor. Button hotspot positions for the hero render are per family
-(`Apex4/App/Stage/<family>.swift`) — a new family needs its own render (your own artwork, not Flydigi's)
+(`SpaceStation/App/Stage/<family>.swift`) — a new family needs its own render (your own artwork, not Flydigi's)
 and hotspot table.
 
 ## 6. Send it

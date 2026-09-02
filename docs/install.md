@@ -1,17 +1,17 @@
-# Installing Apex 4 for Mac
+# Installing Space Station for Mac
 
 **Requirements:** macOS 15 or newer (Liquid Glass details on macOS 26), a Flydigi Apex 4 connected
 over USB-C or through its charging base (2.4 GHz receiver).
 
 ## 1. Install the app
 
-1. Open the `.dmg` and drag **Apex4.app** to Applications.
+1. Open the `.dmg` and drag **Space Station.app** to Applications.
 2. First launch: macOS will say the app is from an unidentified developer, because pre-release builds
-   are signed with a personal certificate and not notarized. **Right-click Apex4.app → Open → Open**
+   are signed with a personal certificate and not notarized. **Right-click Space Station.app → Open → Open**
    (once). If the button is missing, run in Terminal:
 
    ```bash
-   xattr -dr com.apple.quarantine /Applications/Apex4.app
+   xattr -dr com.apple.quarantine /Applications/Space Station.app
    ```
 
 ## 2. Install the helper (needed in XInput mode)
@@ -20,7 +20,7 @@ By default the controller is in **XInput** mode and Apple's own Xbox driver owns
 app uses a small privileged helper that borrows the USB interface only while a command runs.
 
 1. Open **Settings** (bottom of the sidebar) → **Install helper**.
-2. macOS opens *Login Items & Extensions*; allow **Apex4Helper** and enter your password once.
+2. macOS opens *Login Items & Extensions*; allow **SpaceStationHelper** and enter your password once.
 3. Back in the app press the refresh icon. The sidebar should show your controller, firmware and battery.
 
 Without the helper the app still works fully in **DInput** mode (switch with the menu on the device
@@ -37,8 +37,8 @@ card, or hold the controller's mode combination). The LCD upload always needs XI
 
 ## Uninstall
 
-Delete `Apex4.app`. To remove the helper first: Settings → **Remove helper**, or in Terminal
-`sudo launchctl bootout system/com.uiltonlopes.apex4.helper`.
+Delete `Space Station.app`. To remove the helper first: Settings → **Remove helper**, or in Terminal
+`sudo launchctl bootout system/com.uiltonlopes.spacestation.helper`.
 
 ## Safety
 

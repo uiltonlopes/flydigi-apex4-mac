@@ -21,7 +21,7 @@ on Windows — and more — written from scratch, open source (MIT), using what 
 
 ```
 ┌──────────────────────────┐  XPC (Codable)   ┌───────────────────────────────┐
-│ Apex4.app (SwiftUI)      │◄────────────────►│ com.flydigi-mac.helper (root) │
+│ Space Station.app (SwiftUI)      │◄────────────────►│ com.flydigi-mac.helper (root) │
 │  • menu bar + window     │                  │  • IOUSBLib capture 045e:028e  │
 │  • DInput HID directly   │                  │  • screen upload, XInput cfg   │
 │  • GameController live   │                  │  • mode switch                 │
@@ -73,7 +73,7 @@ on Windows — and more — written from scratch, open source (MIT), using what 
   later launch fail, even after `SMAppService.unregister()`/`register()`
   ([forum 795022](https://developer.apple.com/forums/thread/795022),
   [forum 799933](https://developer.apple.com/forums/thread/799933)). Fix: `sudo launchctl bootout
-  system/com.uiltonlopes.apex4.helper`, then re-register from the app; if that is not enough,
+  system/com.uiltonlopes.spacestation.helper`, then re-register from the app; if that is not enough,
   `sudo sfltool resetbtm` and reboot (resets *all* login-item registrations on the Mac). Keep the
   helper's signing identifier and team stable across releases for the same reason.
 - Rebuilding the helper with the **same** identity is fine: the daemon notices its executable changed
@@ -83,7 +83,7 @@ on Windows — and more — written from scratch, open source (MIT), using what 
 
 ```
 FlydigiKit/        Swift package: protocol, blobs, LVGL, state machines, tests
-Apex4/             Xcode project: app + helper targets
+SpaceStation/      Xcode project: app + helper targets
 apex4-cli/         command-line tool
 docs/              protocol.md · architecture.md · roadmap.md
 ```

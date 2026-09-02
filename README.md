@@ -25,7 +25,7 @@ Laid out like Space Station 4 so owners feel at home, built with SwiftUI:
 
 Live input works in both USB modes; in DInput the app also reads the raw report, so paddles
 M1–M4, Fn and Home light up too. Controller artwork is Flydigi's (see
-[`Apex4/App/Resources/Flydigi/NOTICE.md`](Apex4/App/Resources/Flydigi/NOTICE.md)); all code is ours.
+[`SpaceStation/App/Resources/Flydigi/NOTICE.md`](SpaceStation/App/Resources/Flydigi/NOTICE.md)); all code is ours.
 
 ## Why
 
@@ -47,7 +47,7 @@ Details: [`docs/architecture.md`](docs/architecture.md) · [`docs/roadmap.md`](d
 ## Repository
 
 ```
-Apex4/            the macOS app (SwiftUI) and the privileged helper — `Apex4/project.yml` is the xcodegen spec
+SpaceStation/     the macOS app (SwiftUI) and the privileged helper — `SpaceStation/project.yml` is the xcodegen spec
 FlydigiKit/       Swift package: protocol, transports, config/LED/screen models, `apex4` CLI, tests
 docs/             protocol, architecture, design references, roadmap, install guide, adding a controller
 scripts/          release packaging
@@ -58,13 +58,13 @@ tools/            ss4-harness: runs Space Station's own UI in a browser for desi
 
 ```bash
 brew install xcodegen
-cd Apex4 && xcodegen generate
-xcodebuild -project Apex4.xcodeproj -scheme Apex4 -configuration Debug -derivedDataPath build build
-open build/Build/Products/Debug/Apex4.app
+cd SpaceStation && xcodegen generate
+xcodebuild -project SpaceStation.xcodeproj -scheme SpaceStation -configuration Debug -derivedDataPath build build
+open build/Build/Products/Debug/Space Station.app
 ```
 Local builds are ad-hoc signed. To register the privileged helper (needed for screen uploads while the
 pad is in XInput mode) the app and helper must be signed with a team: add your Apple ID in Xcode
-(a free account is enough) and set `DEVELOPMENT_TEAM` in `Apex4/project.yml`.
+(a free account is enough) and set `DEVELOPMENT_TEAM` in `SpaceStation/project.yml`.
 
 ## Building the CLI
 

@@ -109,4 +109,4 @@ Using `tools/ss4-harness/`, the real SS4 4.2.2.3 UI was rendered at 1440 × 900 
 - **Settings** (own route): left sub-navigation (Space Station / Controller / Update), right content
   in labelled sections with switches and links.
 
-The macOS app mirrors this structure (`Apex4/App/Views.swift`, `Pages.swift`, `Theme.swift`).
+The macOS app mirrors this structure (`SpaceStation/App/Views.swift`, `Pages.swift`, `Theme.swift`).

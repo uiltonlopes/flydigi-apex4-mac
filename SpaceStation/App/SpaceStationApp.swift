@@ -18,7 +18,7 @@ enum AppSection: String, CaseIterable, Identifiable {
 }
 
 @main
-struct Apex4App: App {
+struct SpaceStationApp: App {
     @State private var model = ControllerModel()
     @State private var live = LiveInput()
 

@@ -9,8 +9,8 @@ xcuserdata/
 tools/spacestation/
 *.exe
 *.dll
-# gerado por xcodegen a partir de Apex4/project.yml
-Apex4/*.xcodeproj
-Apex4/build/
+# gerado por xcodegen a partir de SpaceStation/project.yml
+SpaceStation/*.xcodeproj
+SpaceStation/build/
 dist/
-Apex4/build-release/
+SpaceStation/build-release/

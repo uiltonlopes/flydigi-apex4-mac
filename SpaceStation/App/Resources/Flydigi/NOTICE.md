@@ -11,7 +11,7 @@ the official tool does:
 | `products/k2-<id>.png` | `assets/images/product/Controller/k2/<id>/main.png` | Device card / hero picture per Apex 4 variant (84, 86, 87, 92, 93, 102, 103, 104) |
 | `apex4-wireframe.svg` | `assets/device_wireframe_k2-*.js` (React SVG, serialised back to plain SVG) | Outline the button hotspots are drawn over |
 
-The hotspot geometry in `Apex4/App/Stage/Apex4Render.swift` is transcribed from `device_config_k2-*.js`
+The hotspot geometry in `SpaceStation/App/Stage/Apex4Render.swift` is transcribed from `device_config_k2-*.js`
 (positions and sizes only, no code).
 
 They are used for interoperability with the Apex 4 and stay separate from the MIT-licensed source so a

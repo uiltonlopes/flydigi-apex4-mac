@@ -6,10 +6,10 @@ import FlydigiKit
 
 public enum HelperConstants {
     /// launchd label == MachServices name == daemon plist file name (minus .plist).
-    public static let machService = "com.uiltonlopes.apex4.helper"
-    public static let plistName = "com.uiltonlopes.apex4.helper.plist"
+    public static let machService = "com.uiltonlopes.spacestation.helper"
+    public static let plistName = "com.uiltonlopes.spacestation.helper.plist"
     public static let protocolVersion = 1
-    public static let appBundleId = "com.uiltonlopes.apex4"
+    public static let appBundleId = "com.uiltonlopes.spacestation"
 }
 
 public enum HelperRequest: Codable, Sendable {

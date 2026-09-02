@@ -90,7 +90,7 @@ final class LiveInput {
         }
         if let pad {
             let names = pad.physicalInputProfile.elements.keys.sorted().joined(separator: ", ")
-            Logger(subsystem: "com.uiltonlopes.apex4", category: "live").notice("GameController pad \(pad.vendorName ?? "?", privacy: .public) [\(pad.productCategory, privacy: .public)] elements: \(names, privacy: .public)")
+            Logger(subsystem: "com.uiltonlopes.spacestation", category: "live").notice("GameController pad \(pad.vendorName ?? "?", privacy: .public) [\(pad.productCategory, privacy: .public)] elements: \(names, privacy: .public)")
         }
         guard let gp = pad?.extendedGamepad else { return }
         gp.valueChangedHandler = { [weak self] gamepad, _ in

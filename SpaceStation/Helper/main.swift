@@ -1,4 +1,4 @@
-// Apex4Helper — launchd daemon (root) registered by the app with SMAppService.
+// SpaceStationHelper — launchd daemon (root) registered by the app with SMAppService.
 // Owns the XInput/IOUSBLib link to the controller; serves Codable requests over XPC.
 
 import Foundation
@@ -161,6 +161,6 @@ do {
     _ = listener
     dispatchMain()
 } catch {
-    FileHandle.standardError.write("Apex4Helper: listener failed: \(error)\n".data(using: .utf8)!)
+    FileHandle.standardError.write("SpaceStationHelper: listener failed: \(error)\n".data(using: .utf8)!)
     exit(1)
 }

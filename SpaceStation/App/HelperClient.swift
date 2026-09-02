@@ -16,7 +16,7 @@ enum HelperError: Error, CustomStringConvertible {
     }
 }
 
-/// Talks to Apex4Helper. One request at a time; long uploads are chunked per frame so the UI can report progress.
+/// Talks to SpaceStationHelper. One request at a time; long uploads are chunked per frame so the UI can report progress.
 @available(macOS 14.0, *)
 final class HelperClient: @unchecked Sendable {
     static let shared = HelperClient()

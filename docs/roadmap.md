@@ -5,7 +5,7 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 
 ## Milestone 0 — foundations
 - [x] `FlydigiKit` package: packet framing (XInput/DInput), CRC, device info, config/LED blob read/write, save-to-flash, LVGL RGB565 encoder, screen upload state machine — with tests using the captured blobs.
-- [x] Privileged helper: `Apex4Helper` (XPCListener, Codable protocol, IOUSBLib capture) registered via `SMAppService.daemon` — **validated on hardware from inside the launchd daemon** (device info/LED through the app). IOUSBHost capture was abandoned after a kernel panic.
+- [x] Privileged helper: `SpaceStationHelper` (XPCListener, Codable protocol, IOUSBLib capture) registered via `SMAppService.daemon` — **validated on hardware from inside the launchd daemon** (device info/LED through the app). IOUSBHost capture was abandoned after a kernel panic.
 - [~] Helper hardening: XPC peer must be signed by our team (`XPCPeerRequirement.isFromSameTeam()`, macOS 26+). TODO: audit-token check on macOS 14–15; idle exit.
 - [x] `apex4` CLI: `info`, `led`, `screen`, `config dump/restore`, `mode` — info/LED/screen verified on hardware in both channels (`mode` untested).
 

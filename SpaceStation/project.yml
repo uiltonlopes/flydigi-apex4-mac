@@ -1,6 +1,6 @@
-# xcodegen spec — run `xcodegen generate` in this folder to (re)create Apex4.xcodeproj.
+# xcodegen spec — run `xcodegen generate` in this folder to (re)create SpaceStation.xcodeproj.
 # The .xcodeproj is generated and not committed; this file is the source of truth.
-name: Apex4
+name: SpaceStation
 options:
   bundleIdPrefix: com.uiltonlopes
   deploymentTarget:
@@ -25,7 +25,7 @@ packages:
   FlydigiKit:
     path: ../FlydigiKit
 targets:
-  Apex4:
+  SpaceStation:
     type: application
     platform: macOS
     sources:
@@ -38,11 +38,11 @@ targets:
       - package: FlydigiKit
         product: FlydigiHelperProtocol
       - sdk: GameController.framework
-      - target: Apex4Helper
+      - target: SpaceStationHelper
         embed: true
         codeSign: true
         copy:
-          destination: executables      # → Contents/MacOS/Apex4Helper (what the daemon plist's BundleProgram points to)
+          destination: executables      # → Contents/MacOS/SpaceStationHelper (what the daemon plist's BundleProgram points to)
     info:
       path: App/Info.plist
       properties:
@@ -55,11 +55,12 @@ targets:
         LSApplicationCategoryType: public.app-category.utilities
         NSHumanReadableCopyright: MIT — github.com/uiltonlopes/flydigi-space-station-mac
     entitlements:
-      path: App/Apex4.entitlements
+      path: App/SpaceStation.entitlements
       properties: {}                     # no sandbox: the app talks to the pad over HID directly
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.uiltonlopes.apex4
+        PRODUCT_BUNDLE_IDENTIFIER: com.uiltonlopes.spacestation
+        PRODUCT_NAME: "Space Station"
         ENABLE_HARDENED_RUNTIME: true
         ENABLE_APP_SANDBOX: false
         INFOPLIST_KEY_LSUIElement: false
@@ -67,10 +68,10 @@ targets:
       - name: Embed LaunchDaemon plist
         script: |
           mkdir -p "${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Library/LaunchDaemons"
-          cp "${SRCROOT}/Helper/com.uiltonlopes.apex4.helper.plist" "${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Library/LaunchDaemons/"
+          cp "${SRCROOT}/Helper/com.uiltonlopes.spacestation.helper.plist" "${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Library/LaunchDaemons/"
         outputFiles:
-          - "${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Library/LaunchDaemons/com.uiltonlopes.apex4.helper.plist"
-  Apex4Helper:
+          - "${BUILT_PRODUCTS_DIR}/${CONTENTS_FOLDER_PATH}/Library/LaunchDaemons/com.uiltonlopes.spacestation.helper.plist"
+  SpaceStationHelper:
     type: tool
     platform: macOS
     sources:
@@ -85,8 +86,8 @@ targets:
         product: FlydigiHelperProtocol
     settings:
       base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.uiltonlopes.apex4.helper
-        PRODUCT_NAME: Apex4Helper
+        PRODUCT_BUNDLE_IDENTIFIER: com.uiltonlopes.spacestation.helper
+        PRODUCT_NAME: SpaceStationHelper
         ENABLE_HARDENED_RUNTIME: true
         # A launchd daemon needs an embedded Info.plist so SMAppService can identify it.
         CREATE_INFOPLIST_SECTION_IN_BINARY: true
