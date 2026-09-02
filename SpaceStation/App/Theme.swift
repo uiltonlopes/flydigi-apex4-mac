@@ -349,3 +349,50 @@ struct TabBarView<T: Hashable>: View {
         .overlay(alignment: .top) { Rectangle().fill(.black.opacity(0.6)).frame(height: 1) }
     }
 }
+
+// MARK: - Remote thumbnails (cached, downscaled — the CDN banners are ~1 MB each)
+
+import ImageIO
+
+@MainActor
+final class ThumbCache {
+    static let shared = ThumbCache()
+    private let cache = NSCache<NSURL, NSImage>()
+    private var inflight: [URL: Task<NSImage?, Never>] = [:]
+
+    func image(for url: URL, maxPixel: Int = 480) async -> NSImage? {
+        if let img = cache.object(forKey: url as NSURL) { return img }
+        if let t = inflight[url] { return await t.value }
+        let task = Task<NSImage?, Never> {
+            guard let (data, _) = try? await URLSession.shared.data(from: url) else { return nil }
+            let opts: [CFString: Any] = [kCGImageSourceCreateThumbnailFromImageAlways: true, kCGImageSourceThumbnailMaxPixelSize: maxPixel, kCGImageSourceCreateThumbnailWithTransform: true]
+            guard let src = CGImageSourceCreateWithData(data as CFData, nil), let cg = CGImageSourceCreateThumbnailAtIndex(src, 0, opts as CFDictionary) else { return nil }
+            return NSImage(cgImage: cg, size: NSSize(width: cg.width, height: cg.height))
+        }
+        inflight[url] = task
+        let img = await task.value
+        inflight[url] = nil
+        if let img { cache.setObject(img, forKey: url as NSURL) }
+        return img
+    }
+}
+
+/// Drop-in replacement for AsyncImage: cached, downscaled, retries when the view reappears.
+struct RemoteThumb: View {
+    let url: URL?
+    var aspect: CGFloat = 16 / 9
+    @State private var image: NSImage?
+    @State private var attempt = 0
+    var body: some View {
+        ZStack {
+            SS.n800
+            if let image { Image(nsImage: image).resizable().aspectRatio(aspect, contentMode: .fill) }
+            else if url != nil { ProgressView().controlSize(.mini).tint(SS.n400) }
+        }
+        .task(id: "\(url?.absoluteString ?? "")#\(attempt)") {
+            guard let url, image == nil else { return }
+            image = await ThumbCache.shared.image(for: url)
+            if image == nil, attempt < 2 { try? await Task.sleep(for: .seconds(2)); attempt += 1 }
+        }
+    }
+}

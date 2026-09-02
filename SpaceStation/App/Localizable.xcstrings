@@ -1501,6 +1501,16 @@
         }
       }
     },
+    "Needed for anything that has to happen while you are not looking at the app — per-game trigger presets, the menu bar status. You can close the window; the app keeps running in the menu bar.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Necessário para o que precisa acontecer sem o app na frente — presets de gatilho por jogo, status na barra de menus. Pode fechar a janela; o app continua rodando na barra de menus."
+          }
+        }
+      }
+    },
     "Needs XInput mode.": {
       "localizations": {
         "pt-BR": {
@@ -1757,6 +1767,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Abrir o Space Station"
+          }
+        }
+      }
+    },
+    "Open at login": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir ao iniciar sessão"
           }
         }
       }
@@ -2517,6 +2537,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Início (zona morta)"
+          }
+        }
+      }
+    },
+    "Start Space Station when I log in": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iniciar o Space Station quando eu entrar no Mac"
           }
         }
       }

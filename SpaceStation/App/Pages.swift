@@ -1,6 +1,7 @@
 // Sidebar routes: Screen (upload + official library), Adaptive Trigger (game presets), Settings.
 
 import SwiftUI
+import ServiceManagement
 import UniformTypeIdentifiers
 import FlydigiKit
 import FlydigiTransport
@@ -82,10 +83,8 @@ struct ScreenPage: View {
         Button { Task { await pick(pic) } } label: {
             VStack(alignment: .leading, spacing: 6) {
                 ZStack {
-                    AsyncImage(url: pic.imagePath) { phase in
-                        if let img = phase.image { img.resizable().aspectRatio(2, contentMode: .fill) } else { Color.black }
-                    }
-                    .frame(height: 88).clipped()
+                    RemoteThumb(url: pic.imagePath, aspect: 2)
+                        .frame(height: 88).clipped()
                     if downloading == pic.id { ProgressView().controlSize(.small) }
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
@@ -180,10 +179,8 @@ struct AdaptiveTriggerPage: View {
 
     private func card(_ g: FlydigiAPI.GamePreset) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            AsyncImage(url: g.imagePath) { phase in
-                if let img = phase.image { img.resizable().aspectRatio(16 / 9, contentMode: .fill) } else { SS.n800 }
-            }
-            .frame(height: 100).clipped().clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+            RemoteThumb(url: g.imagePath)
+                .frame(height: 100).clipped().clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
             Text(g.enGameName.isEmpty ? g.gameName : g.enGameName).font(.system(size: 13, weight: .medium)).foregroundStyle(.white).lineLimit(1)
             HStack(spacing: 4) {
                 ForEach(g.platforms.prefix(4), id: \.self) { p in
@@ -215,7 +212,7 @@ struct SettingsPage: View {
             HStack(alignment: .top, spacing: 0) {
                 VStack(alignment: .leading, spacing: 4) {
                     navGroup("Controller Settings", ["Firmware Update", "USB mode"])
-                    navGroup("App Settings", ["Language", "Privileged helper"])
+                    navGroup("App Settings", ["Language", "Open at login", "Privileged helper"])
                     navGroup("About", [])
                     Spacer()
                     VStack(alignment: .leading, spacing: 4) {
@@ -246,6 +243,14 @@ struct SettingsPage: View {
                                     GhostButton(title: "Restart now", icon: "arrow.clockwise") { AppLanguage.relaunch() }
                                 }
                             }
+                        }
+                        section("Open at login") {
+                            SwitchRow(title: "Start Space Station when I log in", isOn: Binding(get: { SMAppService.mainApp.status == .enabled }, set: { on in
+                                do { if on { try SMAppService.mainApp.register() } else { try SMAppService.mainApp.unregister() } } catch { model.lastError = "\(error)" }
+                            }))
+                            .frame(maxWidth: 420)
+                            Text("Needed for anything that has to happen while you are not looking at the app — per-game trigger presets, the menu bar status. You can close the window; the app keeps running in the menu bar.")
+                                .font(.system(size: 12)).foregroundStyle(SS.n300)
                         }
                         section("Privileged helper") {
                             Text(model.helperInstalled ? "Installed and registered with launchd." : "Not installed.").font(.system(size: 13)).foregroundStyle(.white)
