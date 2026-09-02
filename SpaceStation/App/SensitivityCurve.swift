@@ -21,9 +21,9 @@ struct SensitivityCurve: View {
     var size: CGFloat = 280
     private var k: CGFloat { size / 280 }
     private var x0: CGFloat { 14 * k }
-    private var x1: CGFloat { size - 6 * k }
+    private var x1: CGFloat { size - 4 * k }
     private var y0: CGFloat { size - 14 * k }           // bottom (input 0)
-    private var y1: CGFloat { 6 * k }                   // top (output 100)
+    private var y1: CGFloat { 5 * k }                   // top (output 100) — just enough room for the "100" label
     @State private var dragging: Int? = nil             // 1 or 2 while a handle is held
     @State private var dragPos: CGPoint = .zero
 
@@ -99,7 +99,7 @@ struct SensitivityCurve: View {
                     .offset(x: q.x > size * 0.72 ? q.x - 52 : q.x + 12, y: q.y > size * 0.72 ? q.y - 44 : q.y + 12)
             }
         }
-        .frame(width: size, height: size)
+        .frame(width: size, height: y0 + 12 * k, alignment: .topLeading)   // no dead band under the x-axis labels
     }
 
     private func handle(_ id: Int, _ at: CGPoint, set: @escaping ((UInt8, UInt8)) -> Void) -> some View {

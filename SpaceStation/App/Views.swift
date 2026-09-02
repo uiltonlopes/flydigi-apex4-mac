@@ -810,6 +810,7 @@ struct JoystickTab: View {
                                      deadZone: stick.deadZone, edge: stick.end, editable: stick.curve == .custom,
                                      live: live.connected ? Double(min(1, hypot(liveStick.x, liveStick.y))) : nil,
                                      onEdit: { set { $0.curve = .custom } }, size: 360)
+                        .padding(.top, -6)
                     Text(stick.curve == .custom ? "Drag nodes to adjust curve" : (stick.curve == .default ? "Flydigi's factory curve: a slight lift near the centre (23 % output at 15 % travel), then linear. X: stick position, Y: output." : "Curve cannot be adjusted in current mode — X: stick position, Y: output"))
                         .font(.system(size: 11)).foregroundStyle(SS.n400)
                 }
