@@ -13,7 +13,8 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 - [x] **LED** in the app: mode, colours, brightness, speed; persisted to flash. (Per-group colours: TODO.)
 - [x] **Screen** in the app: GIF/PNG/JPEG → 160×80 (aspect-fill), ≤35 frames, quantised preview, per-frame progress. TODO: fit/fill/crop choice, real frame period in the start packet, online library.
 - [x] Screen sleep time / status bar: read, set and restore verified (`A5 30 02..05`).
-- [x] SwiftUI app `Apex4` (window: Status / Lighting / Screen / Settings + menu bar extra) — **Status, Lighting (apply + save) and Screen (35-frame GIF with progress) verified on hardware through the helper** (2026-09-01).
+- [x] SwiftUI app `Apex4` — Status, Lighting and Screen verified on hardware through the helper (2026-09-01).
+- [~] **Redesign per `docs/design.md`** (2026-09-01 evening): NavigationSplitView shell, stage, toolbar (slot picker · Refresh/Revert · Apply ⌘S), inspector, Settings scene, menu bar `.window`; **Profiles & Buttons** page v1 (hotspots over the stage + mapping table + button inspector: default / remap / turbo / macro). Awaiting visual review.
 
 ## Milestone 2 — controller configuration
 - [~] Profiles: read/apply config slot verified (`A5 20`, `A5 50 05`); per-slot read/write + import/export pending.
