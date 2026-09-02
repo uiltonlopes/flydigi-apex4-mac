@@ -25,8 +25,11 @@ final class ScreenEditorState {
 
     func load(_ url: URL) {
         guard let d = try? ImageLoader.decode(url: url) else { return }
+        // Reset the indices *before* swapping the array: views observing them re-render between the two
+        // assignments, and a stale index into a shorter frame list crashes the filmstrip.
+        start = 0; end = 0; frameIndex = 0
         self.url = url; images = d.images; delays = d.delays
-        start = 0; end = max(0, images.count - 1); frameIndex = 0
+        end = max(0, images.count - 1)
         let avg = d.delays.reduce(0, +) / Double(max(1, d.delays.count))
         intervalMs = images.count > 1 ? max(20, Int((avg * 1000).rounded())) : 100
         zoom = fillZoom(); pan = .zero          // SS4 default is fill
@@ -51,7 +54,8 @@ final class ScreenEditorState {
 
     func selectedImages() -> [CGImage] {
         guard !images.isEmpty else { return [] }
-        return ImageLoader.pick(Array(images[start...end]), max: Screen.maxFrames)
+        let a = min(max(start, 0), images.count - 1), b = min(max(end, a), images.count - 1)
+        return ImageLoader.pick(Array(images[a...b]), max: Screen.maxFrames)
     }
 
     func encode(viewport v: CGSize) -> [[UInt8]] { ImageLoader.frames(images: selectedImages(), crop: crop(viewport: v)) }
@@ -162,8 +166,10 @@ struct ScreenEditorView: View {
             // Filmstrip of thumbnails; click sets start (left half) / end (right half) — plus explicit steppers.
             ScrollView(.horizontal) {
                 HStack(spacing: 2) {
-                    ForEach(state.images.indices, id: \.self) { i in
-                        Image(nsImage: NSImage(cgImage: state.images[i], size: state.sourceSize)).resizable().aspectRatio(contentMode: .fill)
+                    // Iterate over the elements, not the indices: SwiftUI can evaluate a child for an index
+                    // that no longer exists right after a shorter GIF is loaded (crash seen at this line).
+                    ForEach(Array(state.images.enumerated()), id: \.offset) { i, img in
+                        Image(nsImage: NSImage(cgImage: img, size: state.sourceSize)).resizable().aspectRatio(contentMode: .fill)
                             .frame(width: 44, height: 28).clipped()
                             .overlay(Rectangle().strokeBorder(i == state.frameIndex ? SS.brand500 : .clear, lineWidth: 1.5))
                             .opacity(i < state.start || i > state.end ? 0.3 : 1)
