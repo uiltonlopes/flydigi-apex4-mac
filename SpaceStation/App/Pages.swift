@@ -386,8 +386,12 @@ struct SettingsPage: View {
                             TextField("Leave empty to use the app's shared key", text: $giphyKey)
                                 .textFieldStyle(.roundedBorder).frame(width: 360)
                                 .onChange(of: giphyKey) { _, k in UserDefaults.standard.set(k, forKey: Giphy.keyDefaultsKey) }
-                            Text("The shared key is a GIPHY beta key, limited to about 100 searches per hour for everyone using this app. A free key of your own from developers.giphy.com gives you a private limit.")
+                            Text("Saved as you type. The shared key is a GIPHY beta key, limited to about 100 searches per hour for everyone using this app; a free key of your own gives you a private limit.")
                                 .font(.system(size: 12)).foregroundStyle(SS.n300)
+                            HStack(spacing: 10) {
+                                Link(destination: URL(string: "https://developers.giphy.com/dashboard/")!) { Label("Create a key at developers.giphy.com", systemImage: "link") }
+                            }
+                            .font(.system(size: 12)).tint(SS.brand500)
                         }
                         section("Open at login") {
                             SwitchRow(title: "Start Space Station when I log in", isOn: Binding(get: { SMAppService.mainApp.status == .enabled }, set: { on in

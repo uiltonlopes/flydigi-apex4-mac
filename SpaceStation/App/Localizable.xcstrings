@@ -631,6 +631,16 @@
         }
       }
     },
+    "Create a key at developers.giphy.com": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Criar uma chave em developers.giphy.com"
+          }
+        }
+      }
+    },
     "Custom": {
       "localizations": {
         "pt-BR": {
@@ -2637,6 +2647,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Salvar"
+          }
+        }
+      }
+    },
+    "Saved as you type. The shared key is a GIPHY beta key, limited to about 100 searches per hour for everyone using this app; a free key of your own gives you a private limit.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salva enquanto você digita. A chave compartilhada é uma chave beta do GIPHY, limitada a cerca de 100 buscas por hora para todo mundo que usa este app; uma chave gratuita sua dá um limite só seu."
           }
         }
       }
