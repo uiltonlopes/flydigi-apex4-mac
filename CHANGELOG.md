@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Parity batch from the gap analysis: GIF frame interval is now really sent to the pad (start packet period); Settings › Controller gained Controller Sleep Time (1 min…3 h / never), Fast Swap Config (SELECT + A/B/X/Y) and the Turbo hardware shortcut switch; profile menu "Restore default configuration…"; Screen "Restore default animation"; device nickname (right-click the card); second gyro activation key.
 - Sticks: sensitivity curve drawn like Space Station (280 × 280 grid, 0–100 axes, dead-zone and edge bands, 4-point curve with draggable nodes), always visible, with SS4's Default / Instant / Delay / Custom presets and a live dot for the current deflection.
 - Triggers: Vibration (grip-sync) mode now really engages in the live preview (written through the profile, as Space Station does); the vibration test and the grip vibration test use the Xbox rumble packet games send, which the triggers follow.
 - Triggers: per-mode defaults are now the Apex 4's own presets, read back from the pad after picking each mode in its screen menu (Race = light damping over the whole travel, Recoil, Sniper, Trigger lock levels 1–3, Vibration). "Controller preset" button restores them.

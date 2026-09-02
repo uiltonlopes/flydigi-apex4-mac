@@ -12,6 +12,7 @@ final class HelperService: @unchecked Sendable {
     private let queue = DispatchQueue(label: "apex4.helper.device")
     private var session: DeviceSession?            // kept open across a screen upload
     private var uploadFrames: Int = 0
+    var uploadPeriod: UInt8 = 2
 
     /// Opens (or reuses) an XInput session. Every request runs serially on `queue`.
     private func withSession<T>(_ body: (DeviceSession) throws -> T) throws -> T {
@@ -78,15 +79,15 @@ final class HelperService: @unchecked Sendable {
                     if persist { try s.saveToFlash() }
                 }
                 releaseIfIdle(); return .ok
-            case let .beginScreenUpload(frameCount):
+            case let .beginScreenUpload(frameCount, period):
                 guard (1...Screen.maxFrames).contains(frameCount) else { return .error("frame count must be 1…\(Screen.maxFrames)") }
                 _ = try withSession { $0 }                     // capture now, hold until finish
-                uploadFrames = frameCount
+                uploadFrames = frameCount; uploadPeriod = period
                 return .ok
             case let .uploadScreenFrame(index, lvgl):
                 guard uploadFrames > 0 else { return .error("no upload in progress") }
                 guard lvgl.count == Screen.frameLength else { return .error("frame must be \(Screen.frameLength) bytes") }
-                try withSession { try $0.uploadScreenFrame(lvgl, index: index, of: uploadFrames) }
+                try withSession { try $0.uploadScreenFrame(lvgl, index: index, of: uploadFrames, period: uploadPeriod) }
                 return .frameDone(index: index)
             case .finishScreenUpload:
                 guard uploadFrames > 0 else { return .error("no upload in progress") }
@@ -129,6 +130,18 @@ final class HelperService: @unchecked Sendable {
                     try s.setJoystickOption(o, value: value)
                 }
                 return .ok
+            case .readSleepTime:
+                let t = try withSession { try $0.screenSleepTime() }
+                releaseIfIdle(); return .value(t)
+            case let .setSleepTime(minutes):
+                try withSession { try $0.setScreenSleepTime(minutes) }
+                releaseIfIdle(); return .ok
+            case let .setQuickSwitch(on):
+                try withSession { try $0.setQuickSwitch(on) }
+                releaseIfIdle(); return .ok
+            case let .setTurboSwitch(on):
+                try withSession { try $0.setTurboSwitch(on) }
+                releaseIfIdle(); return .ok
             case .captureKey(let ms):
                 let k = try withSession { try $0.captureKey(timeout: Double(ms) / 1000) }
                 return .key(k?.rawValue)

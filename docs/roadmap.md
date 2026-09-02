@@ -47,3 +47,10 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 - [ ] 🚫 Bluetooth configuration — Flydigi's BLE service only covers the BS1 cooler, not the Apex 4.
 
 See [ss4-gap-analysis.md](ss4-gap-analysis.md) (2026-09-02) for the feature-by-feature comparison with Space Station 4 and the suggested order.
+
+## Pending hardware tests (2026-09-02)
+
+- **Macros end to end**: record from the pad, edit steps, apply the profile and confirm the pad plays the macro
+  (once / hold-to-loop / toggle) in a game — never verified on hardware yet.
+- **Per-app game profiles**: switching slot + ForceAdapt + lighting when a game comes to the front, and the
+  restore on leaving — verified only with test apps, not with a real game session.

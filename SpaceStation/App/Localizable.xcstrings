@@ -21,6 +21,36 @@
         }
       }
     },
+    "1 h": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 h"
+          }
+        }
+      }
+    },
+    "1 min": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 min"
+          }
+        }
+      }
+    },
+    "15 min": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "15 min"
+          }
+        }
+      }
+    },
     "160 × 80 · %lld frames": {
       "localizations": {
         "pt-BR": {
@@ -57,6 +87,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Receptor 2,4 GHz"
+          }
+        }
+      }
+    },
+    "3 h": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "3 h"
+          }
+        }
+      }
+    },
+    "5 min": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "5 min"
           }
         }
       }
@@ -681,6 +731,16 @@
         }
       }
     },
+    "Controller Sleep Time": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tempo para o controle dormir"
+          }
+        }
+      }
+    },
     "Controller preset": {
       "localizations": {
         "pt-BR": {
@@ -881,6 +941,16 @@
         }
       }
     },
+    "Device name": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nome do dispositivo"
+          }
+        }
+      }
+    },
     "Disabled": {
       "localizations": {
         "pt-BR": {
@@ -1031,6 +1101,16 @@
         }
       }
     },
+    "Enable Fast Swap, then press SELECT + A / B / X / Y on the controller to switch between profiles 1 / 2 / 3 / 4. The controller does not report this switch back, so the state shown is the last one set from this Mac.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ative a troca rápida e pressione SELECT + A / B / X / Y no controle para alternar entre os perfis 1 / 2 / 3 / 4. O controle não informa esse estado de volta, então o que aparece aqui é o último valor enviado deste Mac."
+          }
+        }
+      }
+    },
     "Enabling gyro mapping will reduce controller polling rate": {
       "localizations": {
         "pt-BR": {
@@ -1077,6 +1157,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Animação de fábrica"
+          }
+        }
+      }
+    },
+    "Fast Swap Config": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Troca rápida de perfil"
+          }
+        }
+      }
+    },
+    "Fast swap": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Troca rápida"
           }
         }
       }
@@ -1571,6 +1671,26 @@
         }
       }
     },
+    "If the controller is not used for this period of time, it will enter sleep mode and can be awakened by pressing the Home button.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Se o controle ficar sem uso por esse tempo, ele entra em modo de espera e acorda com o botão Home."
+          }
+        }
+      }
+    },
+    "In DInput mode the current value cannot be read; the choice is sent as is.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No modo DInput o valor atual não pode ser lido; a escolha é enviada como está."
+          }
+        }
+      }
+    },
     "Input": {
       "localizations": {
         "pt-BR": {
@@ -2011,6 +2131,16 @@
         }
       }
     },
+    "Mappings, sticks, triggers, gyro, vibration and macros go back to their defaults in the editor. Nothing is written to the controller until you Apply.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mapeamentos, analógicos, gatilhos, giroscópio, vibração e macros voltam ao padrão no editor. Nada é gravado no controle até você Aplicar."
+          }
+        }
+      }
+    },
     "Match stroke": {
       "localizations": {
         "pt-BR": {
@@ -2111,6 +2241,16 @@
         }
       }
     },
+    "Never": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nunca"
+          }
+        }
+      }
+    },
     "New firmware available, please update the firmware": {
       "localizations": {
         "pt-BR": {
@@ -2137,6 +2277,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nova macro"
+          }
+        }
+      }
+    },
+    "Nickname": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apelido"
           }
         }
       }
@@ -2227,6 +2377,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ainda sem passos"
+          }
+        }
+      }
+    },
+    "None": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhuma"
           }
         }
       }
@@ -2841,6 +3001,16 @@
         }
       }
     },
+    "Rename device…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renomear dispositivo…"
+          }
+        }
+      }
+    },
     "Rename profile…": {
       "localizations": {
         "pt-BR": {
@@ -2891,12 +3061,42 @@
         }
       }
     },
+    "Restore default animation": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar animação padrão"
+          }
+        }
+      }
+    },
+    "Restore default configuration…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar configuração padrão…"
+          }
+        }
+      }
+    },
     "Restore defaults": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Restaurar padrão"
+          }
+        }
+      }
+    },
+    "Restore this profile to Flydigi's factory settings?": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar este perfil para os valores de fábrica da Flydigi?"
           }
         }
       }
@@ -3131,6 +3331,16 @@
         }
       }
     },
+    "Second key (optional)": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segunda tecla (opcional)"
+          }
+        }
+      }
+    },
     "Select a macro": {
       "localizations": {
         "pt-BR": {
@@ -3267,6 +3477,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Toques por segundo"
+          }
+        }
+      }
+    },
+    "Shown only in this app (Space Station keeps it local too).": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aparece só neste app (o Space Station também guarda isso localmente)."
           }
         }
       }
@@ -4041,6 +4261,26 @@
         }
       }
     },
+    "Turbo Function": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Função Turbo"
+          }
+        }
+      }
+    },
+    "Turbo shortcut on the controller": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atalho de Turbo no controle"
+          }
+        }
+      }
+    },
     "Turn the controller on — it connects by itself": {
       "localizations": {
         "pt-BR": {
@@ -4221,6 +4461,16 @@
         }
       }
     },
+    "Use the model name": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Usar o nome do modelo"
+          }
+        }
+      }
+    },
     "Uses a Windows-only game mod in Space Station": {
       "localizations": {
         "pt-BR": {
@@ -4397,6 +4647,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quando a vibração da empunhadura fica abaixo deste limiar, o gatilho não vibra."
+          }
+        }
+      }
+    },
+    "With it on, hold Turbo + a button to make that button auto-fire, and Turbo + Turbo to clear. Works for A/B/X/Y, LB, LT, RB, RT, the D-pad and the stick clicks. Not reported back by the controller.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ligado, segure Turbo + um botão para ele disparar sozinho, e Turbo + Turbo para limpar. Vale para A/B/X/Y, LB, LT, RB, RT, direcional e cliques dos analógicos. O controle não informa esse estado de volta."
           }
         }
       }

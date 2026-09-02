@@ -20,7 +20,7 @@ public enum HelperRequest: Codable, Sendable {
     case readBlob(kind: BlobKindCode)
     case writeBlob(kind: BlobKindCode, bytes: [UInt8], persist: Bool)
     /// Screen upload is chunked per frame so the app can show progress and the message stays small.
-    case beginScreenUpload(frameCount: Int)
+    case beginScreenUpload(frameCount: Int, period: UInt8)   // period = frame interval in 100 ms units
     case uploadScreenFrame(index: Int, lvgl: [UInt8])      // 1-based index
     case finishScreenUpload
     case switchMode
@@ -35,6 +35,10 @@ public enum HelperRequest: Codable, Sendable {
     case calibration(start: Bool)                              // ADC calibration window (see DeviceSession.calibration)
     case readJoystickSettings
     case setJoystickOption(sub: UInt8, value: UInt8)
+    case readSleepTime
+    case setSleepTime(minutes: UInt8)
+    case setQuickSwitch(Bool)
+    case setTurboSwitch(Bool)
 }
 
 public enum BlobKindCode: Codable, Sendable { case config, led }
@@ -55,6 +59,7 @@ public enum HelperReply: Codable, Sendable {
     case frameDone(index: Int)
     case slot(UInt8)
     case key(UInt8?)
+    case value(UInt8)
     case joystickSettings(raw: [UInt8], debounce: Bool, autoCalibration: Bool, rebound: Bool, precision: UInt8, sensitivity: UInt8, reportRate: UInt8, sleepTime: UInt8)
     case error(String)
 }

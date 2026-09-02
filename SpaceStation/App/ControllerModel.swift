@@ -257,7 +257,8 @@ final class ControllerModel {
 
     /// Sends already-encoded LVGL frames (from the screen editor).
     @discardableResult
-    func uploadScreen(frames: [[UInt8]]) async -> Bool {
+    func uploadScreen(frames: [[UInt8]], intervalMs: Int = 200) async -> Bool {
+        let period = UInt8(clamping: max(1, Int((Double(intervalMs) / 100).rounded())))
         uploadProgress = 0
         defer { uploadProgress = nil }
         let conn = connection
@@ -265,12 +266,57 @@ final class ControllerModel {
         await run {
             guard conn == .xinput else { throw HelperError.transport("Screen upload needs the controller in XInput mode. Use “Switch mode” below.") }
             guard #available(macOS 14.0, *) else { throw HelperError.notInstalled }
-            try HelperClient.shared.uploadScreen(frames: frames) { done, total in
+            try HelperClient.shared.uploadScreen(frames: frames, period: period) { done, total in
                 Task { @MainActor in self.uploadProgress = Double(done) / Double(total) }
             }
             return ()
         } onSuccess: { (_: Void) in ok = true }
         return ok
+    }
+
+    // MARK: Controller settings (Settings › Controller)
+
+    /// Auto-sleep minutes as the pad reports them (XInput only; nil = not read yet).
+    var sleepMinutes: UInt8?
+    func loadSleepTime() async {
+        guard connection == .xinput, helperInstalled, #available(macOS 14.0, *) else { return }
+        let r: Result<UInt8, Error> = await Task.detached { Result { try HelperClient.shared.readSleepTime() } }.value
+        if case .success(let v) = r { sleepMinutes = v }
+    }
+    func setSleepTime(_ minutes: UInt8) async {
+        let conn = connection
+        await run({
+            switch conn {
+            case .dinput: let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }; try s.setScreenSleepTime(minutes)
+            case .xinput: guard #available(macOS 14.0, *) else { throw HelperError.notInstalled }; try HelperClient.shared.setSleepTime(minutes)
+            case .none: throw HelperError.transport("no controller")
+            }
+        }, onSuccess: { (_: Void) in self.sleepMinutes = minutes })
+    }
+    /// Write-only switches (the pad does not report them back): remembered locally per controller.
+    func setQuickSwitch(_ on: Bool) async {
+        let conn = connection
+        await run({
+            switch conn {
+            case .dinput: let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }; try s.setQuickSwitch(on)
+            case .xinput: guard #available(macOS 14.0, *) else { throw HelperError.notInstalled }; try HelperClient.shared.setQuickSwitch(on)
+            case .none: throw HelperError.transport("no controller")
+            }
+        }, onSuccess: { (_: Void) in UserDefaults.standard.set(on, forKey: "quickSwitch.\(self.info?.mac ?? "")") })
+    }
+    func setTurboSwitch(_ on: Bool) async {
+        let conn = connection
+        await run({
+            switch conn {
+            case .dinput: let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }; try s.setTurboSwitch(on)
+            case .xinput: guard #available(macOS 14.0, *) else { throw HelperError.notInstalled }; try HelperClient.shared.setTurboSwitch(on)
+            case .none: throw HelperError.transport("no controller")
+            }
+        }, onSuccess: { (_: Void) in UserDefaults.standard.set(on, forKey: "turboSwitch.\(self.info?.mac ?? "")") })
+    }
+    var nickname: String {
+        get { UserDefaults.standard.string(forKey: "nickname.\(info?.mac ?? "")") ?? "" }
+        set { UserDefaults.standard.set(newValue, forKey: "nickname.\(info?.mac ?? "")") }
     }
 
     func switchMode() async {

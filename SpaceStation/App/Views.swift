@@ -114,7 +114,8 @@ struct Sidebar: View {
 
     private var connected: Bool { model.connection != .none }
     private var deviceName: String {
-        model.info.flatMap { DeviceCatalog.descriptor(for: $0.deviceId)?.name } ?? "Flydigi Apex 4"
+        if !model.nickname.isEmpty { return model.nickname }
+        return model.info.flatMap { DeviceCatalog.descriptor(for: $0.deviceId)?.name } ?? "Flydigi Apex 4"
     }
 
     private var deviceCard: some View {
@@ -269,6 +270,7 @@ struct HeroView: View {
     @Binding var pendingSlot: UInt8?
     let onSelect: (ControllerKey) -> Void
     @State private var renaming = false
+    @State private var confirmReset = false
 
     var body: some View {
         GeometryReader { g in
@@ -320,6 +322,7 @@ struct HeroView: View {
             }
             Divider()
             Button("Rename profile…") { renaming = true }.disabled(profiles.draft == nil)
+            Button("Restore default configuration…") { confirmReset = true }.disabled(profiles.draft == nil)
         } label: {
             HStack(spacing: 8) {
                 Text(profileTitle).font(.system(size: 13, weight: .medium)).foregroundStyle(.white).lineLimit(1)
@@ -331,6 +334,9 @@ struct HeroView: View {
             .contentShape(Rectangle())
         }
         .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden)
+            .confirmationDialog("Restore this profile to Flydigi's factory settings?", isPresented: $confirmReset) {
+                Button("Restore defaults", role: .destructive) { profiles.resetToFactory() }
+            } message: { Text("Mappings, sticks, triggers, gyro, vibration and macros go back to their defaults in the editor. Nothing is written to the controller until you Apply.") }
         .disabled(profiles.slots.isEmpty)
         .popover(isPresented: $renaming, arrowEdge: .bottom) {
             VStack(alignment: .leading, spacing: 8) {
@@ -870,6 +876,12 @@ struct GyroTab: View {
                         Field("Activate key") {
                             DarkSelect(selection: Binding(get: { m.enableKey1 }, set: { v in set { $0.enableKey1 = v } }),
                                        options: [(UInt8(255), "Always on")] + Apex4Render.mappableKeys.map { ($0.rawValue, String(describing: $0)) })
+                        }
+                        if m.enableKey1 != 255 {
+                            Field("Second key (optional)") {
+                                DarkSelect(selection: Binding(get: { m.enableKey2 }, set: { v in set { $0.enableKey2 = v } }),
+                                           options: [(UInt8(255), "None")] + Apex4Render.mappableKeys.map { ($0.rawValue, String(describing: $0)) })
+                            }
                         }
                     }
                 }

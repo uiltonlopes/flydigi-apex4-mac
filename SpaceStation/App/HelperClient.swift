@@ -79,8 +79,8 @@ final class HelperClient: @unchecked Sendable {
     func applyLED(_ led: LEDConfig, persist: Bool = true) throws { _ = try send(.applyLED(bytes: led.bytes, persist: persist)) }
 
     /// Uploads frames one by one; `progress` gets (framesDone, total).
-    func uploadScreen(frames: [[UInt8]], progress: @escaping @Sendable (Int, Int) -> Void) throws {
-        _ = try send(.beginScreenUpload(frameCount: frames.count))
+    func uploadScreen(frames: [[UInt8]], period: UInt8 = 2, progress: @escaping @Sendable (Int, Int) -> Void) throws {
+        _ = try send(.beginScreenUpload(frameCount: frames.count, period: period))
         do {
             for (i, f) in frames.enumerated() {
                 _ = try send(.uploadScreenFrame(index: i + 1, lvgl: f))
@@ -107,6 +107,10 @@ final class HelperClient: @unchecked Sendable {
         return JoystickSettings(debounce: d, autoCalibration: a, rebound: r, precision: p, sensitivity: s, reportRate: rr, sleepTime: st, raw: raw)
     }
     func setJoystickOption(_ opt: DeviceSession.JoystickOption, value: UInt8) throws { _ = try send(.setJoystickOption(sub: opt.rawValue, value: value)) }
+    func readSleepTime() throws -> UInt8 { guard case let .value(v) = try send(.readSleepTime) else { throw HelperError.transport("unexpected reply") }; return v }
+    func setSleepTime(_ m: UInt8) throws { _ = try send(.setSleepTime(minutes: m)) }
+    func setQuickSwitch(_ on: Bool) throws { _ = try send(.setQuickSwitch(on)) }
+    func setTurboSwitch(_ on: Bool) throws { _ = try send(.setTurboSwitch(on)) }
     func captureKey(timeoutMs: Int) throws -> UInt8? { guard case let .key(k) = try send(.captureKey(timeoutMs: timeoutMs)) else { throw HelperError.transport("unexpected reply") }; return k }
 
     private func dropSession() { session?.cancel(reason: "reset"); session = nil }

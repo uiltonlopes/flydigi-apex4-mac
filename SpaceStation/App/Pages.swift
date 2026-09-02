@@ -42,6 +42,12 @@ struct ScreenPage: View {
                                 Text("GIF, PNG or JPEG · drop a file here · the screen is 160 × 80, up to \(Screen.maxFrames) frames").font(.system(size: 12)).foregroundStyle(SS.n300)
                                 Spacer()
                                 if let u = editor.url { Text(u.lastPathComponent).font(.system(size: 12)).foregroundStyle(SS.n400).lineLimit(1) }
+                                GhostButton(title: "Restore default animation", icon: "arrow.counterclockwise", enabled: !model.busy) {
+                                    let id = model.info.map { Int($0.deviceId) } ?? 84
+                                    if let u = Bundle.main.url(forResource: "factory-k2-\(id)", withExtension: "gif") ?? Bundle.main.url(forResource: "factory-k2-84", withExtension: "gif") {
+                                        load(u, ScreenOrigin(name: String(localized: "Factory animation"), kind: .file, url: nil))
+                                    }
+                                }
                             }
                             if !editor.isEmpty {
                                 ScreenEditorView(state: editor)
@@ -148,7 +154,7 @@ struct ScreenPage: View {
         let frames = editor.encode(viewport: vp)
         let images = editor.selectedImages(), crop = editor.crop(viewport: vp), interval = editor.intervalMs, o = origin
         Task {
-            guard await model.uploadScreen(frames: frames) else { return }
+            guard await model.uploadScreen(frames: frames, intervalMs: interval) else { return }
             let rec = ScreenRecord(name: o.name.isEmpty ? (editor.url?.lastPathComponent ?? "Animation") : o.name, source: o.kind.rawValue, url: o.url, date: Date(), frames: frames.count, intervalMs: interval)
             do { try ScreenStore.save(images: images, crop: crop, intervalMs: interval, record: rec) } catch { model.lastError = "\(error)" }
             current = ScreenStore.current(deviceId: model.info?.deviceId)
@@ -348,7 +354,7 @@ struct SettingsPage: View {
             PageHeader(title: "Settings", back: back)
             HStack(alignment: .top, spacing: 0) {
                 VStack(alignment: .leading, spacing: 4) {
-                    navGroup("Controller Settings", ["Firmware Update", "USB mode"])
+                    navGroup("Controller Settings", ["Firmware Update", "USB mode", "Controller Sleep Time", "Fast Swap Config", "Turbo Function"])
                     navGroup("App Settings", ["Language", "GIPHY", "Open at login", "Privileged helper"])
                     navGroup("About", [])
                     Spacer()
@@ -363,11 +369,28 @@ struct SettingsPage: View {
                 ScrollView {
                     VStack(alignment: .leading, spacing: 22) {
                         Text("Controller Settings").font(.system(size: 16, weight: .semibold)).foregroundStyle(.white)
+                            .task(id: model.connection) { await model.loadSleepTime() }
                         section("Firmware Update") { firmware }
                         section("USB mode") {
                             Text(model.connection == .none ? "Not connected." : (model.connection == .xinput ? "XInput — what games expect; the screen and trigger previews need it." : "DInput — the app talks to the pad directly, no helper needed."))
                                 .font(.system(size: 13)).foregroundStyle(.white)
                             GhostButton(title: model.connection == .xinput ? "Switch to DInput" : "Switch to XInput", icon: "arrow.left.arrow.right", enabled: model.connection != .none && !model.busy) { Task { await model.switchMode() } }
+                        }
+                        section("Controller Sleep Time") {
+                            Text("If the controller is not used for this period of time, it will enter sleep mode and can be awakened by pressing the Home button.").font(.system(size: 12)).foregroundStyle(SS.n300)
+                            DarkSelect(selection: Binding(get: { Int(model.sleepMinutes ?? 15) }, set: { v in Task { await model.setSleepTime(UInt8(v)) } }),
+                                       options: [(1, "1 min"), (5, "5 min"), (15, "15 min"), (60, "1 h"), (180, "3 h"), (0, "Never")], width: 200, disabled: model.connection == .none || model.busy)
+                            if model.connection == .dinput { Text("In DInput mode the current value cannot be read; the choice is sent as is.").font(.system(size: 11)).foregroundStyle(SS.n400) }
+                        }
+                        section("Fast Swap Config") {
+                            SwitchRow(title: "Fast swap", isOn: Binding(get: { UserDefaults.standard.bool(forKey: "quickSwitch.\(model.info?.mac ?? "")") }, set: { on in Task { await model.setQuickSwitch(on) } }))
+                                .frame(maxWidth: 420).disabled(model.connection == .none || model.busy)
+                            Text("Enable Fast Swap, then press SELECT + A / B / X / Y on the controller to switch between profiles 1 / 2 / 3 / 4. The controller does not report this switch back, so the state shown is the last one set from this Mac.").font(.system(size: 12)).foregroundStyle(SS.n300)
+                        }
+                        section("Turbo Function") {
+                            SwitchRow(title: "Turbo shortcut on the controller", isOn: Binding(get: { UserDefaults.standard.bool(forKey: "turboSwitch.\(model.info?.mac ?? "")") }, set: { on in Task { await model.setTurboSwitch(on) } }))
+                                .frame(maxWidth: 420).disabled(model.connection == .none || model.busy)
+                            Text("With it on, hold Turbo + a button to make that button auto-fire, and Turbo + Turbo to clear. Works for A/B/X/Y, LB, LT, RB, RT, the D-pad and the stick clicks. Not reported back by the controller.").font(.system(size: 12)).foregroundStyle(SS.n300)
                         }
                         Text("App Settings").font(.system(size: 16, weight: .semibold)).foregroundStyle(.white).padding(.top, 8)
                         section("Language") {

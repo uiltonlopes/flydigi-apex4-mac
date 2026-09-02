@@ -93,12 +93,13 @@ public struct ScreenUploadPlan: Sendable {
     }
 
     /// start → data… → end for one frame (`index` 1-based, `total` = number of frames in the animation).
-    public static func frameSteps(_ frame: [UInt8], index: Int, of total: Int, gifType: UInt8 = 1) -> [Step] {
+    /// `period` = frame interval in 100 ms units (SS4 sends 2; Flydigi's own library entries carry their own).
+    public static func frameSteps(_ frame: [UInt8], index: Int, of total: Int, gifType: UInt8 = 1, period: UInt8 = 2) -> [Step] {
         precondition((1...total).contains(index) && total <= Screen.maxFrames)
         var out: [Step] = []
         let n = UInt8(total), num = UInt8(index), size = frame.count
-        // A5 D0 09 01 gifType N num 02 sizeHi sizeLo crc(1..9)
-        var start: [UInt8] = [XInput.prefix, XInput.Cmd.screenStart, 0x09, 0x01, gifType, n, num, 0x02,
+        // A5 D0 09 01 gifType N num period sizeHi sizeLo crc(1..9)
+        var start: [UInt8] = [XInput.prefix, XInput.Cmd.screenStart, 0x09, 0x01, gifType, n, num, max(1, period),
                               UInt8(size >> 8), UInt8(size & 0xFF), 0, 0, 0, 0, 0]
         start[10] = start[1...9].reduce(0) { $0 &+ $1 }
         out.append(.start(frame: index, packet: start))

@@ -139,11 +139,11 @@ public final class DeviceSession: @unchecked Sendable {
     }
 
     /// Uploads LVGL frames to the LCD. XInput only (the DInput firmware path is broken, see protocol.md §6).
-    public func uploadScreen(frames: [[UInt8]], progress: ((UploadProgress) -> Void)? = nil) throws {
+    public func uploadScreen(frames: [[UInt8]], period: UInt8 = 2, progress: ((UploadProgress) -> Void)? = nil) throws {
         let total = frames.reduce(0) { $0 + $1.count }
         var sent = 0
         for (i, frame) in frames.enumerated() {
-            try uploadScreenFrame(frame, index: i + 1, of: frames.count) { bytes in
+            try uploadScreenFrame(frame, index: i + 1, of: frames.count, period: period) { bytes in
                 progress?(UploadProgress(frame: i + 1, frames: frames.count, bytesSent: sent + bytes, totalBytes: total))
             }
             sent += frame.count
@@ -152,10 +152,10 @@ public final class DeviceSession: @unchecked Sendable {
     }
 
     /// One frame (start → data → end). The helper drives uploads frame by frame through this.
-    public func uploadScreenFrame(_ frame: [UInt8], index: Int, of total: Int, progress: ((Int) -> Void)? = nil) throws {
+    public func uploadScreenFrame(_ frame: [UInt8], index: Int, of total: Int, period: UInt8 = 2, progress: ((Int) -> Void)? = nil) throws {
         guard channel == .xinput else { throw TransportError.protocolError("screen upload requires XInput mode") }
         var sent = 0
-        for step in ScreenUploadPlan.frameSteps(frame, index: index, of: total) {
+        for step in ScreenUploadPlan.frameSteps(frame, index: index, of: total, period: period) {
             try perform(step)
             if case let .data(_, offset, _) = step { sent = min(offset + Screen.chunk, frame.count); progress?(sent) }
         }
@@ -229,7 +229,27 @@ public final class DeviceSession: @unchecked Sendable {
     public func screenStatusBar() throws -> Bool { try xinputQuery(XInput.Cmd.module, [0x02], sub: 0x02)[17] == 0 }
     public func setScreenStatusBar(_ on: Bool) throws { try link.write(XInput.command(XInput.Cmd.module, 0x03, on ? 0 : 1)) }
     public func screenSleepTime() throws -> UInt8 { try xinputQuery(XInput.Cmd.module, [0x04], sub: 0x04)[17] }
-    public func setScreenSleepTime(_ t: UInt8) throws { try link.write(XInput.command(XInput.Cmd.module, 0x05, t)) }
+    /// Auto-sleep in minutes (0 = never; SS4 offers 1/5/15/60/180). XInput `A5 30 05`, DInput `05 F2 02`.
+    public func setScreenSleepTime(_ t: UInt8) throws {
+        switch channel {
+        case .xinput: try link.write(XInput.command(XInput.Cmd.module, 0x05, t))
+        case .dinput: try link.write(DInput.command(DInput.Cmd.screenInfo, 0x02, t))
+        }
+    }
+    /// "Fast swap config": SELECT + A/B/X/Y on the pad switches slots 1–4 (SS4 `EnableQuickSwitchConfig`).
+    public func setQuickSwitch(_ on: Bool) throws {
+        switch channel {
+        case .xinput: try link.write(XInput.command(0xA2, on ? 1 : 0))
+        case .dinput: try link.write(DInput.command(0xFA, 0xA2, on ? 1 : 0))
+        }
+    }
+    /// Hardware turbo switch — the pad's own "Turbo + key" shortcut (SS4 `EnableMappingSwitch`).
+    public func setTurboSwitch(_ on: Bool) throws {
+        switch channel {
+        case .xinput: try link.write(XInput.command(XInput.Cmd.subFunc, 0x06, on ? 0 : 1))   // SS4 sends !enable here
+        case .dinput: try link.write(DInput.command(DInput.Cmd.subFunc, 0x05, on ? 1 : 0))
+        }
+    }
     /// Waits for a key to be pressed on the pad (edge versus the first report seen) and returns its id.
     /// Works in both channels; in XInput it needs the captured link, so the pad is invisible to games meanwhile.
     public func captureKey(timeout: TimeInterval, ignoring: Set<ControllerKey> = [.lt, .rt]) throws -> ControllerKey? {

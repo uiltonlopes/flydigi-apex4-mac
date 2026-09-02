@@ -76,8 +76,11 @@ struct DeviceCenterPage: View {
     }
 
     private var deviceName: String {
-        model.info.flatMap { DeviceCatalog.descriptor(for: $0.deviceId)?.name } ?? "Flydigi controller"
+        if !model.nickname.isEmpty { return model.nickname }
+        return model.info.flatMap { DeviceCatalog.descriptor(for: $0.deviceId)?.name } ?? "Flydigi controller"
     }
+    @State private var renamingDevice = false
+    @State private var nicknameDraft = ""
 
     private var deviceCard: some View {
         Button { route = .home } label: {
@@ -137,6 +140,20 @@ struct DeviceCenterPage: View {
         }
         .buttonStyle(.plain)
         .help("Open the controller")
+        .contextMenu {
+            Button("Rename device…") { nicknameDraft = model.nickname; renamingDevice = true }
+            if !model.nickname.isEmpty { Button("Use the model name") { model.nickname = "" } }
+        }
+        .popover(isPresented: $renamingDevice) {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Device name").font(.system(size: 13, weight: .semibold))
+                TextField("Nickname", text: $nicknameDraft).textFieldStyle(.roundedBorder).frame(width: 240)
+                    .onSubmit { model.nickname = nicknameDraft; renamingDevice = false }
+                Text("Shown only in this app (Space Station keeps it local too).").font(.system(size: 11)).foregroundStyle(.secondary)
+                HStack { Spacer(); Button("Save") { model.nickname = nicknameDraft; renamingDevice = false }.keyboardShortcut(.defaultAction) }
+            }
+            .padding(14)
+        }
     }
 
     private var emptyCard: some View {

@@ -115,6 +115,26 @@ public struct GamepadConfig: Sendable, Hashable {
     // MARK: Fields
 
     public private(set) var raw: [UInt8]
+    /// Puts every modelled setting back to Flydigi's factory values (SS4 "Restore default configuration"):
+    /// identity mappings, default stick curve (k2 point 15/23), no dead zones, full trigger travel, plain
+    /// triggers, gyro off, vibration on at 100 %, no macros. The title is kept.
+    public mutating func resetToFactory() {
+        for k in keys.keys { keys[k] = .identity }
+        for s in [\GamepadConfig.leftStick, \GamepadConfig.rightStick] { self[keyPath: s].applyCurvePreset(.default) }
+        for t in [\GamepadConfig.leftTrigger, \GamepadConfig.rightTrigger] {
+            self[keyPath: t].kind = .normal; self[keyPath: t].zero = 0; self[keyPath: t].end = 255
+            self[keyPath: t].p1x = 0; self[keyPath: t].p1y = 0; self[keyPath: t].p2x = 255; self[keyPath: t].p2y = 255
+            self[keyPath: t].adapterType = 0
+            var p = [UInt8](repeating: 0xFF, count: 20); p[0] = 0; p[1] = 0; p[2] = 10; p[3] = 50; p[4] = 100; p[5] = 1; p[6] = 255; p[7] = 70; p[8] = 0; p[9] = 255
+            for i in 10..<15 { p[i] = 0 }
+            self[keyPath: t].adapterParams = p
+        }
+        motion.mapType = .off; motion.enableKey1 = 0xFF; motion.enableKey2 = 0xFF; motion.enableType = .click; motion.deadZone = 4; motion.sensitivity = 25; motion.useMode = .fps
+        vibration.enabled = true
+        vibration.left = .init(enabled: true, min: 0, max: 100, scale: 100); vibration.right = .init(enabled: true, min: 0, max: 100, scale: 100)
+        macros = []
+    }
+
     public var protoVersion: UInt16        // LE at 0..1 (observed 0x0300 = "3.0")
     public var packageCount: UInt8         // at 2 (79)
     public var dataVersion: UInt16         // at 225..226 — the "random id" used for save-to-flash (big-endian, like `A5 50 02`)

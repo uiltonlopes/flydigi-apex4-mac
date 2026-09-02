@@ -84,6 +84,8 @@ final class ProfileStore {
     }
 
     func revert() { draft = slots.first { $0.index == activeSlot }?.config }
+    /// Factory values in the draft (apply to write them to the pad).
+    func resetToFactory() { draft?.resetToFactory() }
 
     /// Reflect a slot the game-profile watcher activated without changing the remembered choice.
     func showTemporary(slot: UInt8) {
