@@ -76,10 +76,6 @@ final class LiveInput {
         if let pad {
             let names = pad.physicalInputProfile.elements.keys.sorted().joined(separator: ", ")
             Logger(subsystem: "com.uiltonlopes.apex4", category: "live").notice("GameController pad \(pad.vendorName ?? "?", privacy: .public) [\(pad.productCategory, privacy: .public)] elements: \(names, privacy: .public)")
-            // Also on disk for debugging (Console filtering is unreliable for unsigned dev builds).
-            let dir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Logs/Apex4", isDirectory: true)
-            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
-            try? "\(Date()) \(pad.vendorName ?? "?") [\(pad.productCategory)]\n\(names)\n".write(to: dir.appendingPathComponent("gamecontroller.txt"), atomically: true, encoding: .utf8)
         }
         guard let gp = pad?.extendedGamepad else { return }
         gp.valueChangedHandler = { [weak self] gamepad, _ in
