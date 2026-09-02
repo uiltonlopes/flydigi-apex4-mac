@@ -2,6 +2,7 @@
 
 ## Unreleased
 - App renamed **Space Station for Mac** (repo `flydigi-space-station-mac`), Space Station's app icon.
+- Lighting: mode list now matches Space Station's for the Apex 4 (Default, Steady, Breathing, Gradient, Off — no Flow/Feedback on this model), with per-mode colour limits (Steady 1, Gradient 2–5, Breathing up to 5).
 - Welcome / device-center screen with the connected model's picture, connection and battery.
 - Battery read through GameController when macOS provides it (no USB borrow), device-info byte otherwise.
 - Screen editor: drag / pinch / scroll to frame the image in a 2:1 viewport, Fit / Fill, GIF trimming with
