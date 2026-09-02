@@ -19,6 +19,8 @@ final class LiveInput {
     var connected = false
     struct BatteryInfo: Equatable { var level: Float; var charging: Bool }
     var battery: BatteryInfo?
+    /// Input reports per second seen on the raw DInput link (SS4's polling-rate meter). nil while not monitoring.
+    var rawReportRate: Int?
     private var batteryTimer: Timer?
 
     /// Raw state from the DInput vendor interface (paddles, Fn, Home — things the system driver never sees).
@@ -37,15 +39,21 @@ final class LiveInput {
 
     /// Start/stop reading the vendor interface directly. Only possible in DInput mode; harmless to call twice.
     func setRawMonitoring(_ on: Bool) {
-        if !on { rawTask?.cancel(); rawTask = nil; raw = nil; return }
+        if !on { rawTask?.cancel(); rawTask = nil; raw = nil; rawReportRate = nil; return }
         guard rawTask == nil else { return }
         rawTask = Task.detached(priority: .utility) { [weak self] in
             guard let link = try? HIDLink() else { return }
             defer { link.close() }
             var last: ControllerState?
             var connectedSeen = false
+            var count = 0, windowStart = Date()
             while !Task.isCancelled {
                 let state: ControllerState? = try? link.waitForReport(timeout: 0.25) { (r: [UInt8]) -> ControllerState? in ControllerState(dinputReport: r) }
+                if state != nil { count += 1 }
+                if Date().timeIntervalSince(windowStart) >= 1 {
+                    let rate = count; count = 0; windowStart = Date()
+                    await MainActor.run { [weak self] in self?.rawReportRate = rate }
+                }
                 guard let state else { continue }
                 if state != last || !connectedSeen {
                     last = state; connectedSeen = true

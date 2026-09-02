@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Sticks: report-rate meter (DInput) and a circularity test with coverage and average error, like Space Station's advanced test page.
 - Profiles: local library ("Saved profiles…" in the profile menu) — save the current profile, load into the editor, rename, duplicate, reorder, delete, export/import as `.fdgprofile` (the raw 790-byte blob). SS4 share codes are not interoperable yet (they carry the protobuf bean, see docs/ss4-gap-analysis.md).
 - Screen: "Factory animations" tab with the animation each Apex 4 edition ships with (yours is marked).
 - Parity batch from the gap analysis: GIF frame interval is now really sent to the pad (start packet period); Settings › Controller gained Controller Sleep Time (1 min…3 h / never), Fast Swap Config (SELECT + A/B/X/Y) and the Turbo hardware shortcut switch; profile menu "Restore default configuration…"; Screen "Restore default animation"; device nickname (right-click the card); second gyro activation key.

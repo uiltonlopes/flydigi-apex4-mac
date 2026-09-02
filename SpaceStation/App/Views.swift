@@ -797,6 +797,7 @@ struct JoystickTab: View {
     @Environment(ControllerModel.self) private var model
     @State private var side: Side = .left
     @State private var calibrating = false
+    @State private var circularity = false
 
     private var stick: GamepadConfig.Stick { profiles.draft![stick: side] }
     private func set(_ f: (inout GamepadConfig.Stick) -> Void) { var s = stick; f(&s); profiles.draft?[stick: side] = s }
@@ -839,6 +840,9 @@ struct JoystickTab: View {
                     Text("Live").font(.system(size: 13)).foregroundStyle(SS.n300)
                     StickGauge(title: side == .left ? "Left stick" : "Right stick", stick: liveStick, config: stick)
                     if !live.connected { Text("No game controller visible to the system.").font(.system(size: 11)).foregroundStyle(SS.n400) }
+                    if let hz = live.rawReportRate { Text("Report rate \(hz) Hz").font(.system(size: 11).monospacedDigit()).foregroundStyle(SS.n400) }
+                    else if model.connection == .xinput { Text("Report rate: available in DInput mode").font(.system(size: 11)).foregroundStyle(SS.n400) }
+                    GhostButton(title: "Circularity test…", icon: "circle.dotted", enabled: live.connected) { circularity = true }
                 }
             }
             HDivider().padding(.vertical, 4)
@@ -854,6 +858,7 @@ struct JoystickTab: View {
         }
         .frame(maxWidth: .infinity)
         .sheet(isPresented: $calibrating) { CalibrationWizard().environment(model).environment(profiles).environment(live) }
+        .sheet(isPresented: $circularity) { CircularityTestSheet(side: side).environment(live) }
     }
 }
 

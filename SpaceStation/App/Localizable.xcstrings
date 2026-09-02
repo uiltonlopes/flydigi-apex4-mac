@@ -291,6 +291,16 @@
         }
       }
     },
+    "Average error": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Erro médio"
+          }
+        }
+      }
+    },
     "Back to normal now": {
       "localizations": {
         "pt-BR": {
@@ -561,6 +571,26 @@
         }
       }
     },
+    "Circularity test": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teste de circularidade"
+          }
+        }
+      }
+    },
+    "Circularity test…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teste de circularidade…"
+          }
+        }
+      }
+    },
     "Clear all": {
       "localizations": {
         "pt-BR": {
@@ -747,6 +777,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Preset do controle"
+          }
+        }
+      }
+    },
+    "Coverage": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cobertura"
           }
         }
       }
@@ -1181,6 +1221,16 @@
         }
       }
     },
+    "Excellent — the path is a circle.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Excelente — o traço é um círculo."
+          }
+        }
+      }
+    },
     "Export…": {
       "localizations": {
         "pt-BR": {
@@ -1581,6 +1631,16 @@
         }
       }
     },
+    "Good. Small deviations are normal.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bom. Pequenos desvios são normais."
+          }
+        }
+      }
+    },
     "Gradient": {
       "localizations": {
         "pt-BR": {
@@ -1851,6 +1911,16 @@
         }
       }
     },
+    "Keep rolling until coverage passes 50 %.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continue girando até a cobertura passar de 50 %."
+          }
+        }
+      }
+    },
     "Keep the controller still with the sticks and triggers released, then press Start.": {
       "localizations": {
         "pt-BR": {
@@ -1877,6 +1947,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Idioma"
+          }
+        }
+      }
+    },
+    "Large deviation: try calibrating the sticks.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desvio grande: experimente calibrar os analógicos."
           }
         }
       }
@@ -2217,6 +2297,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Acompanhar o curso"
+          }
+        }
+      }
+    },
+    "Max": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Máximo"
+          }
+        }
+      }
+    },
+    "Min (covered)": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mínimo (coberto)"
           }
         }
       }
@@ -2951,6 +3051,16 @@
         }
       }
     },
+    "Push the stick to its edge and roll it around slowly, two or three full turns. The outer trace is what the controller reports; the dashed circle is a perfect 100 %.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Leve o analógico até a borda e gire devagar, duas ou três voltas completas. O traço externo é o que o controle reporta; o círculo tracejado é um 100 % perfeito."
+          }
+        }
+      }
+    },
     "Quick": {
       "localizations": {
         "pt-BR": {
@@ -3157,6 +3267,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Repetir enquanto segura"
+          }
+        }
+      }
+    },
+    "Report rate %lld Hz": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taxa de relatórios %lld Hz"
+          }
+        }
+      }
+    },
+    "Report rate: available in DInput mode": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Taxa de relatórios: disponível no modo DInput"
+          }
+        }
+      }
+    },
+    "Reset": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zerar"
           }
         }
       }
