@@ -12,10 +12,10 @@ struct MacrosPage: View {
 
     var body: some View {
         if profiles.draft == nil {
-            ContentUnavailableView("No profile loaded", systemImage: "list.number", description: Text("Connect the controller and press Refresh."))
+            ContentUnavailableView("No profile loaded", systemImage: "list.number", description: Text("Connect the controller and press Refresh.")).frame(maxWidth: .infinity, maxHeight: .infinity).background(SS.n800)
         } else {
-            HSplitView {
-                macroList.frame(minWidth: 220, idealWidth: 260, maxWidth: 320)
+            HStack(spacing: 0) {
+                macroList.frame(width: 280).background(SS.n700)
                 Group {
                     if let i = selected, profiles.draft?.macros[safe: i] != nil {
                         MacroEditor(index: i)
@@ -43,9 +43,11 @@ struct MacrosPage: View {
                         }
                     }
                     .tag(i)
+                    .listRowBackground(selected == i ? SS.n500 : Color.clear)
                     .contextMenu { Button("Delete", role: .destructive) { profiles.removeMacro(at: i) } }
                 }
             }
+            .listStyle(.plain).scrollContentBackground(.hidden)
             Divider()
             HStack {
                 Menu {
@@ -140,8 +142,9 @@ struct MacroEditor: View {
                     Text("Times are the delay since the previous step (\(profiles.macroTick) ms resolution). Drag rows to reorder. Recording captures presses from the pad itself — enable the live readout in Sticks & Triggers if nothing arrives.")
                 }
             }
-            .formStyle(.grouped)
+            .formStyle(.grouped).scrollContentBackground(.hidden)
         }
+        .background(SS.n800)
         .onChange(of: live.pressedKeys) { old, new in
             guard recorder.isRecording else { return }
             for a in recorder.consume(old: old, new: new) { append(a) }

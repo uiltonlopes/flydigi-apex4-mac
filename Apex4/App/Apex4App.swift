@@ -28,8 +28,10 @@ struct Apex4App: App {
                 .environment(model)
                 .environment(model.profiles)
                 .environment(live)
-                .frame(minWidth: 900, minHeight: 600)
+                .frame(minWidth: 1100, minHeight: 720)
         }
+        .windowStyle(.hiddenTitleBar)
+        .defaultSize(width: 1280, height: 820)
         .commands {
             CommandGroup(after: .saveItem) {
                 Button("Apply to Controller") { Task { await model.profiles.apply() } }

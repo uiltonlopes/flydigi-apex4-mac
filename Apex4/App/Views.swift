@@ -1,231 +1,309 @@
 import SwiftUI
-import UniformTypeIdentifiers
 import FlydigiKit
 import FlydigiHelperProtocol
 import FlydigiTransport
 
-// MARK: - Window shell (docs/design.md §2)
+// MARK: - Routes
+
+enum Route: Hashable { case home, screen, adaptiveTrigger, settings }
+
+enum HomeTab: String, CaseIterable, Identifiable {
+    case common, button, joystick, gyro, trigger, macros
+    var id: String { rawValue }
+    var title: String {
+        switch self { case .common: "Common"; case .button: "Button"; case .joystick: "Joystick"; case .gyro: "Gyro"; case .trigger: "Trigger"; case .macros: "Macros" }
+    }
+    var symbol: String {
+        switch self { case .common: "slider.horizontal.3"; case .button: "circle.grid.2x2"; case .joystick: "dot.circle.and.hand.point.up.left.fill"; case .gyro: "gyroscope"; case .trigger: "rectangle.portrait.bottomhalf.filled"; case .macros: "list.number" }
+    }
+}
+
+// MARK: - Window shell (SS4 layout: 248 pt sidebar + main)
 
 struct MainWindow: View {
     @Environment(ControllerModel.self) private var model
     @Environment(ProfileStore.self) private var profiles
-    @State private var section: AppSection? = .status
-    @State private var showInspector = false
+    @State private var route: Route = .home
+    @State private var tab: HomeTab = .common
     @State private var pendingSlot: UInt8?
 
     var body: some View {
-        NavigationSplitView {
-            List(AppSection.allCases, selection: $section) { s in
-                Label(s.title, systemImage: s.symbol).tag(s)
-            }
-            .navigationSplitViewColumnWidth(min: 200, ideal: 220)
-            .safeAreaInset(edge: .bottom) { ControllerStatusFooter() }
-        } detail: {
-            ScrollView {
-                switch section ?? .status {
-                case .status: StatusPage()
-                case .profiles: ProfilesPage(showInspector: $showInspector)
-                case .sticks: SticksPage()
-                case .motion: MotionPage()
-                case .macros: MacrosPage()
-                case .lighting: LightingPage()
-                case .screen: ScreenPage()
+        HStack(spacing: 0) {
+            Sidebar(route: $route)
+            ZStack {
+                SS.n800
+                switch route {
+                case .home: HomeView(tab: $tab, pendingSlot: $pendingSlot)
+                case .screen: ScreenPage { route = .home }
+                case .adaptiveTrigger: AdaptiveTriggerPage { route = .home }
+                case .settings: SettingsPage { route = .home }
                 }
             }
-            .hardScrollEdge()
-            .navigationTitle(section?.title ?? "Apex 4")
-            .navigationSubtitle(subtitle)
-            .inspector(isPresented: $showInspector) { InspectorHost(section: section ?? .status).inspectorColumnWidth(min: 260, ideal: 300) }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         }
-        .toolbar { MainToolbar(showInspector: $showInspector, pendingSlot: $pendingSlot) }
+        .background(SS.n800)
+        .ignoresSafeArea()
+        .preferredColorScheme(.dark)
         .confirmationDialog("Discard unsaved changes to this profile?", isPresented: Binding(get: { pendingSlot != nil }, set: { if !$0 { pendingSlot = nil } })) {
             Button("Discard and Switch", role: .destructive) { if let s = pendingSlot { profiles.revert(); profiles.select(slot: s) }; pendingSlot = nil }
             Button("Cancel", role: .cancel) { pendingSlot = nil }
         }
         .overlay(alignment: .bottom) {
             if let e = model.lastError ?? profiles.lastError {
-                Label(e, systemImage: "exclamationmark.triangle.fill").font(.callout).padding(10)
-                    .background(.background.secondary, in: .rect(cornerRadius: 10)).padding()
+                Label(e, systemImage: "exclamationmark.triangle.fill").font(.system(size: 12)).foregroundStyle(.white)
+                    .padding(.horizontal, 14).padding(.vertical, 10)
+                    .background(SS.n500, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                    .padding(.bottom, 16)
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
         .task(id: model.connection) { await profiles.loadAll() }
     }
+}
 
-    private var subtitle: String {
-        guard model.connection != .none else { return "Not connected" }
-        var parts = ["Slot \(profiles.activeSlot + 1)"]
-        if let t = profiles.draft?.title, !t.isEmpty { parts.append("“\(t)”") }
-        if profiles.isDirty { parts.append("unsaved changes") }
-        return parts.joined(separator: " · ")
+// MARK: - Sidebar
+
+struct Sidebar: View {
+    @Environment(ControllerModel.self) private var model
+    @Environment(ProfileStore.self) private var profiles
+    @Binding var route: Route
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            // Title row sits to the right of the traffic lights.
+            HStack(spacing: 8) {
+                Image(systemName: "gamecontroller.fill").font(.system(size: 13)).foregroundStyle(SS.brand500)
+                Text("Apex 4 for Mac").font(.system(size: 13)).foregroundStyle(SS.n300)
+            }
+            .padding(.leading, 78).frame(height: 36).padding(.top, 8)
+
+            deviceCard.padding(.horizontal, 12).padding(.top, 14)
+
+            infoList.padding(.horizontal, 12).padding(.top, 14)
+
+            Spacer()
+
+            VStack(spacing: 8) {
+                HStack(spacing: 8) {
+                    RailButton(title: "Adaptive Trigger", icon: "slider.horizontal.below.square.and.square.filled", active: route == .adaptiveTrigger) { route = .adaptiveTrigger }
+                    RailButton(title: "Screen", icon: "photo.tv", active: route == .screen) { route = .screen }
+                }
+                RailButton(title: "Settings", icon: "gearshape", active: route == .settings, wide: true) { route = .settings }
+            }
+            .padding(12)
+        }
+        .frame(width: SS.sidebarWidth)
+        .frame(maxHeight: .infinity)
+        .background(SS.n700)
+    }
+
+    private var connected: Bool { model.connection != .none }
+    private var deviceName: String {
+        model.info.flatMap { DeviceCatalog.descriptor(for: $0.deviceId)?.name } ?? "Flydigi Apex 4"
+    }
+
+    private var deviceCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text("My Device").font(.system(size: 12)).foregroundStyle(SS.n300)
+                Spacer()
+                if connected {
+                    Image(systemName: model.info?.wired == false ? "dot.radiowaves.left.and.right" : "cable.connector")
+                        .font(.system(size: 11)).foregroundStyle(SS.n400)
+                    Image(systemName: "battery.100percent").font(.system(size: 11)).foregroundStyle(SS.n400)
+                }
+            }
+            HStack(spacing: 8) {
+                Circle().fill(connected ? SS.green : SS.n400).frame(width: 7, height: 7)
+                Text(connected ? deviceName : "Not connected").font(.system(size: 13, weight: .medium)).foregroundStyle(.white).lineLimit(1)
+                Spacer()
+                Menu {
+                    Button("Refresh") { Task { await model.refresh(); await profiles.loadAll() } }
+                    Button(model.connection == .xinput ? "Switch to DInput mode" : "Switch to XInput mode") { Task { await model.switchMode() } }.disabled(!connected)
+                    Divider()
+                    Button("Open Settings…") { route = .settings }
+                } label: {
+                    Image(systemName: "chevron.down").font(.system(size: 11, weight: .semibold)).foregroundStyle(SS.n300).frame(width: 20, height: 20).contentShape(Rectangle())
+                }
+                .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden)
+            }
+        }
+        .padding(12)
+        .background(SS.n800, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(route == .home ? SS.brand500.opacity(0.7) : SS.n500))
+        .contentShape(Rectangle())
+        .onTapGesture { route = .home }
+    }
+
+    private var infoList: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            row("Mode", model.connection == .none ? "—" : (model.connection == .xinput ? "XInput" : "DInput"))
+            row("Link", model.info == nil ? "—" : (model.info!.wired ? "USB cable" : "2.4 GHz receiver"))
+            row("Firmware", model.info?.firmware ?? "—")
+            row("Helper", model.helperInstalled ? "Installed" : "Not installed")
+            if let d = profiles.draft {
+                row("Profile", "Slot \(profiles.activeSlot + 1)\(d.title.isEmpty ? "" : " · \(d.title)")")
+            }
+        }
+    }
+    private func row(_ k: String, _ v: String) -> some View {
+        HStack {
+            Text(k).font(.system(size: 12)).foregroundStyle(SS.n400)
+            Spacer()
+            Text(v).font(.system(size: 12)).foregroundStyle(SS.n300).lineLimit(1)
+        }
+        .frame(height: 26)
     }
 }
 
-struct MainToolbar: ToolbarContent {
+// MARK: - Home: hero + tabs
+
+struct HomeView: View {
     @Environment(ControllerModel.self) private var model
     @Environment(ProfileStore.self) private var profiles
-    @Binding var showInspector: Bool
+    @Binding var tab: HomeTab
     @Binding var pendingSlot: UInt8?
 
-    var body: some ToolbarContent {
-        ToolbarItem(placement: .principal) {
-            Picker("Profile slot", selection: Binding(get: { profiles.activeSlot }, set: { new in
-                if profiles.isDirty { pendingSlot = new } else { profiles.select(slot: new) }
-            })) {
-                ForEach(0..<4, id: \.self) { i in Text("\(i + 1)").tag(UInt8(i)) }
-            }
-            .pickerStyle(.segmented).controlSize(.regular)
-            .disabled(profiles.slots.isEmpty || profiles.busy)
-            .help("On-board profile slot")
-        }
-        ToolbarItemGroup(placement: .secondaryAction) {
-            Button { Task { await model.refresh(); await profiles.loadAll() } } label: { Label("Refresh", systemImage: "arrow.trianglehead.2.clockwise") }
-                .disabled(model.busy || profiles.busy)
-            Button { profiles.revert() } label: { Label("Revert", systemImage: "arrow.uturn.backward") }
-                .disabled(!profiles.isDirty)
-        }
-        ToolbarItem(placement: .primaryAction) {
-            Button { Task { await profiles.apply() } } label: { Label("Apply to Controller", systemImage: "checkmark.circle.fill") }
-                .prominentGlassButton()
-                .disabled(!profiles.isDirty || profiles.busy)
-                .help("Write this profile to the controller and save it (⌘S)")
-        }
-        ToolbarItem(placement: .primaryAction) {
-            Button { showInspector.toggle() } label: { Label("Inspector", systemImage: "sidebar.trailing") }
-        }
-    }
-}
-
-struct ControllerStatusFooter: View {
-    @Environment(ControllerModel.self) private var model
     var body: some View {
-        HStack(spacing: 8) {
-            Image(systemName: model.connection == .none ? "gamecontroller" : "gamecontroller.fill")
-                .symbolRenderingMode(.hierarchical)
-                .foregroundStyle(model.connection == .none ? AnyShapeStyle(.secondary) : AnyShapeStyle(Color.accentColor))
-            VStack(alignment: .leading, spacing: 1) {
-                Text(model.connection == .none ? "Not connected" : (model.info.flatMap { DeviceCatalog.descriptor(for: $0.deviceId)?.name } ?? "Flydigi controller"))
-                    .font(.callout.weight(.medium)).lineLimit(1)
-                Text(subtitle).font(.caption).foregroundStyle(.secondary)
-            }
-            Spacer()
-            if model.busy { ProgressView().controlSize(.mini) }
-        }
-        .padding(.horizontal, 12).padding(.vertical, 8)
-        .overlay(alignment: .top) { Divider() }
-    }
-    private var subtitle: String {
-        switch model.connection {
-        case .none: "Plug in or power on"
-        case .dinput: model.info?.wired == false ? "2.4 GHz · DInput" : "USB · DInput"
-        case .xinput: model.info?.wired == false ? "2.4 GHz · XInput" : "USB · XInput"
-        }
-    }
-}
-
-struct ComingSoon: View {
-    let section: AppSection; let note: String
-    var body: some View {
-        ContentUnavailableView { Label(section.title, systemImage: section.symbol) } description: { Text(note) }
-            .frame(maxWidth: .infinity, minHeight: 400)
-    }
-}
-
-// MARK: - Status
-
-struct StatusPage: View {
-    @Environment(ControllerModel.self) private var model
-    var body: some View {
-        VStack(spacing: 20) {
-            StageView(height: 320) {
-                Apex4Hero().frame(height: 250).offset(y: 6)
-            }
-            Grid(horizontalSpacing: 12, verticalSpacing: 12) {
-                GridRow {
-                    PropertyCard(title: "Connection", systemImage: "cable.connector") {
-                        switch model.connection {
-                        case .none: Text("Not connected").foregroundStyle(.secondary)
-                        case .dinput: Text("DInput · talking to the pad directly")
-                        case .xinput: Text("XInput · via the privileged helper")
-                        }
-                        Text(model.connection == .none ? "Plug the controller in over USB, or use the 2.4 GHz receiver." : "Ready. Changes apply live and are saved on the pad.")
-                            .font(.caption).foregroundStyle(.secondary)
-                    }
-                    PropertyCard(title: "Model", systemImage: "gamecontroller") {
-                        if let i = model.info {
-                            Text(DeviceCatalog.descriptor(for: i.deviceId)?.name ?? "Flydigi controller (id \(i.deviceId))")
-                            Text("Firmware \(i.firmware) · MAC \(i.mac)").font(.caption).foregroundStyle(.secondary)
-                        } else {
-                            Text("—").foregroundStyle(.secondary)
-                        }
-                    }
+        GeometryReader { g in
+            VStack(spacing: 0) {
+                HeroView(pendingSlot: $pendingSlot) { key in
+                    profiles.selectedKey = key
+                    withAnimation(.easeOut(duration: 0.18)) { tab = .button }
                 }
-                GridRow {
-                    PropertyCard(title: "Link", systemImage: model.info?.wired == false ? "dot.radiowaves.left.and.right" : "cable.connector") {
-                        if let i = model.info {
-                            Text(i.wired ? "USB cable" : "2.4 GHz receiver")
-                            Text(i.wired ? "Everything is available, including screen uploads." : "Screen uploads need the cable.").font(.caption).foregroundStyle(.secondary)
-                        } else {
-                            Text("—").foregroundStyle(.secondary)
+                .frame(height: max(300, min(460, g.size.height * 0.48)))
+
+                TabBarView(selection: $tab, tabs: HomeTab.allCases.map { ($0, $0.title, $0.symbol) })
+
+                if tab == .macros {
+                    MacrosPage().frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ScrollView {
+                        Group {
+                            if profiles.draft == nil && tab != .common {
+                                noProfile
+                            } else {
+                                switch tab {
+                                case .common: CommonTab()
+                                case .button: ButtonTab(tab: $tab)
+                                case .joystick: JoystickTab()
+                                case .gyro: GyroTab()
+                                case .trigger: TriggerTab()
+                                case .macros: EmptyView()
+                                }
+                            }
                         }
-                    }
-                    PropertyCard(title: "USB mode", systemImage: "arrow.left.arrow.right") {
-                        Button("Switch XInput ⇄ DInput") { Task { await model.switchMode() } }.disabled(model.connection == .none || model.busy)
-                        Text("XInput is what games expect and what the screen needs; DInput lets the app talk without the helper.").font(.caption).foregroundStyle(.secondary)
+                        .padding(.horizontal, 36).padding(.vertical, 32)
+                        .frame(maxWidth: 1100)
+                        .frame(maxWidth: .infinity)
                     }
                 }
             }
-            .frame(maxWidth: 820)
-            .padding(.horizontal)
         }
-        .padding(.bottom)
+        .background(SS.n800)
+    }
+
+    private var noProfile: some View {
+        VStack(spacing: 10) {
+            Image(systemName: "gamecontroller").font(.system(size: 28)).foregroundStyle(SS.n400)
+            Text(model.connection == .none ? "Connect the controller to edit its profiles." : "Loading profiles…").font(.system(size: 13)).foregroundStyle(SS.n300)
+        }
+        .frame(maxWidth: .infinity, minHeight: 160)
     }
 }
 
-// MARK: - Profiles & Buttons
-
-struct ProfilesPage: View {
+struct HeroView: View {
+    @Environment(ControllerModel.self) private var model
     @Environment(ProfileStore.self) private var profiles
-    @Binding var showInspector: Bool
+    @Binding var pendingSlot: UInt8?
+    let onSelect: (ControllerKey) -> Void
+    @State private var renaming = false
 
     var body: some View {
-        VStack(spacing: 16) {
-            StageView(height: 380) {
+        GeometryReader { g in
+            ZStack {
+                SS.n900
+                // Blue glow rising from the bottom, like SS4's `.equipe-light-bg`.
+                Ellipse().fill(SS.brand.opacity(0.55)).frame(width: g.size.width * 0.9, height: g.size.height * 0.9)
+                    .blur(radius: 90).offset(y: g.size.height * 0.55)
                 ZStack {
                     Apex4Wireframe()
-                    HotspotLayer(showInspector: $showInspector).aspectRatio(Apex4Render.canvas, contentMode: .fit)
+                    HeroHotspots(onSelect: onSelect).aspectRatio(Apex4Render.canvas, contentMode: .fit)
                 }
-                .frame(height: 350)
+                .frame(height: g.size.height * 0.86)
+                .offset(y: g.size.height * 0.04)
+
+                controls.padding(20)
             }
-            if let draft = profiles.draft {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text("Profile name").font(.headline).foregroundStyle(.secondary)
-                        TextField("Unnamed profile", text: Binding(get: { draft.title }, set: { profiles.draft?.title = String($0.prefix(10)) }))
-                            .textFieldStyle(.roundedBorder).frame(maxWidth: 260)
-                        Spacer()
-                        Text("\(remapped(draft)) remapped · \(draft.macros.count) macros").font(.caption).foregroundStyle(.secondary)
-                    }
-                    MappingTable(config: draft, selected: Binding(get: { profiles.selectedKey }, set: { profiles.selectedKey = $0; if $0 != nil { showInspector = true } }))
-                        .frame(minHeight: 320)
-                }
-                .padding(.horizontal)
-            } else {
-                ContentUnavailableView("No profiles loaded", systemImage: "square.grid.2x2", description: Text("Connect the controller and press Refresh."))
-                    .frame(minHeight: 200)
-            }
+            .clipped()
         }
-        .padding(.bottom)
     }
 
-    private func remapped(_ c: GamepadConfig) -> Int { c.keys.values.filter { if case .identity = $0 { false } else { true } }.count }
+    private var controls: some View {
+        VStack {
+            HStack(spacing: 8) {
+                Spacer()
+                IconPill(icon: "arrow.trianglehead.2.clockwise", help: "Read everything again from the controller", enabled: !model.busy && !profiles.busy) {
+                    Task { await model.refresh(); await profiles.loadAll() }
+                }
+                if profiles.isDirty {
+                    IconPill(icon: "arrow.uturn.backward", help: "Revert unsaved changes (⌘⇧Z)") { profiles.revert() }
+                    PrimaryButton(title: "Apply", icon: "checkmark", enabled: !profiles.busy) { Task { await profiles.apply() } }
+                        .help("Write this profile to the controller and save it (⌘S)")
+                }
+                profileMenu
+            }
+            Spacer()
+        }
+    }
+
+    private var profileMenu: some View {
+        Menu {
+            ForEach(profiles.slots) { s in
+                Button {
+                    if profiles.isDirty { pendingSlot = s.index } else { profiles.select(slot: s.index) }
+                } label: {
+                    let name = s.config.title.isEmpty ? "Slot \(s.index + 1)" : "\(s.index + 1) · \(s.config.title)"
+                    if s.index == profiles.activeSlot { Label(name, systemImage: "checkmark") } else { Text(name) }
+                }
+            }
+            Divider()
+            Button("Rename profile…") { renaming = true }.disabled(profiles.draft == nil)
+        } label: {
+            HStack(spacing: 8) {
+                Text(profileTitle).font(.system(size: 13, weight: .medium)).foregroundStyle(.white).lineLimit(1)
+                Image(systemName: "chevron.down").font(.system(size: 10, weight: .semibold)).foregroundStyle(SS.n300)
+            }
+            .padding(.horizontal, 12).frame(height: 34)
+            .background(SS.n700.opacity(0.9), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(SS.n500))
+            .contentShape(Rectangle())
+        }
+        .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden)
+        .disabled(profiles.slots.isEmpty)
+        .popover(isPresented: $renaming, arrowEdge: .bottom) {
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Profile name (up to 10 characters)").font(.system(size: 12)).foregroundStyle(.secondary)
+                TextField("Unnamed", text: Binding(get: { profiles.draft?.title ?? "" }, set: { profiles.draft?.title = String($0.prefix(10)) }))
+                    .textFieldStyle(.roundedBorder).frame(width: 220)
+                    .onSubmit { renaming = false }
+            }
+            .padding(14)
+        }
+    }
+
+    private var profileTitle: String {
+        guard profiles.draft != nil else { return "No profile" }
+        let t = profiles.draft?.title ?? ""
+        return t.isEmpty ? "Slot \(profiles.activeSlot + 1)" : t
+    }
 }
 
-/// Button hotspots floating over the stage — the one place with custom glass (docs/design.md §5).
-/// Geometry is Space Station's 508 × 421 canvas, scaled to whatever size the layer gets.
-struct HotspotLayer: View {
+/// Key chips on the hero, SS4 geometry and look (dark fill, grey stroke; blue when selected).
+struct HeroHotspots: View {
     @Environment(ProfileStore.self) private var profiles
     @Environment(LiveInput.self) private var live
-    @Binding var showInspector: Bool
+    let onSelect: (ControllerKey) -> Void
 
     var body: some View {
         GeometryReader { g in
@@ -233,15 +311,11 @@ struct HotspotLayer: View {
             ZStack {
                 ForEach(Apex4Render.stickWells.indices, id: \.self) { i in
                     let r = Apex4Render.stickWells[i]
-                    Circle().strokeBorder(.white.opacity(0.14), lineWidth: 1)
+                    Circle().strokeBorder(.white.opacity(0.12), lineWidth: 1)
                         .frame(width: r.width * s, height: r.height * s)
                         .position(x: r.midX * s, y: r.midY * s)
                 }
-                if #available(macOS 26, *) {
-                    GlassEffectContainer(spacing: 6) { chips(scale: s) }
-                } else {
-                    chips(scale: s)
-                }
+                ForEach(Apex4Render.hotspots) { h in chip(h, scale: s) }
             }
         }
     }
@@ -252,199 +326,129 @@ struct HotspotLayer: View {
         return true
     }
 
-    @ViewBuilder private func chips(scale s: CGFloat) -> some View {
-        ForEach(Apex4Render.hotspots) { h in
-            let selected = profiles.selectedKey == h.key
-            let changed = isChanged(h.key)
-            let pressed = live.pressedKeys.contains(h.key)
-            let tint: Color? = selected ? Color.accentColor : (pressed ? Color.white.opacity(0.8) : (changed ? Stage.glow.opacity(0.6) : nil))
-            let size = CGSize(width: h.rect.width * s, height: h.rect.height * s)
-            Button {
-                guard h.clickable else { return }
-                profiles.selectedKey = h.key; showInspector = true
-            } label: {
+    private func chipShape(_ h: Hotspot, scale s: CGFloat) -> AnyShape {
+        switch h.shape {
+        case .circle: AnyShape(Circle())
+        case .roundRect: AnyShape(Capsule())
+        case .rect: AnyShape(RoundedRectangle(cornerRadius: 6 * s, style: .continuous))
+        }
+    }
+
+    private func chip(_ h: Hotspot, scale s: CGFloat) -> some View {
+        let selected = profiles.selectedKey == h.key
+        let changed = isChanged(h.key)
+        let pressed = live.pressedKeys.contains(h.key)
+        let size = CGSize(width: h.rect.width * s, height: h.rect.height * s)
+        let shape = chipShape(h, scale: s)
+        let stroke: Color = selected ? SS.brand500 : (changed ? SS.brand.opacity(0.9) : SS.n400)
+        return Button { if h.clickable { onSelect(h.key) } } label: {
+            ZStack {
+                shape.fill(pressed ? SS.brand500.opacity(0.85) : SS.chipFill.opacity(0.95))
+                shape.stroke(stroke, lineWidth: selected ? 2 : 1)
                 Text(h.label)
-                    .font(.system(size: max(9, min(13, size.height * 0.42)), weight: .semibold, design: .rounded))
+                    .font(.system(size: max(8, min(12, size.height * 0.42)), weight: .semibold, design: .rounded))
+                    .foregroundStyle(h.clickable ? .white : SS.n400)
                     .minimumScaleFactor(0.6).lineLimit(1)
-                    .foregroundStyle(h.clickable ? Color.primary : Color.secondary)
-                    .frame(width: size.width, height: size.height)
             }
-            .buttonStyle(.plain)
-            .modifier(HotspotChipStyle(shape: h.shape, tint: tint, enabled: h.clickable))
-            .rotationEffect(.degrees(h.rotation))
-            .position(x: h.center.x * s, y: h.center.y * s)
-            .accessibilityLabel("\(h.key) button\(changed ? ", remapped" : "")")
-            .allowsHitTesting(h.clickable)
+            .frame(width: size.width, height: size.height)
+            .shadow(color: selected ? SS.brand500.opacity(0.7) : .clear, radius: 8)
+            .contentShape(shape)
         }
+        .buttonStyle(.plain)
+        .rotationEffect(.degrees(h.rotation))
+        .position(x: h.center.x * s, y: h.center.y * s)
+        .allowsHitTesting(h.clickable)
+        .opacity(h.clickable ? 1 : 0.6)
+        .accessibilityLabel("\(h.key) button\(changed ? ", remapped" : "")")
+        .animation(.easeOut(duration: 0.12), value: pressed)
     }
 }
 
-/// Picks the concrete shape for a chip (glass needs a concrete `InsettableShape`).
-private struct HotspotChipStyle: ViewModifier {
-    let shape: Hotspot.Shape
-    let tint: Color?
-    let enabled: Bool
-    func body(content: Content) -> some View {
-        switch shape {
-        case .circle: content.floatingChip(tint: tint, in: Circle()).opacity(enabled ? 1 : 0.55)
-        case .roundRect: content.floatingChip(tint: tint, in: Capsule()).opacity(enabled ? 1 : 0.55)
-        case .rect: content.floatingChip(tint: tint, in: RoundedRectangle(cornerRadius: 7, style: .continuous)).opacity(enabled ? 1 : 0.55)
-        }
-    }
-}
+// MARK: - Common tab (Light + Vibration)
 
-struct MappingTable: View {
-    let config: GamepadConfig
-    @Binding var selected: ControllerKey?
-    private var rows: [ControllerKey] { Apex4Render.mappableKeys }
+struct CommonTab: View {
     var body: some View {
-        Table(rows, selection: Binding<Set<UInt8>>(get: { selected.map { Set([$0.id]) } ?? [] }, set: { selected = $0.first.flatMap(ControllerKey.init(rawValue:)) })) {
-            TableColumn("Button") { k in Text(String(describing: k)) }.width(min: 120)
-            TableColumn("Does") { k in
-                Text(describeMapping(config.keys[k] ?? .identity, for: k)).foregroundStyle(isDefault(config.keys[k]) ? .secondary : .primary)
-            }
-        }
-        .cardShape()
-    }
-    private func isDefault(_ m: GamepadConfig.KeyMapping?) -> Bool { if case .identity? = m { return true }; return m == nil }
-}
-
-func describeMapping(_ m: GamepadConfig.KeyMapping, for k: ControllerKey) -> String {
-    switch m {
-    case .identity: "\(k) (default)"
-    case .key(let t): "\(t)"
-    case .turbo(let t, let en, let f): "Turbo → \(t), \(en == .press ? "hold" : "toggle"), \(f) Hz"
-    case .macro: "Macro"
-    case .keyboardMouse: "Keyboard/Mouse (Windows driver)"
-    }
-}
-
-// MARK: - Inspector
-
-struct InspectorHost: View {
-    let section: AppSection
-    @Environment(ProfileStore.self) private var profiles
-    var body: some View {
-        switch section {
-        case .profiles:
-            if let key = profiles.selectedKey, let draft = profiles.draft { ButtonInspector(key: key, mapping: draft.keys[key] ?? .identity) }
-            else { ContentUnavailableView("Select a button", systemImage: "hand.tap", description: Text("Click a button on the controller or in the table.")) }
-        default:
-            ContentUnavailableView("Nothing to inspect", systemImage: "sidebar.trailing", description: Text("This page has no per-item details."))
+        HStack(alignment: .top, spacing: 0) {
+            LightPanel().frame(maxWidth: .infinity)
+            VDivider().padding(.horizontal, 28)
+            VibrationPanel().frame(maxWidth: .infinity)
         }
     }
 }
 
-struct ButtonInspector: View {
-    let key: ControllerKey
-    let mapping: GamepadConfig.KeyMapping
-    @Environment(ProfileStore.self) private var profiles
-
-    private enum Kind: Hashable { case `default`, remap, turbo, macro }
-    private var kind: Kind { switch mapping { case .identity: .default; case .key: .remap; case .turbo: .turbo; case .macro, .keyboardMouse: .macro } }
-    private var target: ControllerKey { switch mapping { case .key(let t), .turbo(let t, _, _): t; default: key } }
-    private var turboHold: Bool { if case .turbo(_, let en, _) = mapping { return en == .press }; return true }
-    private var turboFreq: Double { if case .turbo(_, _, let f) = mapping { return Double(f) }; return 10 }
-
-    var body: some View {
-        Form {
-            Section(String(describing: key)) {
-                Picker("Behaviour", selection: Binding(get: { kind }, set: { setKind($0) })) {
-                    Text("Default").tag(Kind.default); Text("Another button").tag(Kind.remap); Text("Turbo").tag(Kind.turbo); Text("Macro").tag(Kind.macro)
-                }
-                .pickerStyle(.segmented)
-                if kind == .remap || kind == .turbo {
-                    Picker("Acts as", selection: Binding(get: { target }, set: { setTarget($0) })) {
-                        ForEach(Apex4Render.mappableKeys, id: \.self) { Text(String(describing: $0)).tag($0) }
-                    }
-                }
-                if kind == .turbo {
-                    Picker("Activate", selection: Binding(get: { turboHold }, set: { profiles.setMapping(key, .turbo(target, enable: $0 ? .press : .click, frequency: UInt8(turboFreq))) })) {
-                        Text("Hold for turbo").tag(true); Text("Press to toggle").tag(false)
-                    }
-                    LabeledContent("Rate") {
-                        Slider(value: Binding(get: { turboFreq }, set: { profiles.setMapping(key, .turbo(target, enable: turboHold ? .press : .click, frequency: UInt8($0))) }), in: 1...30, step: 1)
-                        Text("\(Int(turboFreq)) Hz").monospacedDigit().frame(width: 44, alignment: .trailing)
-                    }
-                }
-                if kind == .macro {
-                    if let i = profiles.macroIndex(for: key), let m = profiles.draft?.macros[safe: i] {
-                        Text("Runs on-board macro with \(m.actions.count) step\(m.actions.count == 1 ? "" : "s"). Edit it in the Macros page.").font(.caption).foregroundStyle(.secondary)
-                    } else {
-                        Text("No macro is bound to this button yet. Create one in the Macros page.").font(.caption).foregroundStyle(.secondary)
-                    }
-                }
-            }
-        }
-        .formStyle(.grouped).controlSize(.small)
-    }
-
-    private func setKind(_ k: Kind) {
-        switch k {
-        case .default: profiles.setMapping(key, .identity)
-        case .remap: profiles.setMapping(key, .key(target == key ? .a : target))
-        case .turbo: profiles.setMapping(key, .turbo(target, enable: .press, frequency: 10))
-        case .macro: if profiles.addMacro(for: key) == nil { profiles.setMapping(key, .macro) }
-        }
-    }
-    private func setTarget(_ t: ControllerKey) {
-        if case .turbo(_, let en, let f) = mapping { profiles.setMapping(key, .turbo(t, enable: en, frequency: f)) } else { profiles.setMapping(key, t == key ? .identity : .key(t)) }
-    }
-}
-
-// MARK: - Lighting
-
-struct LightingPage: View {
+struct LightPanel: View {
     @Environment(ControllerModel.self) private var model
     @State private var colours: [Color] = [.blue, .red, .green]
     @State private var mode: LEDConfig.Mode = .gradient
     @State private var brightness: Double = 50
     @State private var speed: Double = 50
+    @State private var loaded = false
+    @State private var pending: Task<Void, Never>?
+
+    private let modes: [(LEDConfig.Mode, String)] = [(.off, "Off"), (.steady, "Steady"), (.breathing, "Breathing"), (.gradient, "Gradient"), (.streamlined, "Streamlined"), (.feedback, "Feedback")]
+    private var cycleDisabled: Bool { mode == .steady || mode == .off }
 
     var body: some View {
-        VStack(spacing: 16) {
-            StageView(height: 220) {
-                VStack(spacing: 14) {
-                    Apex4Hero().frame(height: 200).offset(y: 10)
-                    HStack(spacing: 6) { ForEach(colours.indices, id: \.self) { i in Capsule().fill(colours[i]).frame(width: 60, height: 8).shadow(color: colours[i].opacity(0.8), radius: 8) } }
-                        .opacity(mode == .off ? 0.15 : brightness / 100 * 0.8 + 0.2)
-                }
-            }
-            Form {
-                if model.led == nil {
-                    ContentUnavailableView("No lighting data", systemImage: "light.max", description: Text("Connect the controller."))
-                } else {
-                    Picker("Mode", selection: $mode) { ForEach(LEDConfig.Mode.allCases, id: \.self) { Text(name($0)).tag($0) } }
-                    if mode != .off {
-                        Section("Colours") {
-                            ForEach(colours.indices, id: \.self) { i in ColorPicker("Colour \(i + 1)", selection: $colours[i], supportsOpacity: false) }
-                            HStack {
-                                Button("Add") { if colours.count < LEDConfig.unitsPerGroup { colours.append(.white) } }.disabled(mode == .steady || colours.count >= LEDConfig.unitsPerGroup)
-                                Button("Remove") { if colours.count > 1 { colours.removeLast() } }.disabled(colours.count <= 1)
-                            }
-                        }
-                        Slider(value: $brightness, in: 0...100, step: 1) { Text("Brightness \(Int(brightness))%") }
-                        if mode != .steady { Slider(value: $speed, in: 0...100, step: 1) { Text("Speed \(Int(speed))%") } }
+        VStack(alignment: .leading, spacing: 20) {
+            SectionTitle("Light", icon: "lightbulb")
+            if model.led == nil {
+                Text(model.connection == .none ? "Connect the controller to edit its lighting." : "Reading lighting…").font(.system(size: 13)).foregroundStyle(SS.n300)
+            } else {
+                Grid(alignment: .topLeading, horizontalSpacing: 24, verticalSpacing: 20) {
+                    GridRow {
+                        Field("Light mode") { DarkSelect(selection: $mode, options: modes) }
+                        Field("Brightness") { StepSlider(value: $brightness, range: 0...100) }
                     }
-                    Button("Apply and save lighting") { Task { await apply() } }.prominentGlassButton().disabled(model.busy)
+                    GridRow {
+                        Field("Color") { colourRow }
+                        Field("Cycle time") { StepSlider(value: $speed, range: 0...100) }.opacity(cycleDisabled ? 0.4 : 1).disabled(cycleDisabled)
+                    }
                 }
+                if model.busy { HStack(spacing: 6) { ProgressView().controlSize(.mini); Text("Applying…").font(.system(size: 12)).foregroundStyle(SS.n300) } }
             }
-            .formStyle(.grouped).frame(maxWidth: 640)
         }
-        .padding(.bottom)
         .onAppear(perform: load)
         .onChange(of: model.led) { _, _ in load() }
+        .onChange(of: mode) { _, _ in schedule() }
+        .onChange(of: brightness) { _, _ in schedule() }
+        .onChange(of: speed) { _, _ in schedule() }
+        .onChange(of: colours) { _, _ in schedule() }
     }
 
-    private func name(_ m: LEDConfig.Mode) -> String {
-        switch m { case .off: "Off"; case .streamlined: "Streamlined"; case .breathing: "Breathing"; case .gradient: "Gradient"; case .feedback: "Feedback"; case .steady: "Steady" }
+    private var colourRow: some View {
+        HStack(spacing: 8) {
+            ForEach(colours.indices, id: \.self) { i in
+                ColorPicker("", selection: $colours[i], supportsOpacity: false).labelsHidden().frame(width: 28, height: 28)
+            }
+            Button { if colours.count < LEDConfig.unitsPerGroup { colours.append(.white) } } label: { Image(systemName: "plus.circle").font(.system(size: 18)).foregroundStyle(SS.n300) }
+                .buttonStyle(.plain).disabled(cycleDisabled || colours.count >= LEDConfig.unitsPerGroup)
+            Button { if colours.count > 1 { colours.removeLast() } } label: { Image(systemName: "minus.circle").font(.system(size: 18)).foregroundStyle(SS.n300) }
+                .buttonStyle(.plain).disabled(colours.count <= 1)
+        }
+        .frame(height: 36)
+        .opacity(mode == .off ? 0.4 : 1)
     }
+
     private func load() {
         guard let led = model.led else { return }
+        loaded = false
         mode = led.mode; brightness = Double(led.brightness); speed = Double(led.speed)
         let cs = led.colours(ofGroup: 0)
         if !cs.isEmpty { colours = cs.map { Color(red: Double($0.r) / 100, green: Double($0.g) / 100, blue: Double($0.b) / 100) } }
+        Task { @MainActor in try? await Task.sleep(for: .milliseconds(50)); loaded = true }
     }
+
+    /// Debounced live apply (the pad saves to flash on every write, so wait for the slider to settle).
+    private func schedule() {
+        guard loaded, model.led != nil else { return }
+        pending?.cancel()
+        pending = Task { @MainActor in
+            try? await Task.sleep(for: .milliseconds(600))
+            guard !Task.isCancelled else { return }
+            await apply()
+        }
+    }
+
     private func apply() async {
         guard var led = model.led else { return }
         let units = colours.map { c -> LEDConfig.Unit in
@@ -453,125 +457,356 @@ struct LightingPage: View {
         }
         switch mode { case .steady: led.setSteady(units.first ?? .off); case .off: led.mode = .off; default: led.setCycle(units, mode: mode) }
         led.brightness = UInt8(brightness); led.speed = UInt8(speed)
+        loaded = false                                   // model.led will change back → don't re-trigger
         await model.apply(led: led)
+        loaded = true
     }
 }
 
-// MARK: - Screen
-
-struct ScreenPage: View {
-    @Environment(ControllerModel.self) private var model
-    @State private var file: URL?
-    @State private var preview: [NSImage] = []
-    @State private var frameIndex = 0
-    @State private var importing = false
-    private let timer = Timer.publish(every: 0.12, on: .main, in: .common).autoconnect()
-
-    var body: some View {
-        VStack(spacing: 16) {
-            StageView(height: 260) {
-                ZStack {
-                    RoundedRectangle(cornerRadius: 6).fill(.black).frame(width: 480, height: 240)
-                    if preview.isEmpty {
-                        Text("Drop a GIF, PNG or JPEG\n160 × 80 · up to \(Screen.maxFrames) frames").multilineTextAlignment(.center).foregroundStyle(.secondary)
-                    } else {
-                        Image(nsImage: preview[min(frameIndex, preview.count - 1)]).interpolation(.none).resizable().aspectRatio(2, contentMode: .fit).frame(width: 468)
-                    }
-                }
-                .onReceive(timer) { _ in if preview.count > 1 { frameIndex = (frameIndex + 1) % preview.count } }
-                .dropDestination(for: URL.self) { urls, _ in if let u = urls.first { load(u) }; return true }
-            }
-            Form {
-                LabeledContent("Image") {
-                    HStack { Button("Choose…") { importing = true }; if let file { Text(file.lastPathComponent).foregroundStyle(.secondary).lineLimit(1) } }
-                }
-                if !preview.isEmpty { LabeledContent("Frames", value: "\(preview.count)") }
-                if let p = model.uploadProgress {
-                    ProgressView(value: p) { Text("Uploading… \(Int(p * 100))% — about \(Int((1 - p) * Double(preview.count) * 3.5)) s left") }
-                } else {
-                    Button("Upload to controller") { if let file { Task { await model.uploadScreen(url: file) } } }
-                        .prominentGlassButton().disabled(file == nil || model.busy || model.connection != .xinput)
-                    if model.connection == .dinput { Text("Screen uploads only work in XInput mode — switch it in Status.").font(.footnote).foregroundStyle(.secondary) }
-                }
-            }
-            .formStyle(.grouped).frame(maxWidth: 640)
-        }
-        .padding(.bottom)
-        .fileImporter(isPresented: $importing, allowedContentTypes: [.gif, .png, .jpeg]) { if case let .success(u) = $0 { load(u) } }
-    }
-
-    private func load(_ url: URL) {
-        file = url
-        guard let frames = try? ImageLoader.frames(url: url) else { preview = []; return }
-        preview = frames.map { lvgl in
-            let w = Screen.width, h = Screen.height
-            var rgba = [UInt8](repeating: 255, count: w * h * 4)
-            for i in 0..<(w * h) {
-                let px = UInt16(lvgl[4 + i * 2]) << 8 | UInt16(lvgl[5 + i * 2])
-                rgba[i * 4] = UInt8((px >> 11) & 0x1F) << 3; rgba[i * 4 + 1] = UInt8((px >> 5) & 0x3F) << 2; rgba[i * 4 + 2] = UInt8(px & 0x1F) << 3
-            }
-            let provider = CGDataProvider(data: Data(rgba) as CFData)!
-            let cg = CGImage(width: w, height: h, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: w * 4,
-                             space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.noneSkipLast.rawValue),
-                             provider: provider, decode: nil, shouldInterpolate: false, intent: .defaultIntent)!
-            return NSImage(cgImage: cg, size: NSSize(width: w, height: h))
-        }
-        frameIndex = 0
-    }
-}
-
-// MARK: - Settings scene
-
-struct SettingsView: View {
-    @Environment(ControllerModel.self) private var model
-    var body: some View {
-        TabView {
-            Form {
-                Section("Privileged helper") {
-                    LabeledContent("Status", value: model.helperInstalled ? "Installed" : "Not installed")
-                    Text("Runs as root only while talking to the controller in XInput mode (Apple's Xbox driver owns the USB interface). Required for screen uploads.").font(.footnote).foregroundStyle(.secondary)
-                    HStack {
-                        Button("Install helper") { model.installHelper() }.disabled(model.helperInstalled)
-                        Button("Remove helper", role: .destructive) { model.uninstallHelper() }.disabled(!model.helperInstalled)
-                    }
-                }
-            }
-            .formStyle(.grouped).tabItem { Label("Helper", systemImage: "lock.shield") }
-            Form {
-                Text("Open-source, MIT. Protocol reverse-engineered and documented at github.com/uiltonlopes/flydigi-apex4-mac. Not affiliated with Flydigi.").font(.footnote).foregroundStyle(.secondary)
-            }
-            .formStyle(.grouped).tabItem { Label("About", systemImage: "info.circle") }
-        }
-        .frame(width: 480, height: 300)
-    }
-}
-
-// MARK: - Menu bar extra
-
-struct MenuBarView: View {
-    @Environment(ControllerModel.self) private var model
+struct VibrationPanel: View {
     @Environment(ProfileStore.self) private var profiles
-    @Environment(\.openWindow) private var openWindow
+    @Environment(ControllerModel.self) private var model
+
+    private var vib: GamepadConfig.Vibration? { profiles.draft?.vibration }
+    private func set(_ f: (inout GamepadConfig.Vibration) -> Void) { guard var v = vib else { return }; f(&v); profiles.draft?.vibration = v }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Image(systemName: model.connection == .none ? "gamecontroller" : "gamecontroller.fill").foregroundStyle(model.connection == .none ? AnyShapeStyle(.secondary) : AnyShapeStyle(Color.accentColor))
-                Text(model.connection == .none ? "Apex 4 not connected" : "Apex 4 · \(model.connection == .dinput ? "DInput" : "XInput")").font(.headline)
-            }
-            if !profiles.slots.isEmpty {
-                Picker("Profile", selection: Binding(get: { profiles.activeSlot }, set: { profiles.select(slot: $0) })) {
-                    ForEach(profiles.slots) { s in Text("\(s.index + 1) · \(s.config.title.isEmpty ? "Unnamed" : s.config.title)").tag(s.index) }
+        VStack(alignment: .leading, spacing: 20) {
+            SectionTitle("Vibration", icon: "waveform")
+            if let vib {
+                SwitchRow(title: "Grip vibration", isOn: Binding(get: { vib.enabled }, set: { v in set { $0.enabled = v } }))
+                Field("Grip vibration intensity") {
+                    StepSlider(value: Binding(get: { Double(max(vib.left.scale, vib.right.scale)) }, set: { v in set { $0.left.scale = UInt8(v); $0.right.scale = UInt8(v) } }),
+                               range: 0...100, format: { "\(Int($0)) %" })
                 }
-                .disabled(profiles.isDirty)
-            }
-            if let l = model.led { Text("Lighting: \(String(describing: l.mode)) · \(l.brightness)%").font(.caption).foregroundStyle(.secondary) }
-            Divider()
-            HStack {
-                Button("Open Apex 4…") { openWindow(id: "main"); NSApp.activate() }
-                Spacer()
-                Button("Quit") { NSApp.terminate(nil) }
+                .opacity(vib.enabled ? 1 : 0.4).disabled(!vib.enabled)
+                GhostButton(title: "Vibration test", icon: "waveform.path", enabled: model.connection == .xinput && !model.busy) { Task { await test() } }
+                if model.connection == .dinput { Text("The test needs XInput mode.").font(.system(size: 12)).foregroundStyle(SS.n400) }
+            } else {
+                Text("Connect the controller to edit vibration.").font(.system(size: 13)).foregroundStyle(SS.n300)
             }
         }
-        .padding(12).frame(width: 280)
+    }
+    private func test() async {
+        guard #available(macOS 14.0, *) else { return }
+        _ = await Task.detached { Result { try HelperClient.shared.motorTest(left: 200, right: 200); Thread.sleep(forTimeInterval: 0.5); try HelperClient.shared.motorTest(left: 0, right: 0) } }.value
+    }
+}
+
+// MARK: - Button tab
+
+struct ButtonTab: View {
+    @Environment(ProfileStore.self) private var profiles
+    @Binding var tab: HomeTab
+    var body: some View {
+        if let key = profiles.selectedKey, let mapping = profiles.draft?.keys[key] {
+            KeyEditor(key: key, mapping: mapping, tab: $tab)
+        } else {
+            HStack(spacing: 10) {
+                Image(systemName: "hand.tap").font(.system(size: 18)).foregroundStyle(.white)
+                Text("Click any button on the controller image above to modify its mapping.").font(.system(size: 13)).foregroundStyle(.white)
+            }
+            .padding(.horizontal, 20).frame(height: 44)
+            .background(SS.n700, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+            .frame(maxWidth: .infinity)
+        }
+    }
+}
+
+struct KeyEditor: View {
+    let key: ControllerKey
+    let mapping: GamepadConfig.KeyMapping
+    @Binding var tab: HomeTab
+    @Environment(ProfileStore.self) private var profiles
+    @Environment(LiveInput.self) private var live
+    @State private var armed = false          // waiting for a pad press (or a pick) to set the target
+
+    enum Kind: Hashable { case click, turbo, macro, special }
+    private var kind: Kind { switch mapping { case .identity, .key: .click; case .turbo: .turbo; case .macro: .macro; case .keyboardMouse: .special } }
+    private var target: ControllerKey { switch mapping { case .key(let t), .turbo(let t, _, _): t; default: key } }
+    private var turboEnable: GamepadConfig.TurboEnable { if case .turbo(_, let en, _) = mapping { return en }; return .press }
+    private var turboFreq: Double { if case .turbo(_, _, let f) = mapping { return Double(f) }; return 15 }
+
+    var body: some View {
+        VStack(spacing: 28) {
+            PillSegmented(selection: Binding(get: { kind }, set: { setKind($0) }),
+                          options: [(.click, "Click"), (.turbo, "Turbo"), (.macro, "Macro"), (.special, "Special")])
+            switch kind {
+            case .click: clickEditor
+            case .turbo: turboEditor
+            case .macro: macroEditor
+            case .special: specialEditor
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .onChange(of: live.pressedKeys) { old, new in
+            guard armed, let k = new.subtracting(old).first, Apex4Render.mappableKeys.contains(k) else { return }
+            setTarget(k); armed = false
+        }
+        .onChange(of: key) { _, _ in armed = false }
+    }
+
+    private var inputColumn: some View {
+        VStack(spacing: 8) {
+            KeyBadge(label: Apex4Render.shortLabel(key), size: 32)
+            Text("Input").font(.system(size: 12)).foregroundStyle(SS.n300)
+        }
+    }
+
+    private var outputBox: some View {
+        Button { armed.toggle() } label: {
+            VStack(spacing: 0) {
+                ZStack {
+                    RoundedRectangle(cornerRadius: 8, style: .continuous).fill(SS.n700)
+                    RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(armed ? SS.brand500 : SS.n500, lineWidth: armed ? 2 : 1)
+                    KeyBadge(label: Apex4Render.shortLabel(target), size: 34, highlighted: target != key)
+                }
+                .frame(width: 240, height: 100)
+                if armed {
+                    Text("Press the button on the controller or pick one")
+                        .font(.system(size: 11, weight: .medium)).foregroundStyle(.white).multilineTextAlignment(.center)
+                        .padding(.horizontal, 10).padding(.vertical, 6)
+                        .background(SS.brand500, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                        .offset(y: -6)
+                }
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .popover(isPresented: $armed, arrowEdge: .bottom) { keyGrid }
+    }
+
+    private var keyGrid: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Acts as").font(.system(size: 12)).foregroundStyle(.secondary)
+            LazyVGrid(columns: Array(repeating: GridItem(.fixed(44)), count: 6), spacing: 8) {
+                ForEach(Apex4Render.mappableKeys, id: \.self) { k in
+                    Button { setTarget(k); armed = false } label: {
+                        KeyBadge(label: Apex4Render.shortLabel(k), size: 36, highlighted: k == target)
+                    }.buttonStyle(.plain).help(String(describing: k))
+                }
+            }
+            GhostButton(title: "Reset to default") { setTarget(key); armed = false }
+        }
+        .padding(14)
+    }
+
+    private var clickEditor: some View {
+        HStack(alignment: .center, spacing: 24) {
+            inputColumn
+            Text("=").font(.system(size: 18)).foregroundStyle(SS.n300)
+            outputBox
+        }
+    }
+
+    private var turboEditor: some View {
+        HStack(alignment: .top, spacing: 36) {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Button").font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+                HStack(spacing: 20) { inputColumn; Text("=").foregroundStyle(SS.n300); outputBox }
+            }
+            Field("Activate method") {
+                RadioList(selection: Binding(get: { turboEnable }, set: { en in profiles.setMapping(key, .turbo(target, enable: en, frequency: UInt8(turboFreq))) }),
+                          options: [(.press, "Hold for turbo"), (.click, "Press to toggle turbo"), (.close, "Close")])
+            }
+            .frame(width: 220)
+            Field("Shots per second") {
+                StepSlider(value: Binding(get: { turboFreq }, set: { f in profiles.setMapping(key, .turbo(target, enable: turboEnable, frequency: UInt8(f))) }), range: 1...30)
+            }
+            .frame(width: 200)
+        }
+    }
+
+    private var macroEditor: some View {
+        let i = profiles.macroIndex(for: key)
+        let m = i.flatMap { profiles.draft?.macros[safe: $0] }
+        return VStack(alignment: .leading, spacing: 12) {
+            Button {
+                profiles.addMacro(for: key)
+                withAnimation(.easeOut(duration: 0.18)) { tab = .macros }
+            } label: {
+                HStack {
+                    Text(m == nil ? "Click to set macro" : "Edit macro").font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+                    Spacer()
+                    Image(systemName: "chevron.right").font(.system(size: 11, weight: .semibold)).foregroundStyle(SS.n300)
+                        .frame(width: 20, height: 20).background(SS.n500, in: RoundedRectangle(cornerRadius: 4))
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            Text("Preview").font(.system(size: 12)).foregroundStyle(SS.n300)
+            HStack(spacing: 6) {
+                if let m, !m.actions.isEmpty {
+                    ForEach(Array(m.actions.prefix(12).enumerated()), id: \.offset) { _, a in
+                        Text("\(a.event == .release ? "↑" : "↓")\(Apex4Render.shortLabel(ControllerKey(rawValue: a.key) ?? .none))")
+                            .font(.system(size: 11, design: .monospaced)).foregroundStyle(.white)
+                            .padding(.horizontal, 6).frame(height: 22).background(SS.n500, in: Capsule())
+                    }
+                    if m.actions.count > 12 { Text("…").foregroundStyle(SS.n300) }
+                } else {
+                    Text("No steps yet").font(.system(size: 12)).foregroundStyle(SS.n400)
+                }
+            }
+            .frame(height: 30).frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 10)
+            .background(SS.n800, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+        }
+        .padding(16)
+        .frame(width: 320)
+        .background(SS.n700, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(SS.n500))
+    }
+
+    private var specialEditor: some View {
+        VStack(spacing: 24) {
+            Notice("Keyboard and mouse mapping needs a companion driver on the Mac. It arrives in a later release.")
+            HStack(spacing: 24) {
+                inputColumn
+                Text("=").foregroundStyle(SS.n300)
+                DarkSelect(selection: .constant(0), options: [(0, "Disabled")], width: 260, disabled: true)
+            }
+        }
+    }
+
+    private func setKind(_ k: Kind) {
+        switch k {
+        case .click: profiles.setMapping(key, target == key ? .identity : .key(target))
+        case .turbo: profiles.setMapping(key, .turbo(target, enable: .press, frequency: 15))
+        case .macro: if profiles.addMacro(for: key) == nil { profiles.setMapping(key, .macro) }
+        case .special: profiles.setMapping(key, .keyboardMouse)
+        }
+    }
+    private func setTarget(_ t: ControllerKey) {
+        if case .turbo(_, let en, let f) = mapping { profiles.setMapping(key, .turbo(t, enable: en, frequency: f)) } else { profiles.setMapping(key, t == key ? .identity : .key(t)) }
+    }
+}
+
+// MARK: - Joystick tab
+
+struct JoystickTab: View {
+    @Environment(ProfileStore.self) private var profiles
+    @Environment(LiveInput.self) private var live
+    @State private var side: Side = .left
+
+    private var stick: GamepadConfig.Stick { profiles.draft![stick: side] }
+    private func set(_ f: (inout GamepadConfig.Stick) -> Void) { var s = stick; f(&s); profiles.draft?[stick: side] = s }
+
+    var body: some View {
+        VStack(spacing: 28) {
+            PillSegmented(selection: $side, options: [(.left, "Left joystick"), (.right, "Right joystick")])
+            HStack(alignment: .top, spacing: 36) {
+                VStack(alignment: .leading, spacing: 20) {
+                    Field("Mapping to") { DarkSelect(selection: .constant(0), options: [(0, "Joystick")], disabled: true) }
+                    Field("Sensitivity curve") {
+                        DarkSelect(selection: Binding(get: { stick.curve }, set: { v in set { $0.curve = v } }),
+                                   options: [(.default, "Default"), (.quick, "Quick"), (.slow, "Slow"), (.custom, "Custom")])
+                    }
+                    if stick.curve == .custom {
+                        Field("Custom curve (drag the points)") {
+                            CurveEditor(p1: Binding(get: { (stick.p1x, stick.p1y) }, set: { v in set { $0.p1x = v.0; $0.p1y = v.1 } }),
+                                        p2: Binding(get: { (stick.p2x, stick.p2y) }, set: { v in set { $0.p2x = v.0; $0.p2y = v.1 } }))
+                        }
+                    }
+                }
+                .frame(width: 300)
+                VStack(alignment: .leading, spacing: 20) {
+                    Field("Center dead zone") {
+                        StepSlider(value: Binding(get: { Double(stick.deadZone) }, set: { v in set { $0.deadZone = UInt8(v) } }), range: 0...60, format: { "\(Int($0 / 127 * 100)) %" })
+                    }
+                    Field("Edge (active range)") {
+                        StepSlider(value: Binding(get: { Double(stick.end) }, set: { v in set { $0.end = UInt8(v) } }), range: 80...127, format: { "\(Int($0 / 127 * 100)) %" })
+                    }
+                }
+                .frame(width: 300)
+                VStack(spacing: 8) {
+                    Text("Live").font(.system(size: 13)).foregroundStyle(SS.n300)
+                    StickGauge(title: side == .left ? "Left stick" : "Right stick", stick: side == .left ? live.left : live.right, config: stick)
+                    if !live.connected { Text("No game controller visible to the system.").font(.system(size: 11)).foregroundStyle(SS.n400) }
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+// MARK: - Gyro tab
+
+struct GyroTab: View {
+    @Environment(ProfileStore.self) private var profiles
+    private var m: GamepadConfig.Motion { profiles.draft!.motion }
+    private func set(_ f: (inout GamepadConfig.Motion) -> Void) { var v = m; f(&v); profiles.draft?.motion = v }
+
+    var body: some View {
+        VStack(spacing: 24) {
+            Notice("Enabling gyro mapping will reduce controller polling rate")
+            HStack(alignment: .top, spacing: 36) {
+                VStack(alignment: .leading, spacing: 20) {
+                    Field("Mapping to") {
+                        DarkSelect(selection: Binding(get: { m.mapType }, set: { v in set { $0.mapType = v } }),
+                                   options: [(.off, "Close"), (.leftStick, "Left joystick (racing games)"), (.rightStick, "Right joystick (shooting games)")])
+                    }
+                    if m.mapType != .off {
+                        Field("How to activate") {
+                            DarkSelect(selection: Binding(get: { m.enableType }, set: { v in set { $0.enableType = v } }),
+                                       options: [(.click, "Press to toggle"), (.press, "Hold to enable")])
+                        }
+                        Field("Activate key") {
+                            DarkSelect(selection: Binding(get: { m.enableKey1 }, set: { v in set { $0.enableKey1 = v } }),
+                                       options: [(UInt8(255), "Always on")] + Apex4Render.mappableKeys.map { ($0.rawValue, String(describing: $0)) })
+                        }
+                    }
+                }
+                .frame(width: 300)
+                if m.mapType != .off {
+                    VStack(alignment: .leading, spacing: 20) {
+                        Field("Sensitivity") {
+                            StepSlider(value: Binding(get: { Double(m.sensitivity) }, set: { v in set { $0.sensitivity = UInt8(v) } }), range: 1...100)
+                        }
+                        Field("Dead zone") {
+                            StepSlider(value: Binding(get: { Double(m.deadZone) }, set: { v in set { $0.deadZone = UInt8(v) } }), range: 0...30)
+                        }
+                        Field("Use mode") {
+                            PillSegmented(selection: Binding(get: { m.useMode }, set: { v in set { $0.useMode = v } }), options: [(.fps, "Shooting"), (.racer, "Racing")])
+                        }
+                    }
+                    .frame(width: 300)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+}
+
+// MARK: - Trigger tab
+
+struct TriggerTab: View {
+    @Environment(ProfileStore.self) private var profiles
+    @Environment(LiveInput.self) private var live
+    @State private var side: Side = .left
+
+    private var trig: GamepadConfig.Trigger { profiles.draft![trigger: side] }
+    private func set(_ f: (inout GamepadConfig.Trigger) -> Void) { var t = trig; f(&t); profiles.draft?[trigger: side] = t }
+
+    var body: some View {
+        VStack(spacing: 28) {
+            PillSegmented(selection: $side, options: [(.left, "Left trigger"), (.right, "Right trigger")])
+            HStack(alignment: .top, spacing: 36) {
+                ForceAdaptPanel(side: side).frame(width: 320).id(side)
+                VStack(alignment: .leading, spacing: 20) {
+                    Field("Start (dead zone)") {
+                        StepSlider(value: Binding(get: { Double(trig.zero) }, set: { v in set { $0.zero = UInt8(v) } }), range: 0...120, format: { "\(Int($0 / 255 * 100)) %" })
+                    }
+                    Field("End (full press)") {
+                        StepSlider(value: Binding(get: { Double(trig.end) }, set: { v in set { $0.end = UInt8(v) } }), range: 120...255, format: { "\(Int($0 / 255 * 100)) %" })
+                    }
+                }
+                .frame(width: 300)
+                VStack(spacing: 8) {
+                    Text("Live").font(.system(size: 13)).foregroundStyle(SS.n300)
+                    TriggerGauge(title: side == .left ? "LT" : "RT", value: side == .left ? live.leftTrigger : live.rightTrigger, config: trig)
+                }
+            }
+        }
+        .frame(maxWidth: .infinity)
     }
 }
