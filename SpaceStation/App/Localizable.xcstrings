@@ -621,6 +621,16 @@
         }
       }
     },
+    "Controller": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controle"
+          }
+        }
+      }
+    },
     "Controller Settings": {
       "localizations": {
         "pt-BR": {
@@ -2381,6 +2391,16 @@
         }
       }
     },
+    "Receiver connected. Turn the controller on (Home button) — it shows up by itself.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receptor conectado. Ligue o controle (botão Home) — ele aparece sozinho."
+          }
+        }
+      }
+    },
     "Recoil": {
       "localizations": {
         "pt-BR": {
@@ -3221,6 +3241,16 @@
         }
       }
     },
+    "The controller did not answer in time. Turn it on or reconnect the cable — it shows up by itself.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O controle não respondeu a tempo. Ligue-o ou reconecte o cabo — ele aparece sozinho."
+          }
+        }
+      }
+    },
     "The controller does not report movement while calibrating — follow the timer.": {
       "localizations": {
         "pt-BR": {
@@ -3377,6 +3407,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Turbo"
+          }
+        }
+      }
+    },
+    "Turn the controller on — it connects by itself": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ligue o controle — ele conecta sozinho"
           }
         }
       }
@@ -3597,6 +3637,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Testar vibração"
+          }
+        }
+      }
+    },
+    "Waiting for controller": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aguardando o controle"
           }
         }
       }

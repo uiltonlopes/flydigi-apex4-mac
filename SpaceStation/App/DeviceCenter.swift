@@ -92,26 +92,45 @@ struct DeviceCenterPage: View {
                 }
                 .padding(14)
                 HStack(spacing: 8) {
-                    Circle().fill(SS.green).frame(width: 8, height: 8)
-                    Text(deviceName.replacingOccurrences(of: "Flydigi ", with: "").uppercased()).font(.system(size: 15, weight: .semibold)).foregroundStyle(.white)
+                    Circle().fill(model.awaitingPad ? SS.yellow : SS.green).frame(width: 8, height: 8)
+                    Text(model.awaitingPad ? (model.looksLikeReceiver ? String(localized: "2.4 GHz receiver").uppercased() : String(localized: "Controller").uppercased())
+                         : deviceName.replacingOccurrences(of: "Flydigi ", with: "").uppercased())
+                        .font(.system(size: 15, weight: .semibold)).foregroundStyle(.white)
                 }
                 Spacer(minLength: 24)
                 if let img = Apex4Render.productImage(deviceId: model.info?.deviceId) {
                     Image(nsImage: img).resizable().interpolation(.high).aspectRatio(contentMode: .fit)
                         .frame(width: 200)
+                        .saturation(model.awaitingPad ? 0 : 1).opacity(model.awaitingPad ? 0.35 : 1)
                         .shadow(color: .black.opacity(0.6), radius: 16, y: 10)
                 }
                 Spacer(minLength: 24)
-                Text(model.info.map { "Firmware \($0.firmware) · \(model.connection == .xinput ? "XInput" : "DInput")" } ?? "")
-                    .font(.system(size: 12)).foregroundStyle(SS.n300)
-                if let u = model.firmwareUpdate {
+                if model.awaitingPad {
+                    HStack(spacing: 8) {
+                        ProgressView().controlSize(.small)
+                        Text("Turn the controller on — it connects by itself").font(.system(size: 12)).foregroundStyle(SS.n300)
+                    }
+                } else {
+                    Text(model.info.map { "Firmware \($0.firmware) · \(model.connection == .xinput ? "XInput" : "DInput")" } ?? "")
+                        .font(.system(size: 12)).foregroundStyle(SS.n300)
+                }
+                if let u = model.firmwareUpdate, !model.awaitingPad {
                     Text("Firmware update available: \(u.version)").font(.system(size: 11, weight: .semibold)).foregroundStyle(.white)
                         .padding(.horizontal, 8).frame(height: 20).background(SS.brand500, in: Capsule()).padding(.top, 6)
                 }
                 Spacer().frame(height: 18)
             }
             .frame(width: 360, height: 450)
-            .background(LinearGradient(colors: [SS.n700.opacity(0.95), SS.n800.opacity(0.9)], startPoint: .top, endPoint: .bottom), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            .background {
+                ZStack {
+                    LinearGradient(colors: [SS.n700.opacity(0.95), SS.n800.opacity(0.9)], startPoint: .top, endPoint: .bottom)
+                    // Special editions get Space Station's card artwork behind the photo (362 × 450, same as the card).
+                    if !model.awaitingPad, let bg = Apex4Render.cardBackground(deviceId: model.info?.deviceId) {
+                        Image(nsImage: bg).resizable().interpolation(.high).aspectRatio(contentMode: .fill)
+                    }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
             .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(SS.brand500.opacity(0.6), lineWidth: 1))
             .shadow(color: SS.brand.opacity(0.25), radius: 30)
             .contentShape(RoundedRectangle(cornerRadius: 12, style: .continuous))

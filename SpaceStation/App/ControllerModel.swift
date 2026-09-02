@@ -24,6 +24,12 @@ final class ControllerModel {
     var lastError: String?
     var uploadProgress: Double?   // 0…1 while a screen upload runs
     var firmwareUpdate: FlydigiAPI.FirmwareChip?      // newer main-chip firmware Flydigi offers, nil = up to date / unknown
+    /// USB link is up but the pad has not answered yet — the 2.4 GHz receiver with the pad off, typically.
+    var awaitingPad: Bool { connection != .none && info == nil }
+    /// USB product string of the matched device ("Flydigi VADER3" is the charging dock's receiver).
+    var usbProductName: String?
+    var looksLikeReceiver: Bool { usbProductName?.localizedCaseInsensitiveContains("vader") == true }
+    private var padPoll: Task<Void, Never>?
     var firmwareChecked = false
     var firmwareReport: [String] = []                 // dry-run log shown in Settings
     private var firmwareCheckedFor: String?
@@ -66,8 +72,9 @@ final class ControllerModel {
 
     func refresh() async {
         connection = USBMonitor.currentConnection()
+        usbProductName = USBMonitor.productName()
         refreshHelperStatus()
-        guard connection != .none else { info = nil; led = nil; return }
+        guard connection != .none else { info = nil; led = nil; firmwareUpdate = nil; firmwareCheckedFor = nil; padPoll?.cancel(); padPoll = nil; return }
         let conn = connection, installed = helperInstalled
         await run {
             switch conn {
@@ -83,6 +90,22 @@ final class ControllerModel {
             }
         } onSuccess: { (i: HelperDeviceInfo, l: LEDConfig) in self.info = i; self.led = l }
         if let fw = info?.firmware, firmwareCheckedFor != fw { firmwareCheckedFor = fw; Task { await checkFirmware() } }
+        if info == nil {
+            // Receiver plugged in with the pad off (or a pad that is still waking up): keep asking every few
+            // seconds instead of leaving a stale error on screen; it appears by itself once it answers.
+            firmwareUpdate = nil; firmwareCheckedFor = nil
+            lastError = looksLikeReceiver
+                ? String(localized: "Receiver connected. Turn the controller on (Home button) — it shows up by itself.")
+                : String(localized: "The controller did not answer in time. Turn it on or reconnect the cable — it shows up by itself.")
+            padPoll?.cancel()
+            padPoll = Task { @MainActor [weak self] in
+                try? await Task.sleep(for: .seconds(5))
+                guard !Task.isCancelled, let self, self.awaitingPad, !self.busy else { return }
+                await self.refresh()
+            }
+        } else {
+            padPoll?.cancel(); padPoll = nil
+        }
     }
 
     // MARK: Firmware (read-only for now — docs/firmware-update.md)
@@ -357,6 +380,19 @@ final class USBMonitor: @unchecked Sendable {
         if present(USBID.dinputVendor, USBID.dinputProduct) { return .dinput }
         if present(USBID.xinputVendor, USBID.xinputProduct) { return .xinput }
         return .none
+    }
+
+    /// "USB Product Name" of whichever pad device is present (the receiver announces itself as "Flydigi VADER3").
+    static func productName() -> String? {
+        for (vid, pid) in [(USBID.dinputVendor, USBID.dinputProduct), (USBID.xinputVendor, USBID.xinputProduct)] {
+            let match = IOServiceMatching("IOUSBHostDevice")! as NSMutableDictionary
+            match["idVendor"] = Int(vid); match["idProduct"] = Int(pid)
+            let s = IOServiceGetMatchingService(kIOMainPortDefault, match as CFDictionary)
+            guard s != IO_OBJECT_NULL else { continue }
+            defer { IOObjectRelease(s) }
+            if let n = IORegistryEntryCreateCFProperty(s, "USB Product Name" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? String { return n }
+        }
+        return nil
     }
 
     deinit { iterators.forEach { IOObjectRelease($0) }; IONotificationPortDestroy(port) }

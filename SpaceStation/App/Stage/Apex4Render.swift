@@ -56,6 +56,9 @@ enum Apex4Render {
 
     static let wireframe: NSImage? = load("apex4-wireframe", "svg")
     static let hero: NSImage? = load("apex4-hero", "png")
+    /// Space Station's device-card artwork for the special editions (EVA-01, Assassin's Creed, Black Myth
+    /// Wukong, Genshin, Honkai Star Rail); the standard Apex 4 has none.
+    static func cardBackground(deviceId: UInt8?) -> NSImage? { deviceId.flatMap { load("card-k2-\($0)", "png") } }
     /// Space Station's "add device" silhouette shown when nothing is connected.
     static let addDevice: NSImage? = load("add-device", "png")
     /// Product picture for a specific Apex 4 variant (Space Station's `k2/<id>/main.png`), falling back to the base model.

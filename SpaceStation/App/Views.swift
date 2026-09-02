@@ -135,8 +135,8 @@ struct Sidebar: View {
                 }
             }
             HStack(spacing: 8) {
-                Circle().fill(connected ? SS.green : SS.n400).frame(width: 7, height: 7)
-                Text(connected ? deviceName : "Not connected").font(.system(size: 13, weight: .medium)).foregroundStyle(.white).lineLimit(1)
+                Circle().fill(model.awaitingPad ? SS.yellow : (connected ? SS.green : SS.n400)).frame(width: 7, height: 7)
+                Text(model.awaitingPad ? "Waiting for controller" : (connected ? deviceName : "Not connected")).font(.system(size: 13, weight: .medium)).foregroundStyle(.white).lineLimit(1)
                 Spacer()
             }
             if let u = model.firmwareUpdate {
@@ -186,7 +186,7 @@ struct Sidebar: View {
                 }
             }
             .frame(height: 26)
-            row("Link", model.info == nil ? "—" : (model.info!.wired ? "USB cable" : "2.4 GHz receiver"))
+            row("Link", model.info.map { $0.wired ? "USB cable" : "2.4 GHz receiver" } ?? (model.looksLikeReceiver ? "2.4 GHz receiver" : "—"))
             row("Firmware", model.info.map { $0.firmware + (model.firmwareUpdate != nil ? "  ↑" : "") } ?? "—")
             if let i = model.info { let b = Battery(raw: i.batteryRaw, system: live.battery); if b.known { row("Battery", b.description) } }
             row("Helper", model.helperInstalled ? "Installed" : "Not installed")
