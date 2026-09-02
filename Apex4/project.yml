@@ -48,7 +48,7 @@ targets:
       properties:
         CFBundleDisplayName: Space Station
         CFBundleIconFile: AppIcon
-        CFBundleName: Apex4
+        CFBundleName: Space Station
         CFBundleShortVersionString: $(MARKETING_VERSION)
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSMinimumSystemVersion: "15.0"

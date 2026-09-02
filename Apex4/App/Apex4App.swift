@@ -50,7 +50,7 @@ struct Apex4App: App {
         }
 
         MenuBarExtra {
-            MenuBarView().environment(model).environment(model.profiles)
+            MenuBarView().environment(model).environment(model.profiles).environment(live)
         } label: {
             Image(systemName: model.connection == .none ? "gamecontroller" : "gamecontroller.fill")
         }

@@ -317,27 +317,71 @@ struct SettingsView: View {
 struct MenuBarView: View {
     @Environment(ControllerModel.self) private var model
     @Environment(ProfileStore.self) private var profiles
+    @Environment(LiveInput.self) private var live
     @Environment(\.openWindow) private var openWindow
+
+    private var connected: Bool { model.connection != .none }
+    private var name: String { model.info.flatMap { DeviceCatalog.descriptor(for: $0.deviceId)?.name } ?? "Flydigi controller" }
+
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Image(systemName: model.connection == .none ? "gamecontroller" : "gamecontroller.fill").foregroundStyle(model.connection == .none ? AnyShapeStyle(.secondary) : AnyShapeStyle(Color.accentColor))
-                Text(model.connection == .none ? "Apex 4 not connected" : "Apex 4 · \(model.connection == .dinput ? "DInput" : "XInput")").font(.headline)
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 10) {
+                if let img = Apex4Render.productImage(deviceId: model.info?.deviceId), connected {
+                    Image(nsImage: img).resizable().aspectRatio(contentMode: .fit).frame(width: 56, height: 40)
+                } else {
+                    Image(systemName: "gamecontroller").font(.system(size: 26)).foregroundStyle(.secondary).frame(width: 56, height: 40)
+                }
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(connected ? name : "No controller").font(.headline)
+                    Text(subtitle).font(.caption).foregroundStyle(.secondary)
+                }
+                Spacer()
+                if connected, let i = model.info {
+                    let b = Battery(raw: i.batteryRaw, system: live.battery)
+                    HStack(spacing: 4) {
+                        Image(systemName: b.symbol).foregroundStyle(b.charging ? .green : .secondary)
+                        Text(b.description).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
+                    }
+                }
+            }
+            if connected, let i = model.info {
+                Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 4) {
+                    GridRow { Text("Mode").foregroundStyle(.secondary); Text(model.connection == .xinput ? "XInput (Xbox)" : "DInput") }
+                    GridRow { Text("Link").foregroundStyle(.secondary); Text(i.wired ? "USB cable" : "2.4 GHz receiver") }
+                    GridRow { Text("Firmware").foregroundStyle(.secondary); Text(i.firmware) }
+                    if let l = model.led { GridRow { Text("Lighting").foregroundStyle(.secondary); Text("\(lightingName(l.mode)) · \(l.brightness) %") } }
+                    GridRow { Text("Helper").foregroundStyle(.secondary); Text(model.helperInstalled ? "Installed" : "Not installed") }
+                }
+                .font(.caption)
             }
             if !profiles.slots.isEmpty {
                 Picker("Profile", selection: Binding(get: { profiles.activeSlot }, set: { profiles.select(slot: $0) })) {
                     ForEach(profiles.slots) { s in Text("\(s.index + 1) · \(s.config.title.isEmpty ? "Unnamed" : s.config.title)").tag(s.index) }
                 }
                 .disabled(profiles.isDirty)
+                if profiles.isDirty { Text("Unsaved changes in the app — apply or revert there first.").font(.caption).foregroundStyle(.orange) }
             }
-            if let l = model.led { Text("Lighting: \(String(describing: l.mode)) · \(l.brightness)%").font(.caption).foregroundStyle(.secondary) }
             Divider()
-            HStack {
-                Button("Open Apex 4…") { openWindow(id: "main"); NSApp.activate() }
+            HStack(spacing: 8) {
+                Button("Open Space Station") { openWindow(id: "main"); NSApp.activate() }
+                Button(model.connection == .xinput ? "Switch to DInput" : "Switch to XInput") { Task { await model.switchMode() } }.disabled(!connected || model.busy)
+                Button { Task { await model.refresh(); await profiles.loadAll() } } label: { Image(systemName: "arrow.trianglehead.2.clockwise") }.disabled(model.busy)
                 Spacer()
                 Button("Quit") { NSApp.terminate(nil) }
             }
+            .controlSize(.small)
         }
-        .padding(12).frame(width: 280)
+        .padding(14).frame(width: 340)
+    }
+
+    private var subtitle: String {
+        guard connected else { return "Plug in over USB-C or power on with the receiver" }
+        var parts: [String] = []
+        if let d = profiles.draft { parts.append("Slot \(profiles.activeSlot + 1)\(d.title.isEmpty ? "" : " · \(d.title)")") }
+        if model.busy { parts.append("working…") }
+        return parts.isEmpty ? "Connected" : parts.joined(separator: " · ")
+    }
+    private func lightingName(_ m: LEDConfig.Mode) -> String {
+        switch m { case .off: "Off"; case .streamlined: "Streamlined"; case .breathing: "Breathing"; case .gradient: "Gradient"; case .feedback: "Feedback"; case .steady: "Steady" }
     }
 }
