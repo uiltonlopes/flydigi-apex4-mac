@@ -33,7 +33,8 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 - [x] Re-tested the DInput details flagged by the SS4 analysis (see `protocol.md` §3): keep `EA`/`E7`; acks are 1-based; DInput commands need 12-byte padding.
 
 ## Milestone 3 — beyond Space Station
-- [ ] Per-game trigger/vibration profiles: detect the frontmost app (`NSWorkspace`) and apply the profile automatically (Space Station's `GameTriggerModService`, Windows-only today).
+- [x] Per-app game profiles (2026-09-02): rules matched by bundle id or app name via `NSWorkspace`; switch profile slot and ForceAdapt presets when the app is frontmost, restore afterwards; Flydigi's list as a starting point. Space Station's game *mods* (DLL injection) stay Windows-only.
+- [ ] Racing telemetry (Forza "Data Out" UDP, F1/Dirt/WRC): drive trigger resistance from ABS/traction data — works with the game on a console too.
 - [ ] Shareable community presets (LED themes, GIF packs, game profiles).
 - [ ] Shortcuts / URL scheme / CLI automation.
 

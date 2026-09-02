@@ -323,9 +323,10 @@ struct HeroView: View {
     }
 
     private var profileTitle: String {
-        guard profiles.draft != nil else { return "No profile" }
+        guard profiles.draft != nil else { return String(localized: "No profile") }
         let t = profiles.draft?.title ?? ""
-        return t.isEmpty ? "Slot \(profiles.activeSlot + 1)" : t
+        let base = t.isEmpty ? "Slot \(profiles.shownSlot + 1)" : t
+        return profiles.temporarySlot != nil ? "\(base) · game" : base
     }
 }
 
