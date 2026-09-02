@@ -46,20 +46,47 @@ final class ControllerModel {
         profiles = ProfileStore(controller: self)
         refreshHelperStatus()
         monitor = USBMonitor { [weak self] in Task { @MainActor in self?.usbChanged() } }
+        startPresencePoll()
         Task { await refresh() }
     }
 
     /// Debounced USB attach/detach handling: update `connection`; fetch details only when a pad appears.
+    /// Notifications that arrive while we are busy with the device are not dropped: the check is re-run
+    /// once the quiet period is over, so a pad that came back mid-request is still picked up.
     private func usbChanged() {
-        guard Date() >= suppressNotificationsUntil else { return }
         pendingNotification?.cancel()
         pendingNotification = Task { @MainActor in
             try? await Task.sleep(for: .seconds(1.5))
-            guard !Task.isCancelled, Date() >= suppressNotificationsUntil else { return }
-            let now = USBMonitor.currentConnection()
-            if now != connection {
-                connection = now
-                if now == .none { info = nil; led = nil } else { await refresh() }
+            while !Task.isCancelled, Date() < suppressNotificationsUntil { try? await Task.sleep(for: .seconds(1)) }
+            guard !Task.isCancelled else { return }
+            await reconcileConnection()
+        }
+        if presencePoll == nil { startPresencePoll() }
+    }
+
+    /// Compares what USB shows now with what we believe and reacts to the difference.
+    private func reconcileConnection() async {
+        let now = USBMonitor.currentConnection()
+        if now != connection {
+            connection = now
+            if now == .none { info = nil; led = nil; firmwareUpdate = nil; firmwareCheckedFor = nil; padPoll?.cancel(); padPoll = nil }
+            else { await refresh() }
+        } else if now != .none, info == nil, !busy, padPoll == nil {
+            await refresh()
+        }
+    }
+
+    /// Safety net for missed IOKit notifications (seen after the receiver drops off the bus and comes back):
+    /// while nothing is connected, look at the USB tree every few seconds.
+    private var presencePoll: Task<Void, Never>?
+    private func startPresencePoll() {
+        presencePoll = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(4))
+                guard let self else { return }
+                if self.connection == .none, !self.busy, Date() >= self.suppressNotificationsUntil, USBMonitor.currentConnection() != .none {
+                    await self.reconcileConnection()
+                }
             }
         }
     }
