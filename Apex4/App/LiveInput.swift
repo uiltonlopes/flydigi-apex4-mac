@@ -6,6 +6,7 @@ import GameController
 import Observation
 import FlydigiKit
 import FlydigiTransport
+import os.log
 
 @MainActor @Observable
 final class LiveInput {
@@ -52,7 +53,7 @@ final class LiveInput {
     }
     private static let keyForLabel: [String: ControllerKey] = [
         "A": .a, "B": .b, "X": .x, "Y": .y, "LB": .lb, "RB": .rb, "LS": .thumbL, "RS": .thumbR,
-        "▲": .up, "▼": .down, "◀": .left, "▶": .right, "≡": .start, "◧": .select,
+        "▲": .up, "▼": .down, "◀": .left, "▶": .right, "≡": .start, "◧": .select, "⌂": .home,
     ]
 
     private var observers: [NSObjectProtocol] = []
@@ -72,6 +73,14 @@ final class LiveInput {
         let all = GCController.controllers()
         let pad = all.first { ($0.vendorName ?? "").localizedCaseInsensitiveContains("flydigi") } ?? all.first { $0.extendedGamepad != nil }
         connected = pad != nil
+        if let pad {
+            let names = pad.physicalInputProfile.elements.keys.sorted().joined(separator: ", ")
+            Logger(subsystem: "com.uiltonlopes.apex4", category: "live").notice("GameController pad \(pad.vendorName ?? "?", privacy: .public) [\(pad.productCategory, privacy: .public)] elements: \(names, privacy: .public)")
+            // Also on disk for debugging (Console filtering is unreliable for unsigned dev builds).
+            let dir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Logs/Apex4", isDirectory: true)
+            try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+            try? "\(Date()) \(pad.vendorName ?? "?") [\(pad.productCategory)]\n\(names)\n".write(to: dir.appendingPathComponent("gamecontroller.txt"), atomically: true, encoding: .utf8)
+        }
         guard let gp = pad?.extendedGamepad else { return }
         gp.valueChangedHandler = { [weak self] gamepad, _ in
             guard let self else { return }
@@ -88,6 +97,7 @@ final class LiveInput {
                 if gamepad.dpad.up.isPressed { p.insert("▲") }; if gamepad.dpad.down.isPressed { p.insert("▼") }
                 if gamepad.dpad.left.isPressed { p.insert("◀") }; if gamepad.dpad.right.isPressed { p.insert("▶") }
                 if gamepad.buttonMenu.isPressed { p.insert("≡") }; if gamepad.buttonOptions?.isPressed == true { p.insert("◧") }
+                if gamepad.buttonHome?.isPressed == true { p.insert("⌂") }
                 self.pressed = p
             }
         }
