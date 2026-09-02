@@ -207,3 +207,16 @@ mode (`FlydigiKit/Sources/FlydigiKit/InputReport.swift`). Reply frames on the sa
 triggers 25/26 (verified 2026-09-02 with `apex4 dev xinput-raw`; no enable command needed). Reading it
 requires capturing interface 0, so the app only does that for a few seconds while the user is asked to
 press a key ("borrow the pad"), then hands the pad back to the system driver.
+
+## 10. Two traps found on 2026-09-02 (both channels)
+
+- **Stale parcels.** After a blob read completes, the pad may still deliver one or two trailing parcels
+  (the last index again). If the next read command is sent without draining the input queue, the
+  assembler of the *next* blob accepts them — you get a config whose title is half from another slot
+  (`"Padra置"`) or, in the worst case, a whole slot mis-attributed (id 0 showing slot 3). Drain the queue
+  before every read and again ~30 ms after the last parcel (`Link.discardPending()`).
+- **The cursor is not the active slot.** `A5 20` (XInput "current config id") reports the id of the last
+  slot *read*, so reading slots 0…3 and then "re-applying the current slot" activates slot 3. The app now
+  remembers which slot the user chose and re-applies it with `A5 50 05 <slot>` (XInput) / `05 50 05 <slot>`
+  (DInput) after any multi-slot read. In DInput, `05 EB <id>` with id 0…3 reads the slot directly
+  (id 4 returns a blank "常规游戏配置" template).
