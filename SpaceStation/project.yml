@@ -54,6 +54,16 @@ targets:
         LSMinimumSystemVersion: "15.0"
         LSApplicationCategoryType: public.app-category.utilities
         NSHumanReadableCopyright: "MIT · Ported to macOS by Uilton Lopes\ngithub.com/uiltonlopes · linkedin.com/in/uiltonlopes\nbuymeacoffee.com/uiltonlopes · Not affiliated with Flydigi"
+        UTExportedTypeDeclarations:
+          - UTTypeIdentifier: com.uiltonlopes.spacestation.profile
+            UTTypeDescription: Space Station profile
+            UTTypeConformsTo: [public.data]
+            UTTypeTagSpecification:
+              public.filename-extension: [fdgprofile]
+        CFBundleDocumentTypes:
+          - CFBundleTypeName: Space Station profile
+            LSItemContentTypes: [com.uiltonlopes.spacestation.profile]
+            CFBundleTypeRole: Editor
     entitlements:
       path: App/SpaceStation.entitlements
       properties: {}                     # no sandbox: the app talks to the pad over HID directly

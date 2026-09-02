@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Profiles: local library ("Saved profiles…" in the profile menu) — save the current profile, load into the editor, rename, duplicate, reorder, delete, export/import as `.fdgprofile` (the raw 790-byte blob). SS4 share codes are not interoperable yet (they carry the protobuf bean, see docs/ss4-gap-analysis.md).
+- Screen: "Factory animations" tab with the animation each Apex 4 edition ships with (yours is marked).
 - Parity batch from the gap analysis: GIF frame interval is now really sent to the pad (start packet period); Settings › Controller gained Controller Sleep Time (1 min…3 h / never), Fast Swap Config (SELECT + A/B/X/Y) and the Turbo hardware shortcut switch; profile menu "Restore default configuration…"; Screen "Restore default animation"; device nickname (right-click the card); second gyro activation key.
 - Sticks: sensitivity curve drawn like Space Station (280 × 280 grid, 0–100 axes, dead-zone and edge bands, 4-point curve with draggable nodes), always visible, with SS4's Default / Instant / Delay / Custom presets and a live dot for the current deflection.
 - Triggers: Vibration (grip-sync) mode now really engages in the live preview (written through the profile, as Space Station does); the vibration test and the grip vibration test use the Xbox rumble packet games send, which the triggers follow.

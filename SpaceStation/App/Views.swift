@@ -267,10 +267,12 @@ struct HomeView: View {
 struct HeroView: View {
     @Environment(ControllerModel.self) private var model
     @Environment(ProfileStore.self) private var profiles
+    @Environment(ProfileLibrary.self) private var library
     @Binding var pendingSlot: UInt8?
     let onSelect: (ControllerKey) -> Void
     @State private var renaming = false
     @State private var confirmReset = false
+    @State private var showLibrary = false
 
     var body: some View {
         GeometryReader { g in
@@ -323,6 +325,8 @@ struct HeroView: View {
             Divider()
             Button("Rename profile…") { renaming = true }.disabled(profiles.draft == nil)
             Button("Restore default configuration…") { confirmReset = true }.disabled(profiles.draft == nil)
+            Divider()
+            Button("Saved profiles…") { showLibrary = true }
         } label: {
             HStack(spacing: 8) {
                 Text(profileTitle).font(.system(size: 13, weight: .medium)).foregroundStyle(.white).lineLimit(1)
@@ -337,6 +341,7 @@ struct HeroView: View {
             .confirmationDialog("Restore this profile to Flydigi's factory settings?", isPresented: $confirmReset) {
                 Button("Restore defaults", role: .destructive) { profiles.resetToFactory() }
             } message: { Text("Mappings, sticks, triggers, gyro, vibration and macros go back to their defaults in the editor. Nothing is written to the controller until you Apply.") }
+            .sheet(isPresented: $showLibrary) { ProfileLibrarySheet().environment(profiles).environment(library) }
         .disabled(profiles.slots.isEmpty)
         .popover(isPresented: $renaming, arrowEdge: .bottom) {
             VStack(alignment: .leading, spacing: 8) {

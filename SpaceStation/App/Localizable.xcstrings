@@ -606,7 +606,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Desligado"
+            "value": "Fechar"
           }
         }
       }
@@ -906,7 +906,27 @@
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Excluir"
+            "value": "Apagar"
+          }
+        }
+      }
+    },
+    "Delete this saved profile?": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apagar este perfil salvo?"
+          }
+        }
+      }
+    },
+    "Delete…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apagar…"
           }
         }
       }
@@ -1071,6 +1091,16 @@
         }
       }
     },
+    "Duplicate": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Duplicar"
+          }
+        }
+      }
+    },
     "Edge (active range)": {
       "localizations": {
         "pt-BR": {
@@ -1151,12 +1181,32 @@
         }
       }
     },
+    "Export…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportar…"
+          }
+        }
+      }
+    },
     "Factory animation": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Animação de fábrica"
+          }
+        }
+      }
+    },
+    "Factory animations": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Animações de fábrica"
           }
         }
       }
@@ -1681,6 +1731,16 @@
         }
       }
     },
+    "Import…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importar…"
+          }
+        }
+      }
+    },
     "In DInput mode the current value cannot be read; the choice is sent as is.": {
       "localizations": {
         "pt-BR": {
@@ -2001,6 +2061,16 @@
         }
       }
     },
+    "Load into editor": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carregar no editor"
+          }
+        }
+      }
+    },
     "Load this animation into the preview": {
       "localizations": {
         "pt-BR": {
@@ -2171,12 +2241,32 @@
         }
       }
     },
+    "Move down": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mover para baixo"
+          }
+        }
+      }
+    },
     "Move the sticks in the Joystick tab and check that the dot rests at the centre and reaches the ring on every side. If anything feels off, run the calibration again.": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Mova os analógicos na aba Analógicos e confira se o ponto descansa no centro e alcança o anel em todos os lados. Se algo parecer errado, rode a calibração de novo."
+          }
+        }
+      }
+    },
+    "Move up": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mover para cima"
           }
         }
       }
@@ -2401,6 +2491,16 @@
         }
       }
     },
+    "Not a Space Station for Mac profile (expected a 790-byte .fdgprofile).": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não é um perfil do Space Station for Mac (esperado um .fdgprofile de 790 bytes)."
+          }
+        }
+      }
+    },
     "Not affiliated with Flydigi. Controller artwork and app icon © Flydigi, used for interoperability (see NOTICE.md in the app bundle).": {
       "localizations": {
         "pt-BR": {
@@ -2467,6 +2567,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nada foi enviado deste Mac ainda."
+          }
+        }
+      }
+    },
+    "Nothing saved yet. “Save current profile” keeps a copy of what is in the editor.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada salvo ainda. “Salvar perfil atual” guarda uma cópia do que está no editor."
           }
         }
       }
@@ -2831,6 +2941,16 @@
         }
       }
     },
+    "Profiles kept on this Mac. Load one into the editor, then Apply to write it to the selected slot.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perfis guardados neste Mac. Carregue um no editor e depois Aplique para gravar no slot selecionado."
+          }
+        }
+      }
+    },
     "Quick": {
       "localizations": {
         "pt-BR": {
@@ -3017,6 +3137,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Renomear perfil…"
+          }
+        }
+      }
+    },
+    "Rename…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renomear…"
           }
         }
       }
@@ -3261,12 +3391,42 @@
         }
       }
     },
+    "Save current profile": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salvar perfil atual"
+          }
+        }
+      }
+    },
     "Saved as you type. The shared key is a GIPHY beta key, limited to about 100 searches per hour for everyone using this app; a free key of your own gives you a private limit.": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Salva enquanto você digita. A chave compartilhada é uma chave beta do GIPHY, limitada a cerca de 100 buscas por hora para todo mundo que usa este app; uma chave gratuita sua dá um limite só seu."
+          }
+        }
+      }
+    },
+    "Saved profiles": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perfis salvos"
+          }
+        }
+      }
+    },
+    "Saved profiles…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perfis salvos…"
           }
         }
       }
@@ -3867,6 +4027,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Testar vibração"
+          }
+        }
+      }
+    },
+    "The animation each Apex 4 edition ships with on its screen. Yours is marked; the others are the special editions'.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A animação com que cada edição do Apex 4 sai da fábrica no visor. A sua está marcada; as outras são das edições especiais."
           }
         }
       }
@@ -4707,6 +4877,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "XInput — o que os jogos esperam; a tela e o teste dos gatilhos precisam dele."
+          }
+        }
+      }
+    },
+    "Yours": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sua"
           }
         }
       }

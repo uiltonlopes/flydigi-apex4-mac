@@ -6,6 +6,19 @@
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
 	<string>Space Station</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Space Station profile</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.uiltonlopes.spacestation.profile</string>
+			</array>
+		</dict>
+	</array>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIconFile</key>
@@ -30,5 +43,25 @@
 	<string>MIT · Ported to macOS by Uilton Lopes
 github.com/uiltonlopes · linkedin.com/in/uiltonlopes
 buymeacoffee.com/uiltonlopes · Not affiliated with Flydigi</string>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Space Station profile</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.uiltonlopes.spacestation.profile</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>fdgprofile</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>

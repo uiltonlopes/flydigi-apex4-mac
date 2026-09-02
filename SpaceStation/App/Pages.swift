@@ -25,7 +25,7 @@ struct ScreenPage: View {
     @State private var giphyLoading = false
     @State private var current: ScreenStore.Current?
     @State private var origin = ScreenOrigin(name: "", kind: .file, url: nil)
-    enum Source: Hashable { case flydigi, giphy }
+    enum Source: Hashable { case flydigi, factory, giphy }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -68,7 +68,7 @@ struct ScreenPage: View {
                     .dropDestination(for: URL.self) { urls, _ in if let u = urls.first { load(u, ScreenOrigin(name: u.lastPathComponent, kind: .file, url: nil)) }; return true }
 
                     HStack(spacing: 14) {
-                        PillSegmented(selection: $source, options: [(.flydigi, "Official selection"), (.giphy, "GIPHY")])
+                        PillSegmented(selection: $source, options: [(.flydigi, "Official selection"), (.factory, "Factory animations"), (.giphy, "GIPHY")])
                             .padding(2).background(SS.n700, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                         if source == .giphy {
                             HStack(spacing: 6) {
@@ -87,7 +87,12 @@ struct ScreenPage: View {
                     }
                     .padding(.top, 8)
 
-                    if source == .flydigi {
+                    if source == .factory {
+                        Text("The animation each Apex 4 edition ships with on its screen. Yours is marked; the others are the special editions'.").font(.system(size: 12)).foregroundStyle(SS.n400)
+                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 176), spacing: 14)], spacing: 14) {
+                            ForEach(ScreenPage.factoryIds, id: \.self) { id in factoryCell(id) }
+                        }
+                    } else if source == .flydigi {
                         if library.isEmpty && libraryError == nil {
                             HStack(spacing: 8) { ProgressView().controlSize(.small); Text("Loading Flydigi's library…").font(.system(size: 12)).foregroundStyle(SS.n300) }
                         } else {
@@ -179,6 +184,38 @@ struct ScreenPage: View {
             }
             .padding(8)
             .background(SS.n700, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help("Load this animation into the preview")
+    }
+
+    static let factoryIds: [UInt8] = [84, 86, 87, 92, 93, 102, 103, 104]
+
+    private func factoryCell(_ id: UInt8) -> some View {
+        let url = Bundle.main.url(forResource: "factory-k2-\(id)", withExtension: "gif")
+        let name = DeviceCatalog.descriptor(for: id)?.name.replacingOccurrences(of: "Flydigi ", with: "") ?? "Apex 4 (\(id))"
+        let mine = model.info?.deviceId == id
+        return Button {
+            if let url { load(url, ScreenOrigin(name: String(localized: "Factory animation") + " · " + name, kind: .file, url: nil)) }
+        } label: {
+            VStack(alignment: .leading, spacing: 6) {
+                ZStack {
+                    Color.black
+                    if let url { AnimatedGIF(url: url, token: url.lastPathComponent) }
+                }
+                .frame(height: 88)
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                HStack {
+                    Text(name).font(.system(size: 12)).foregroundStyle(.white).lineLimit(1)
+                    Spacer()
+                    if mine { Text("Yours").font(.system(size: 10, weight: .semibold)).foregroundStyle(.white).padding(.horizontal, 5).frame(height: 16).background(SS.brand, in: RoundedRectangle(cornerRadius: 4)) }
+                    else { Text("GIF").font(.system(size: 10, weight: .semibold)).foregroundStyle(SS.n300).padding(.horizontal, 5).frame(height: 16).background(SS.n500, in: RoundedRectangle(cornerRadius: 4)) }
+                }
+            }
+            .padding(8)
+            .background(SS.n700, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 10, style: .continuous).strokeBorder(mine ? SS.brand500.opacity(0.7) : .clear))
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

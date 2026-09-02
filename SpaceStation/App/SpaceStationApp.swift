@@ -22,6 +22,7 @@ struct SpaceStationApp: App {
     @State private var model = ControllerModel()
     @State private var live = LiveInput()
     @State private var games: GameProfileStore
+    @State private var library = ProfileLibrary()
     init() { let m = ControllerModel(); _model = State(initialValue: m); _games = State(initialValue: GameProfileStore(model: m)) }
 
     var body: some Scene {
@@ -31,6 +32,7 @@ struct SpaceStationApp: App {
                 .environment(model.profiles)
                 .environment(live)
                 .environment(games)
+                .environment(library)
                 .frame(minWidth: 1100, minHeight: 720)
         }
         .windowStyle(.hiddenTitleBar)
