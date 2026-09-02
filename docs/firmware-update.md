@@ -56,7 +56,7 @@ No timeouts or retries anywhere in SS4's OTA path.
 
 ## 4. Firmware file
 
-Host checks are minimal **[proven]**: `u32 LE @0x02` printed as version; `u32 LE @0x18` = number of bytes transmitted (`size`); `u32 LE @size−4` = CRC32, only checked ≠ 0 and ≠ 0xFFFFFFFF. No signature, no model check. Telink convention **[inferred]**: boot mark `KNLT` at 0x08, size at 0x18, CRC32 appended by `tl_check_fw`, verified by the device after END; image written to the inactive bank and the boot flag switched only after CRC passes. Version bytes `0x68 0x37` ⇔ `6.8.3.7` ⇔ `6837` in the file name. Max image 2 MiB.
+Host checks are minimal **[proven]**: `u32 LE @0x02` printed as version; `u32 LE @0x18` = number of bytes transmitted (`size`); `u32 LE @size−4` = CRC32, only checked ≠ 0 and ≠ 0xFFFFFFFF. No signature, no model check. **Verified on the real 6.8.3.7 image (161 380 B): the stored value is the IEEE CRC-32 register without the final inversion (a5ca3c6d = ~5a35c392); our validator recomputes it.** Telink convention **[inferred]**: boot mark `KNLT` at 0x08, size at 0x18, CRC32 appended by `tl_check_fw`, verified by the device after END; image written to the inactive bank and the boot flag switched only after CRC passes. Version bytes `0x68 0x37` ⇔ `6.8.3.7` ⇔ `6837` in the file name. Max image 2 MiB.
 
 ## 5. Other chips (k2)
 

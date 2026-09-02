@@ -11,7 +11,8 @@ public struct FirmwareImage: Sendable {
     public let versionField: UInt32
     /// Trailing CRC32 (u32 LE at payloadSize − 4) as stored in the file.
     public let storedCRC: UInt32
-    /// CRC32 (IEEE, reflected) computed over `0 ..< payloadSize − 4`.
+    /// Telink's CRC32 over `0 ..< payloadSize − 4`: the IEEE reflected CRC **without the final inversion**
+    /// (verified against K2_Telink87_Gamepad_6837_0714.bin: stored a5ca3c6d = ~5a35c392).
     public let computedCRC: UInt32
     /// "KNLT" boot mark at 0x08 (Telink convention).
     public let hasBootMark: Bool
@@ -42,7 +43,7 @@ public struct FirmwareImage: Sendable {
         payloadSize = size
         versionField = u32(0x02)
         storedCRC = u32(size - 4)
-        computedCRC = FirmwareImage.crc32(data.subdata(in: 0..<(size - 4)))
+        computedCRC = FirmwareImage.crc32Telink(data.subdata(in: 0..<(size - 4)))
         hasBootMark = data[8..<12].elementsEqual("KNLT".utf8)
     }
 
@@ -63,13 +64,17 @@ public struct FirmwareImage: Sendable {
 
     // MARK: CRCs used by the OTA
 
-    public static func crc32(_ d: Data) -> UInt32 {
+    /// Standard CRC-32/IEEE (check value 0xCBF43926).
+    public static func crc32(_ d: Data) -> UInt32 { ~crc32Telink(d) }
+
+    /// Same register, no final XOR — what Telink's `tl_check_fw` appends to the image.
+    public static func crc32Telink(_ d: Data) -> UInt32 {
         var crc: UInt32 = 0xFFFF_FFFF
         for byte in d {
             crc ^= UInt32(byte)
             for _ in 0..<8 { crc = (crc & 1) != 0 ? (crc >> 1) ^ 0xEDB8_8320 : crc >> 1 }
         }
-        return ~crc
+        return crc
     }
 
     /// CRC-16/MODBUS (init 0xFFFF, reflected poly 0xA001) over a 20-byte OTA packet's first 18 bytes.
