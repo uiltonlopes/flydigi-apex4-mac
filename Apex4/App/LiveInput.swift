@@ -71,19 +71,22 @@ final class LiveInput {
         attach()
     }
 
+    private func readBattery(from pad: GCController) {
+        guard let b = pad.battery, b.batteryLevel >= 0 else { return }
+        battery = BatteryInfo(level: b.batteryLevel, charging: b.batteryState == .charging || b.batteryState == .full)
+    }
+
     private func attach() {
         // Prefer a Flydigi pad; otherwise the first extended gamepad.
         let all = GCController.controllers()
         let pad = all.first { ($0.vendorName ?? "").localizedCaseInsensitiveContains("flydigi") } ?? all.first { $0.extendedGamepad != nil }
         connected = pad != nil
         batteryTimer?.invalidate(); batteryTimer = nil; battery = nil
-        if let pad, let b = pad.battery {
-            let read: () -> Void = { [weak self] in
-                guard let self else { return }
-                if b.batteryLevel >= 0 { self.battery = BatteryInfo(level: b.batteryLevel, charging: b.batteryState == .charging || b.batteryState == .full) }
+        if let pad, pad.battery != nil {
+            readBattery(from: pad)
+            batteryTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { [weak self] _ in
+                Task { @MainActor [weak self] in if let self, let pad = GCController.controllers().first(where: { $0.battery != nil }) { self.readBattery(from: pad) } }
             }
-            read()
-            batteryTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { _ in Task { @MainActor in read() } }
         }
         if let pad {
             let names = pad.physicalInputProfile.elements.keys.sorted().joined(separator: ", ")
