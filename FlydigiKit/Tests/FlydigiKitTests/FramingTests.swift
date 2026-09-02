@@ -100,7 +100,18 @@ func fixture(_ name: String) throws -> [UInt8] {
     @Test func ledEdit() throws {
         var cfg = try #require(LEDConfig(bytes: try fixture("led_factory_500.bin")))
         cfg.setSteady(.init(rgb8: 255, 0, 0))
-        #expect(cfg.mode == .steady && cfg.groups[0][0] == .init(r: 100, g: 0, b: 0) && cfg.groups[3][1].isOff)
+        // Space Station "On": every unit carries the colour and the loop is a single step.
+        #expect(cfg.mode == .steady && cfg.groups[0][0] == .init(r: 100, g: 0, b: 0) && cfg.groups[3][9] == .init(r: 100, g: 0, b: 0) && cfg.loopEnd == 0)
+        #expect(cfg.colours(ofGroup: 0).count == 1)
+        cfg.setCycle([.init(r: 100, g: 0, b: 0), .init(r: 0, g: 0, b: 100)], mode: .breathing)
+        // Breath: colour, black, colour, black … and loopEnd = 2n-1 so the firmware dips to black between colours.
+        #expect(cfg.groups[0][0] == .init(r: 100, g: 0, b: 0) && cfg.groups[0][1].isOff && cfg.groups[0][2] == .init(r: 0, g: 0, b: 100) && cfg.loopEnd == 3)
+        #expect(cfg.colours(ofGroup: 0).count == 2)
+        cfg.setCycle([.init(r: 1, g: 2, b: 3), .init(r: 4, g: 5, b: 6), .init(r: 7, g: 8, b: 9)], mode: .gradient)
+        #expect(cfg.loopEnd == 2 && cfg.type == 0)
+        cfg.setCycle([.init(r: 1, g: 2, b: 3)], mode: .feedback)
+        #expect(cfg.loopEnd == 1 && cfg.type == 1)
+        cfg.setOff(); #expect(cfg.mode.rawValue == 6)
         #expect(cfg.bytes.count == 500)
     }
     @Test func assembler() {
