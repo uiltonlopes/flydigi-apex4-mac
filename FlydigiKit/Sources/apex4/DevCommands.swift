@@ -7,7 +7,37 @@ import FlydigiTransport
 
 struct Dev: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Developer experiments (protocol re-tests).", shouldDisplay: false,
-                                                    subcommands: [DInputRetest.self, HIDSniff.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self])
+                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self])
+
+    /// Watches DInput input reports for N seconds and prints every byte/bit that changes versus the idle
+    /// report, with timestamps — press buttons one at a time to map them.
+    struct HIDDiff: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "hid-diff")
+        @Option(name: .long) var seconds: Double = 10
+        func run() throws {
+            let link = try HIDLink(); defer { link.close() }
+            var baseline: [UInt8]? = nil
+            var last: [UInt8]? = nil
+            let t0 = Date()
+            print("watching for \(Int(seconds)) s — press one button at a time…")
+            while Date().timeIntervalSince(t0) < seconds {
+                guard let r: [UInt8] = try? link.waitForReport(timeout: 0.5, { (r: [UInt8]) -> [UInt8]? in r }) else { continue }
+                if baseline == nil { baseline = r; last = r; print("baseline (\(r.count) B): \(hex(r))"); continue }
+                guard let prev = last, r.count == prev.count else { last = r; continue }
+                var changes: [String] = []
+                for i in 0..<r.count where r[i] != prev[i] {
+                    // Ignore analogue jitter on bytes that only move a little.
+                    if abs(Int(r[i]) - Int(prev[i])) < 6 && ((r[i] ^ prev[i]) & 0xF0) == 0 && baseline![i] != 0 { continue }
+                    let diff = r[i] ^ prev[i]
+                    let bits = (0..<8).filter { diff & (1 << $0) != 0 }.map { "b\($0)" }.joined(separator: ",")
+                    changes.append(String(format: "[%d] %02x→%02x (%@)", i, prev[i], r[i], bits))
+                }
+                if !changes.isEmpty { print(String(format: "%6.2fs  ", Date().timeIntervalSince(t0)) + changes.joined(separator: "  ")) }
+                last = r
+            }
+        }
+        private func hex(_ b: [UInt8]) -> String { b.map { String(format: "%02x", $0) }.joined(separator: " ") }
+    }
 
     /// Counts raw input reports on the DInput vendor interface for 2 s (transport smoke test).
     struct HIDSniff: ParsableCommand {

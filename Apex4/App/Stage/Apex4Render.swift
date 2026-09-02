@@ -34,7 +34,6 @@ enum Apex4Render {
         .init(.thumbL, 116.5, 152.5, 32, 32, .circle), .init(.thumbR, 302, 216, 32, 32, .circle),
         .init(.y, 364, 130, 32, 32, .circle), .init(.x, 335, 159, 32, 32, .circle), .init(.b, 393, 159, 32, 32, .circle), .init(.a, 364, 188, 32, 32, .circle),
         .init(.up, 186, 194, 24, 24, .circle), .init(.right, 212, 222, 24, 24, .circle), .init(.down, 186, 250, 24, 24, .circle), .init(.left, 158, 222, 24, 24, .circle),
-        .init(.c, 379, 239, 26, 26, .circle), .init(.z, 408, 210, 26, 26, .circle),
         .init(.menu, 225, 275, 28, 12, .roundRect, clickable: false), .init(.home, 260, 275, 28, 12, .roundRect, clickable: false),
         .init(.m2, 149, 344, 41, 41), .init(.m4, 206, 344, 41, 41), .init(.m3, 263, 344, 41, 41), .init(.m1, 324, 345, 41, 41),
     ]
