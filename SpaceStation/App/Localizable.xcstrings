@@ -1,6 +1,16 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%lld s": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld s"
+          }
+        }
+      }
+    },
     "2.4 GHz receiver": {
       "localizations": {
         "pt-BR": {
@@ -811,12 +821,32 @@
         }
       }
     },
+    "Finish unlocks when the timer ends (or every limit is reached).": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concluir libera quando o cronômetro terminar (ou todos os limites forem alcançados)."
+          }
+        }
+      }
+    },
     "Finish with what was captured": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Concluir com o que foi capturado"
+          }
+        }
+      }
+    },
+    "Finishing before the timer ends may store a wrong range if you have not swept the sticks and triggers fully — you can always run the calibration again.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concluir antes do cronômetro pode gravar um alcance errado se você não percorreu analógicos e gatilhos por completo — você sempre pode calibrar de novo."
           }
         }
       }
@@ -1641,6 +1671,26 @@
         }
       }
     },
+    "Now: press LT and RT all the way down and release, three times each.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agora: pressione LT e RT até o fundo e solte, três vezes cada."
+          }
+        }
+      }
+    },
+    "Now: rotate BOTH sticks slowly along their outer edge, all the way round, three or four times. Also push each stick fully up, down, left and right.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Agora: gire os DOIS analógicos devagar pela borda, volta completa, três ou quatro vezes. Empurre também cada um até o fim para cima, baixo, esquerda e direita."
+          }
+        }
+      }
+    },
     "Off": {
       "localizations": {
         "pt-BR": {
@@ -1957,6 +2007,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Ler tudo de novo do controle"
+          }
+        }
+      }
+    },
+    "Ready to finish": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto para concluir"
           }
         }
       }
@@ -2491,6 +2551,16 @@
         }
       }
     },
+    "Sticks": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analógicos"
+          }
+        }
+      }
+    },
     "Stop": {
       "localizations": {
         "pt-BR": {
@@ -2651,6 +2721,16 @@
         }
       }
     },
+    "The controller does not report movement while calibrating — follow the timer.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O controle não reporta movimento enquanto calibra — siga o cronômetro."
+          }
+        }
+      }
+    },
     "The sticks and triggers have not reached all their limits yet. Finishing now may store a wrong range — you can always run the calibration again.": {
       "localizations": {
         "pt-BR": {
@@ -2717,6 +2797,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Modo do gatilho"
+          }
+        }
+      }
+    },
+    "Triggers": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gatilhos"
           }
         }
       }

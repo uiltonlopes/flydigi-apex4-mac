@@ -14,6 +14,14 @@ struct CalibrationWizard: View {
     @State private var step: Step = .intro
     @State private var coverage = Coverage()
     @State private var confirmCancel = false
+    @State private var elapsed = 0                    // seconds since Start
+    @State private var sawInput = false               // did the pad keep reporting input while calibrating?
+    private let sticksSeconds = 24, triggersSeconds = 10
+    private var totalSeconds: Int { sticksSeconds + triggersSeconds }
+    private var phase: Int { elapsed < sticksSeconds ? 0 : 1 }           // 0 sticks, 1 triggers
+    private var timeDone: Bool { elapsed >= totalSeconds }
+    private var canFinish: Bool { coverage.complete || timeDone }
+    private let ticker = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     struct Coverage: Equatable {
         var lMin = CGPoint(x: 0, y: 0), lMax = CGPoint(x: 0, y: 0)
@@ -59,15 +67,20 @@ struct CalibrationWizard: View {
         .onChange(of: right) { _, _ in track() }
         .onChange(of: lt) { _, _ in track() }
         .onChange(of: rt) { _, _ in track() }
+        .onReceive(ticker) { _ in if step == .running { elapsed += 1 } }
         .confirmationDialog("Stop calibration now?", isPresented: $confirmCancel) {
             Button("Finish with what was captured", role: .destructive) { Task { await finish() } }
             Button("Keep calibrating", role: .cancel) {}
         } message: {
-            Text("The sticks and triggers have not reached all their limits yet. Finishing now may store a wrong range — you can always run the calibration again.")
+            Text("Finishing before the timer ends may store a wrong range if you have not swept the sticks and triggers fully — you can always run the calibration again.")
         }
     }
 
-    private func track() { guard step == .running else { return }; coverage.feed(l: left, r: right, lt: lt, rt: rt) }
+    private func track() {
+        guard step == .running else { return }
+        if abs(left.x) > 0.05 || abs(left.y) > 0.05 || abs(right.x) > 0.05 || abs(right.y) > 0.05 || lt > 0.05 || rt > 0.05 { sawInput = true }
+        coverage.feed(l: left, r: right, lt: lt, rt: rt)
+    }
 
     // MARK: Steps
 
@@ -91,7 +104,7 @@ struct CalibrationWizard: View {
                 Spacer()
                 PrimaryButton(title: "Start", icon: "play.fill", enabled: model.connection != .none && !model.busy && live.connected && model.info?.wired != false) {
                     Task {
-                        coverage = Coverage()
+                        coverage = Coverage(); elapsed = 0; sawInput = false
                         if await model.calibration(start: true) { step = .running } else { step = .failed }
                     }
                 }
@@ -101,8 +114,18 @@ struct CalibrationWizard: View {
 
     private var running: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Rotate each stick slowly along its edge, then press both triggers all the way. The rings fill in as you reach the limits.")
-                .font(.system(size: 13)).foregroundStyle(.white)
+            // The pad shows "Calibrating" on its screen and stops reporting input while the window is open,
+            // so the steps are timed. If input does arrive (some firmwares), the rings fill in as a bonus.
+            HStack(alignment: .top, spacing: 12) {
+                phaseBadge(0, "Sticks")
+                phaseBadge(1, "Triggers")
+                Spacer()
+                Text(timeDone ? "Ready to finish" : "\(totalSeconds - elapsed) s").font(.system(size: 22, weight: .semibold).monospacedDigit()).foregroundStyle(timeDone ? SS.green : .white)
+            }
+            Text(phase == 0 ? "Now: rotate BOTH sticks slowly along their outer edge, all the way round, three or four times. Also push each stick fully up, down, left and right."
+                            : "Now: press LT and RT all the way down and release, three times each.")
+                .font(.system(size: 13, weight: .medium)).foregroundStyle(.white)
+            ProgressView(value: Double(min(elapsed, totalSeconds)), total: Double(totalSeconds)).tint(SS.brand500)
             HStack(alignment: .top, spacing: 28) {
                 CoverageGauge(title: "Left stick", stick: left, minP: coverage.lMin, maxP: coverage.lMax, done: coverage.stickLeftDone)
                 CoverageGauge(title: "Right stick", stick: right, minP: coverage.rMin, maxP: coverage.rMax, done: coverage.stickRightDone)
@@ -111,17 +134,27 @@ struct CalibrationWizard: View {
                         TriggerCoverage(title: "LT", value: lt, peak: coverage.lt)
                         TriggerCoverage(title: "RT", value: rt, peak: coverage.rt)
                     }
-                    Label(coverage.triggersDone ? "Triggers reached" : "Press both triggers fully", systemImage: coverage.triggersDone ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 12)).foregroundStyle(coverage.triggersDone ? SS.green : SS.n300)
+                    if !sawInput { Text("The controller does not report movement while calibrating — follow the timer.").font(.system(size: 11)).foregroundStyle(SS.n400).multilineTextAlignment(.center).frame(width: 150) }
                 }
             }
             HStack {
-                GhostButton(title: "Cancel", enabled: step == .running) { if coverage.complete { Task { await finish() } } else { confirmCancel = true } }
+                GhostButton(title: "Cancel", enabled: step == .running) { if canFinish { Task { await finish() } } else { confirmCancel = true } }
                 Spacer()
-                if !coverage.complete { Text("Finish unlocks when every limit has been reached.").font(.system(size: 12)).foregroundStyle(SS.n400) }
-                PrimaryButton(title: step == .finishing ? "Saving…" : "Finish", icon: "checkmark", enabled: coverage.complete && step == .running) { Task { await finish() } }
+                if !canFinish { Text("Finish unlocks when the timer ends (or every limit is reached).").font(.system(size: 12)).foregroundStyle(SS.n400) }
+                PrimaryButton(title: step == .finishing ? "Saving…" : "Finish", icon: "checkmark", enabled: canFinish && step == .running) { Task { await finish() } }
             }
         }
+    }
+
+    private func phaseBadge(_ i: Int, _ title: String) -> some View {
+        let active = phase == i, past = phase > i
+        return HStack(spacing: 6) {
+            Image(systemName: past ? "checkmark.circle.fill" : (active ? "record.circle" : "circle")).font(.system(size: 12))
+            Text(LocalizedStringKey(title)).font(.system(size: 12, weight: active ? .semibold : .regular))
+        }
+        .foregroundStyle(past ? SS.green : (active ? .white : SS.n400))
+        .padding(.horizontal, 10).frame(height: 26)
+        .background(active ? SS.n500 : SS.n700, in: Capsule())
     }
 
     private var done: some View {
