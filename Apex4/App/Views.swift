@@ -451,8 +451,17 @@ struct LightPanel: View {
         .opacity(mode == .off ? 0.4 : 1)
     }
 
+    private func log(_ s: String) {
+        let dir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Library/Logs/Apex4", isDirectory: true)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        let url = dir.appendingPathComponent("light.log")
+        let line = "\(Date()) \(s)\n"
+        if let h = try? FileHandle(forWritingTo: url) { h.seekToEndOfFile(); h.write(line.data(using: .utf8)!); try? h.close() } else { try? line.write(to: url, atomically: true, encoding: .utf8) }
+    }
+
     private func load() {
-        guard let led = model.led else { return }
+        guard let led = model.led else { log("load: model.led nil"); return }
+        log("load: mode=\(led.mode) b=\(led.brightness) s=\(led.speed) colours=\(led.colours(ofGroup: 0).map { "(\($0.r),\($0.g),\($0.b))" })")
         loaded = false
         mode = led.mode; brightness = Double(led.brightness); speed = Double(led.speed)
         let cs = led.colours(ofGroup: 0)
@@ -462,7 +471,8 @@ struct LightPanel: View {
 
     /// Debounced live apply (the pad saves to flash on every write, so wait for the slider to settle).
     private func schedule() {
-        guard loaded, model.led != nil else { return }
+        guard loaded, model.led != nil else { log("schedule ignored (loaded=\(loaded))"); return }
+        log("schedule: mode=\(mode) b=\(Int(brightness)) s=\(Int(speed)) colours=\(colours.count)")
         pending?.cancel()
         pending = Task { @MainActor in
             try? await Task.sleep(for: .milliseconds(600))
@@ -480,7 +490,9 @@ struct LightPanel: View {
         switch mode { case .steady: led.setSteady(units.first ?? .off); case .off: led.mode = .off; default: led.setCycle(units, mode: mode) }
         led.brightness = UInt8(brightness); led.speed = UInt8(speed)
         loaded = false                                   // model.led will change back → don't re-trigger
+        log("apply: sending mode=\(led.mode) colours=\(led.colours(ofGroup: 0).map { "(\($0.r),\($0.g),\($0.b))" }) conn=\(model.connection)")
         await model.apply(led: led)
+        log("apply: done error=\(model.lastError ?? "none")")
         loaded = true
     }
 }
