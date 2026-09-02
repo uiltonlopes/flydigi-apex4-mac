@@ -7,8 +7,10 @@ import FlydigiKit
 
 struct CalibrationWizard: View {
     @Environment(ControllerModel.self) private var model
+    @Environment(ProfileStore.self) private var profiles
     @Environment(LiveInput.self) private var live
     @Environment(\.dismiss) private var dismiss
+    @State private var reconnecting = false
 
     enum Step { case intro, running, finishing, done, failed }
     @State private var step: Step = .intro
@@ -141,7 +143,7 @@ struct CalibrationWizard: View {
                 GhostButton(title: "Cancel", enabled: step == .running) { if canFinish { Task { await finish() } } else { confirmCancel = true } }
                 Spacer()
                 if !canFinish { Text("Finish unlocks when the timer ends (or every limit is reached).").font(.system(size: 12)).foregroundStyle(SS.n400) }
-                PrimaryButton(title: step == .finishing ? "Saving…" : "Finish", icon: "checkmark", enabled: canFinish && step == .running) { Task { await finish() } }
+                PrimaryButton(title: step == .finishing ? (reconnecting ? "Reconnecting…" : "Saving…") : "Finish", icon: "checkmark", enabled: canFinish && step == .running) { Task { await finish() } }
             }
         }
     }
@@ -176,7 +178,16 @@ struct CalibrationWizard: View {
 
     private func finish() async {
         step = .finishing
-        step = await model.calibration(start: false) ? .done : .failed
+        guard await model.calibration(start: false) else { step = .failed; return }
+        // Closing the window makes the pad store the result and re-enumerate; the app's USB watcher ignores
+        // events for a few seconds after its own commands, so re-read everything explicitly.
+        reconnecting = true
+        try? await Task.sleep(for: .seconds(3))
+        await model.refresh()
+        await profiles.loadAll()
+        live.setRawMonitoring(model.connection == .dinput)
+        reconnecting = false
+        step = .done
     }
 
     private func bullet(_ n: String, _ text: String) -> some View {

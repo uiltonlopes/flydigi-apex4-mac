@@ -2041,6 +2041,16 @@
         }
       }
     },
+    "Reconnecting…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reconectando…"
+          }
+        }
+      }
+    },
     "Record from pad": {
       "localizations": {
         "pt-BR": {

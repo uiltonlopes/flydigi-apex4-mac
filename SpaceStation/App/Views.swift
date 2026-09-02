@@ -801,7 +801,7 @@ struct JoystickTab: View {
             .frame(maxWidth: 1000)
         }
         .frame(maxWidth: .infinity)
-        .sheet(isPresented: $calibrating) { CalibrationWizard().environment(model).environment(live) }
+        .sheet(isPresented: $calibrating) { CalibrationWizard().environment(model).environment(profiles).environment(live) }
     }
 }
 
