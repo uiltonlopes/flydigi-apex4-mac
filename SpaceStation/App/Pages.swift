@@ -53,7 +53,7 @@ struct ScreenPage: View {
                                         PrimaryButton(title: "Send to controller", icon: "arrow.up.circle", enabled: !model.busy && model.connection == .xinput && model.info?.wired != false) { send() }
                                         if model.connection != .xinput { Text("Needs XInput mode.").font(.system(size: 12)).foregroundStyle(SS.yellow) }
                                         else if model.info?.wired == false { Text("Needs the USB cable (the receiver does not forward screen data).").font(.system(size: 12)).foregroundStyle(SS.yellow) }
-                                        else { Text("About \(Int(Double(editor.outputCount) * 3.5)) s for \(editor.outputCount) frame\(editor.outputCount == 1 ? "" : "s").").font(.system(size: 12)).foregroundStyle(SS.n400) }
+                                        else { Text("About \(Int(Double(editor.outputCount) * 3.5)) s for \(editor.outputCount) frames.").font(.system(size: 12)).foregroundStyle(SS.n400) }
                                     }
                                 }
                             }

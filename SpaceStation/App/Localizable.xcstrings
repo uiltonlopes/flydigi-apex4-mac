@@ -21,6 +21,26 @@
         }
       }
     },
+    "160 × 80 · %lld frames": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "160 × 80 · %lld quadros"
+          }
+        }
+      }
+    },
+    "160 × 80 · %lld frames (thinned from %lld)": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "160 × 80 · %1$lld quadros (reduzido de %2$lld)"
+          }
+        }
+      }
+    },
     "2 to 5 colors": {
       "localizations": {
         "pt-BR": {
@@ -57,6 +77,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Sobre"
+          }
+        }
+      }
+    },
+    "About %lld s for %lld frames.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cerca de %1$lld s para %2$lld quadros."
           }
         }
       }
@@ -871,6 +901,16 @@
         }
       }
     },
+    "End %lld": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fim %lld"
+          }
+        }
+      }
+    },
     "End (full press)": {
       "localizations": {
         "pt-BR": {
@@ -1127,6 +1167,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Frequência"
+          }
+        }
+      }
+    },
+    "GIF, PNG or JPEG · drop a file here · the screen is 160 × 80, up to %lld frames": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "GIF, PNG ou JPEG · solte um arquivo aqui · o visor tem 160 × 80, até %lld quadros"
           }
         }
       }
@@ -2166,7 +2216,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Pré-visualização"
+            "value": "Prévia"
           }
         }
       }
@@ -2671,6 +2721,16 @@
         }
       }
     },
+    "Sending… %lld %% — about %lld s left": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enviando… %1$lld %% — faltam cerca de %2$lld s"
+          }
+        }
+      }
+    },
     "Sensitivity": {
       "localizations": {
         "pt-BR": {
@@ -2847,6 +2907,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Iniciar"
+          }
+        }
+      }
+    },
+    "Start %lld": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Início %lld"
           }
         }
       }
@@ -3557,6 +3627,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "ativo"
+          }
+        }
+      }
+    },
+    "frames %lld–%lld of %lld": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "quadros %1$lld–%2$lld de %3$lld"
           }
         }
       }

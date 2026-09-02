@@ -84,9 +84,9 @@ struct ScreenEditorView: View {
                 if state.images.count > 1 { trim }
             }
             VStack(alignment: .leading, spacing: 12) {
-                Text("On the controller").font(.system(size: 13)).foregroundStyle(SS.n300)
+                Text("Preview").font(.system(size: 13)).foregroundStyle(SS.n300)
                 preview
-                Text("160 × 80 · \(state.outputCount) frame\(state.outputCount == 1 ? "" : "s")\(state.selectedCount > Screen.maxFrames ? " (thinned from \(state.selectedCount))" : "")")
+                Text(state.selectedCount > Screen.maxFrames ? "160 × 80 · \(state.outputCount) frames (thinned from \(state.selectedCount))" : "160 × 80 · \(state.outputCount) frames")
                     .font(.system(size: 12)).foregroundStyle(SS.n400)
                 if state.images.count > 1 {
                     Field("Frame interval") {
