@@ -76,19 +76,21 @@ struct Sidebar: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            // Title row sits to the right of the traffic lights; like SS4, it goes back to the device center.
+            // Title row on its own line under the traffic lights, aligned with the card; like SS4, it goes
+            // back to the device center.
             Button { route = .deviceCenter } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "chevron.left").font(.system(size: 11, weight: .semibold)).foregroundStyle(SS.n400)
                     Image(systemName: "gamecontroller.fill").font(.system(size: 13)).foregroundStyle(SS.brand500)
-                    Text("Space Station for Mac").font(.system(size: 13)).foregroundStyle(SS.n300)
+                    Text("Space Station for Mac").font(.system(size: 13, weight: .medium)).foregroundStyle(SS.n300).lineLimit(1).fixedSize()
+                    Spacer(minLength: 0)
                 }
                 .contentShape(Rectangle())
             }
             .buttonStyle(.plain)
-            .padding(.leading, 78).frame(height: 36).padding(.top, 8)
+            .padding(.horizontal, 12).frame(height: 28).padding(.top, 34)
 
-            deviceCard.padding(.horizontal, 12).padding(.top, 14)
+            deviceCard.padding(.horizontal, 12).padding(.top, 10)
 
             infoList.padding(.horizontal, 12).padding(.top, 14)
 
