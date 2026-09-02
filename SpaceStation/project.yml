@@ -60,9 +60,17 @@ targets:
             UTTypeConformsTo: [public.data]
             UTTypeTagSpecification:
               public.filename-extension: [fdgprofile]
+          - UTTypeIdentifier: com.uiltonlopes.spacestation.macro
+            UTTypeDescription: Space Station macro
+            UTTypeConformsTo: [public.json]
+            UTTypeTagSpecification:
+              public.filename-extension: [fdgmacro]
         CFBundleDocumentTypes:
           - CFBundleTypeName: Space Station profile
             LSItemContentTypes: [com.uiltonlopes.spacestation.profile]
+            CFBundleTypeRole: Editor
+          - CFBundleTypeName: Space Station macro
+            LSItemContentTypes: [com.uiltonlopes.spacestation.macro]
             CFBundleTypeRole: Editor
     entitlements:
       path: App/SpaceStation.entitlements

@@ -18,6 +18,16 @@
 				<string>com.uiltonlopes.spacestation.profile</string>
 			</array>
 		</dict>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Space Station macro</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>com.uiltonlopes.spacestation.macro</string>
+			</array>
+		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
@@ -59,6 +69,23 @@ buymeacoffee.com/uiltonlopes · Not affiliated with Flydigi</string>
 				<key>public.filename-extension</key>
 				<array>
 					<string>fdgprofile</string>
+				</array>
+			</dict>
+		</dict>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.json</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Space Station macro</string>
+			<key>UTTypeIdentifier</key>
+			<string>com.uiltonlopes.spacestation.macro</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>fdgmacro</string>
 				</array>
 			</dict>
 		</dict>

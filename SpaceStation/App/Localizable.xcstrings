@@ -11,6 +11,16 @@
         }
       }
     },
+    "%lld steps · %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%1$lld passos · %2$@"
+          }
+        }
+      }
+    },
     "1 color": {
       "localizations": {
         "pt-BR": {
@@ -217,6 +227,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Adicionar passo"
+          }
+        }
+      }
+    },
+    "Add to profile": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicionar ao perfil"
           }
         }
       }
@@ -2251,12 +2271,42 @@
         }
       }
     },
+    "Macro library": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Biblioteca de macros"
+          }
+        }
+      }
+    },
+    "Macro name": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nome da macro"
+          }
+        }
+      }
+    },
     "Macros": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Macros"
+          }
+        }
+      }
+    },
+    "Macros kept on this Mac. Add one to the current profile and pick the button that runs it.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Macros guardadas neste Mac. Adicione uma ao perfil atual e escolha o botão que a executa."
           }
         }
       }
@@ -2591,6 +2641,16 @@
         }
       }
     },
+    "Not a Space Station for Mac macro (.fdgmacro).": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não é uma macro do Space Station for Mac (.fdgmacro)."
+          }
+        }
+      }
+    },
     "Not a Space Station for Mac profile (expected a 790-byte .fdgprofile).": {
       "localizations": {
         "pt-BR": {
@@ -2667,6 +2727,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nada foi enviado deste Mac ainda."
+          }
+        }
+      }
+    },
+    "Nothing saved yet. Right-click a macro in a profile and choose “Save to library”.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada salvo ainda. Clique com o botão direito em uma macro do perfil e escolha “Salvar na biblioteca”."
           }
         }
       }
@@ -3541,6 +3611,16 @@
         }
       }
     },
+    "Save to library": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salvar na biblioteca"
+          }
+        }
+      }
+    },
     "Saved as you type. The shared key is a GIPHY beta key, limited to about 100 searches per hour for everyone using this app; a free key of your own gives you a private limit.": {
       "localizations": {
         "pt-BR": {
@@ -4337,6 +4417,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Os valores que o próprio Apex 4 usa para este modo no menu da tela"
+          }
+        }
+      }
+    },
+    "This profile already has the maximum number of macros.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Este perfil já tem o número máximo de macros."
           }
         }
       }

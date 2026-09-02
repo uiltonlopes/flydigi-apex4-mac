@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Macros: local library (save from a profile, add to any profile on a free button, rename, duplicate, export/import `.fdgmacro`).
 - Sticks: report-rate meter (DInput) and a circularity test with coverage and average error, like Space Station's advanced test page.
 - Profiles: local library ("Saved profiles…" in the profile menu) — save the current profile, load into the editor, rename, duplicate, reorder, delete, export/import as `.fdgprofile` (the raw 790-byte blob). SS4 share codes are not interoperable yet (they carry the protobuf bean, see docs/ss4-gap-analysis.md).
 - Screen: "Factory animations" tab with the animation each Apex 4 edition ships with (yours is marked).

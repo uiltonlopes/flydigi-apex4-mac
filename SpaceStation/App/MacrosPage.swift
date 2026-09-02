@@ -8,7 +8,9 @@ import FlydigiKit
 struct MacrosPage: View {
     @Environment(ProfileStore.self) private var profiles
     @Environment(LiveInput.self) private var live
+    @Environment(MacroLibrary.self) private var library
     @State private var selected: Int?
+    @State private var showLibrary = false
 
     var body: some View {
         if profiles.draft == nil {
@@ -57,7 +59,10 @@ struct MacrosPage: View {
                     }
                     .tag(i)
                     .listRowBackground(selected == i ? SS.n500 : Color.clear)
-                    .contextMenu { Button("Delete", role: .destructive) { profiles.removeMacro(at: i) } }
+                    .contextMenu {
+                        Button("Save to library") { library.save(m, name: String(localized: "Macro") + " " + shortName(m.key)) }
+                        Button("Delete", role: .destructive) { profiles.removeMacro(at: i) }
+                    }
                 }
             }
             .listStyle(.plain).scrollContentBackground(.hidden)
@@ -74,11 +79,14 @@ struct MacrosPage: View {
                 .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden)
                 .disabled((profiles.draft?.macros.count ?? 0) >= profiles.maxMacros || availableKeys.isEmpty)
                 .help("Bind a new macro to a button")
+                GhostButton(title: "", icon: "books.vertical") { showLibrary = true }
+                    .frame(width: 40).help("Macro library")
                 GhostButton(title: "", icon: "trash", enabled: selected != nil, destructive: true) { if let s = selected { profiles.removeMacro(at: s) } }
                     .frame(width: 40)
             }
             .padding(12)
         }
+        .sheet(isPresented: $showLibrary) { MacroLibrarySheet(onAdded: { selected = $0 }).environment(profiles).environment(library) }
     }
 
     /// Buttons that can still receive a macro: physical keys without one.
