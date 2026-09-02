@@ -138,14 +138,16 @@ struct DarkSelect<T: Hashable>: View {
 struct PillSegmented<T: Hashable>: View {
     @Binding var selection: T
     let options: [(T, String)]
+    var compact = false          // tighter padding + smaller type for 4+ options in a narrow column
     var body: some View {
         HStack(spacing: 2) {
             ForEach(options, id: \.0) { o in
                 let on = o.0 == selection
                 Button { withAnimation(.easeOut(duration: 0.15)) { selection = o.0 } } label: {
-                    Text(LocalizedStringKey(o.1)).font(.system(size: 13, weight: on ? .semibold : .regular))
+                    Text(LocalizedStringKey(o.1)).font(.system(size: compact ? 12 : 13, weight: on ? .semibold : .regular))
+                        .lineLimit(1).fixedSize()
                         .foregroundStyle(on ? .white : SS.n300)
-                        .padding(.horizontal, 16).frame(height: 28)
+                        .padding(.horizontal, compact ? 9 : 16).frame(height: 28)
                         .background(on ? SS.n500 : .clear, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
                         .contentShape(Rectangle())
                 }

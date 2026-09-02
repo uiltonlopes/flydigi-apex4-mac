@@ -1261,6 +1261,16 @@
         }
       }
     },
+    "Flydigi's factory curve: a slight lift near the centre (23 % output at 15 % travel), then linear. X: stick position, Y: output.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curva de fábrica da Flydigi: um leve ganho perto do centro (23 % de saída com 15 % de curso), depois linear. X: posição do analógico, Y: saída."
+          }
+        }
+      }
+    },
     "Flydigi's game list": {
       "localizations": {
         "pt-BR": {

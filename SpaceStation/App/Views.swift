@@ -799,11 +799,10 @@ struct JoystickTab: View {
             PillSegmented(selection: $side, options: [(.left, "Left joystick"), (.right, "Right joystick")])
             HStack(alignment: .top, spacing: 36) {
                 VStack(alignment: .leading, spacing: 20) {
-                    Field("Mapping to") { DarkSelect(selection: .constant(0), options: [(0, "Joystick")], disabled: true) }
                     Field("Sensitivity curve") {
                         // SS4's tabs: picking a preset also clears the dead zone and edge; touching anything makes it Custom.
                         PillSegmented(selection: Binding(get: { stick.curve }, set: { c in set { $0.applyCurvePreset(c) } }),
-                                      options: [(.default, "Default"), (.quick, "Instant"), (.slow, "Delay"), (.custom, "Custom")])
+                                      options: [(.default, "Default"), (.quick, "Instant"), (.slow, "Delay"), (.custom, "Custom")], compact: true)
                             .padding(2).background(SS.n700, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
                     SensitivityCurve(p1: Binding(get: { (stick.p1x, stick.p1y) }, set: { v in set { $0.p1x = v.0; $0.p1y = v.1 } }),
@@ -811,10 +810,10 @@ struct JoystickTab: View {
                                      deadZone: stick.deadZone, edge: stick.end, editable: stick.curve == .custom,
                                      live: live.connected ? Double(min(1, hypot(liveStick.x, liveStick.y))) : nil,
                                      onEdit: { set { $0.curve = .custom } })
-                    Text(stick.curve == .custom ? "Drag nodes to adjust curve" : "Curve cannot be adjusted in current mode — X: stick position, Y: output")
+                    Text(stick.curve == .custom ? "Drag nodes to adjust curve" : (stick.curve == .default ? "Flydigi's factory curve: a slight lift near the centre (23 % output at 15 % travel), then linear. X: stick position, Y: output." : "Curve cannot be adjusted in current mode — X: stick position, Y: output"))
                         .font(.system(size: 11)).foregroundStyle(SS.n400)
                 }
-                .frame(width: 300)
+                .frame(width: 360)
                 VStack(alignment: .leading, spacing: 20) {
                     Field("Center dead zone") {
                         StepSlider(value: Binding(get: { Double(stick.deadZone) }, set: { v in set { $0.deadZone = UInt8(v); $0.curve = .custom } }), range: 0...60, format: { "\(Int($0 / 127 * 100)) %" })
