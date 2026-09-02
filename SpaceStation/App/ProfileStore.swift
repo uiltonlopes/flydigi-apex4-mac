@@ -30,6 +30,8 @@ final class ProfileStore {
     // MARK: Load
 
     func loadAll() async {
+        // Nothing to read while the pad has not answered (receiver with the pad off): stay quiet.
+        guard controller.info != nil else { lastError = nil; return }
         guard controller.connection != .none else { slots = []; draft = nil; return }
         busy = true; defer { busy = false }
         let conn = controller.connection
@@ -61,7 +63,7 @@ final class ProfileStore {
             activeSlot = current
             draft = slots.first { $0.index == activeSlot }?.config
             lastError = nil
-        case .failure(let e): lastError = "\(e)"
+        case .failure(let e): report(e)
         }
     }
 
@@ -146,7 +148,7 @@ final class ProfileStore {
         case .success:
             if let i = slots.firstIndex(where: { $0.index == slot }), let cfg = GamepadConfig(bytes: bytes) { slots[i].config = cfg; self.draft = cfg }
             lastError = nil
-        case .failure(let e): lastError = "\(e)"
+        case .failure(let e): report(e)
         }
     }
 
@@ -166,4 +168,13 @@ final class ProfileStore {
 
 extension Array {
     subscript(safe i: Int) -> Element? { indices.contains(i) ? self[i] : nil }
+
+    /// Same wording as ControllerModel for timeouts, so the banner never shows raw transport text.
+    private func report(_ e: Error) {
+        let text = "\(e)"
+        lastError = text.contains("no matching report") || text.contains("timeout")
+            ? String(localized: "The controller did not answer in time. Turn it on or reconnect the cable — it shows up by itself.")
+            : text
+    }
+
 }

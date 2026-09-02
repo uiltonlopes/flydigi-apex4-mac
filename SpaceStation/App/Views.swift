@@ -63,6 +63,8 @@ struct MainWindow: View {
             live.setRawMonitoring(model.connection == .dinput)
             await profiles.loadAll()
         }
+        // The receiver can be there before the pad answers: load the profiles once it does.
+        .onChange(of: model.info == nil) { _, isNil in if !isNil { Task { await profiles.loadAll() } } }
     }
 }
 

@@ -69,7 +69,7 @@ final class ControllerModel {
         let now = USBMonitor.currentConnection()
         if now != connection {
             connection = now
-            if now == .none { info = nil; led = nil; firmwareUpdate = nil; firmwareCheckedFor = nil; padPoll?.cancel(); padPoll = nil }
+            if now == .none { info = nil; led = nil; firmwareUpdate = nil; firmwareCheckedFor = nil; lastError = nil; padPoll?.cancel(); padPoll = nil }
             else { await refresh() }
         } else if now != .none, info == nil, !busy, padPoll == nil {
             await refresh()
@@ -101,7 +101,7 @@ final class ControllerModel {
         connection = USBMonitor.currentConnection()
         usbProductName = USBMonitor.productName()
         refreshHelperStatus()
-        guard connection != .none else { info = nil; led = nil; firmwareUpdate = nil; firmwareCheckedFor = nil; padPoll?.cancel(); padPoll = nil; return }
+        guard connection != .none else { info = nil; led = nil; firmwareUpdate = nil; firmwareCheckedFor = nil; lastError = nil; padPoll?.cancel(); padPoll = nil; return }
         let conn = connection, installed = helperInstalled
         await run {
             switch conn {
