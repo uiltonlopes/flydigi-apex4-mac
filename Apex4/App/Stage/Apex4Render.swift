@@ -1,59 +1,105 @@
-// Schematic render of the Apex 4 (our own artwork) with normalised hotspot positions for mapping.
-// Positions are fractions of the render's bounds; the view scales with its container.
+// The controller on the stage. The outline and product picture come from Space Station 4's assets
+// (see Resources/Flydigi/NOTICE.md); the hotspot geometry is Space Station's `device_config_k2`
+// (508 × 421 canvas), so buttons land exactly on the drawing. Falls back to a schematic when the files
+// are missing.
 
 import SwiftUI
+import AppKit
 import FlydigiKit
 
 struct Hotspot: Identifiable, Hashable {
+    enum Shape: Hashable { case circle, roundRect, rect }
     let key: ControllerKey
-    let x: CGFloat, y: CGFloat          // 0…1 in render space
+    let rect: CGRect                    // in canvas coordinates (Apex4Render.canvas)
+    var shape: Shape = .rect
+    var rotation: Double = 0            // degrees
+    var clickable = true
     var id: UInt8 { key.rawValue }
     var label: String { Apex4Render.shortLabel(key) }
+    var center: CGPoint { CGPoint(x: rect.midX, y: rect.midY) }
+
+    init(_ key: ControllerKey, _ x: CGFloat, _ y: CGFloat, _ w: CGFloat, _ h: CGFloat, _ shape: Shape = .rect, rotation: Double = 0, clickable: Bool = true) {
+        self.key = key; rect = CGRect(x: x, y: y, width: w, height: h); self.shape = shape; self.rotation = rotation; self.clickable = clickable
+    }
 }
 
 enum Apex4Render {
-    /// Front + top face hotspots. Back paddles (M1–M4) are drawn as a labelled strip below the body.
+    static let canvas = CGSize(width: 508, height: 421)
+
+    /// Mapping targets, in drawing order. Same positions/sizes as Space Station 4 (`device_config_k2`).
     static let hotspots: [Hotspot] = [
-        .init(key: .lb, x: 0.24, y: 0.10), .init(key: .rb, x: 0.76, y: 0.10),
-        .init(key: .lt, x: 0.17, y: 0.03), .init(key: .rt, x: 0.83, y: 0.03),
-        .init(key: .thumbL, x: 0.24, y: 0.40),                  // left stick (click)
-        .init(key: .up, x: 0.42, y: 0.62), .init(key: .left, x: 0.36, y: 0.70), .init(key: .right, x: 0.48, y: 0.70), .init(key: .down, x: 0.42, y: 0.78),
-        .init(key: .y, x: 0.76, y: 0.30), .init(key: .x, x: 0.69, y: 0.40), .init(key: .b, x: 0.83, y: 0.40), .init(key: .a, x: 0.76, y: 0.50),
-        .init(key: .thumbR, x: 0.62, y: 0.68),                  // right stick (click)
-        .init(key: .select, x: 0.40, y: 0.36), .init(key: .start, x: 0.60, y: 0.36), .init(key: .home, x: 0.50, y: 0.28),
-        .init(key: .c, x: 0.46, y: 0.90), .init(key: .z, x: 0.54, y: 0.90),
-        .init(key: .m1, x: 0.30, y: 0.98), .init(key: .m2, x: 0.40, y: 0.98), .init(key: .m3, x: 0.60, y: 0.98), .init(key: .m4, x: 0.70, y: 0.98),
+        .init(.lt, 6, 3, 40, 48), .init(.rt, 460, 3, 40, 48),
+        .init(.lb, 9, 51, 75, 28), .init(.rb, 423, 51, 75, 28),
+        .init(.select, 166, 108, 40, 18, .roundRect, rotation: 49), .init(.start, 301, 108, 40, 18, .roundRect, rotation: -51),
+        .init(.thumbL, 116.5, 152.5, 32, 32, .circle), .init(.thumbR, 302, 216, 32, 32, .circle),
+        .init(.y, 364, 130, 32, 32, .circle), .init(.x, 335, 159, 32, 32, .circle), .init(.b, 393, 159, 32, 32, .circle), .init(.a, 364, 188, 32, 32, .circle),
+        .init(.up, 186, 194, 24, 24, .circle), .init(.right, 212, 222, 24, 24, .circle), .init(.down, 186, 250, 24, 24, .circle), .init(.left, 158, 222, 24, 24, .circle),
+        .init(.c, 379, 239, 26, 26, .circle), .init(.z, 408, 210, 26, 26, .circle),
+        .init(.menu, 225, 275, 28, 12, .roundRect, clickable: false), .init(.home, 260, 275, 28, 12, .roundRect, clickable: false),
+        .init(.m2, 149, 344, 41, 41), .init(.m4, 206, 344, 41, 41), .init(.m3, 263, 344, 41, 41), .init(.m1, 324, 345, 41, 41),
     ]
+
+    /// Stick wells (decorative rings under the stick-click chips).
+    static let stickWells: [CGRect] = [CGRect(x: 100, y: 136, width: 65, height: 65), CGRect(x: 285, y: 200, width: 65, height: 65)]
+
+    /// Keys the user can point at (physical buttons the firmware lets you remap).
+    static var mappableKeys: [ControllerKey] { hotspots.filter(\.clickable).map(\.key) }
 
     static func shortLabel(_ k: ControllerKey) -> String {
         switch k {
         case .up: "▲"; case .down: "▼"; case .left: "◀"; case .right: "▶"
-        case .thumbL: "LS"; case .thumbR: "RS"; case .select: "◧"; case .start: "≡"; case .home: "⌂"
-        default: "\(k)".uppercased().replacingOccurrences(of: "LB", with: "LB")
+        case .thumbL: "LS"; case .thumbR: "RS"; case .select: "⧉"; case .start: "≡"; case .home: "⌂"; case .menu: "Fn"
+        default: "\(k)".uppercased()
+        }
+    }
+
+    // MARK: Artwork
+
+    static let wireframe: NSImage? = load("apex4-wireframe", "svg")
+    static let hero: NSImage? = load("apex4-hero", "png")
+
+    private static func load(_ name: String, _ ext: String) -> NSImage? {
+        guard let url = Bundle.main.url(forResource: name, withExtension: ext) else { return nil }
+        return NSImage(contentsOf: url)
+    }
+}
+
+/// The outline drawing, scaled to fit while keeping the 508 × 421 canvas aspect.
+struct Apex4Wireframe: View {
+    var body: some View {
+        if let img = Apex4Render.wireframe {
+            Image(nsImage: img).resizable().interpolation(.high).aspectRatio(Apex4Render.canvas, contentMode: .fit)
+        } else {
+            Apex4BodyShape().aspectRatio(Apex4Render.canvas, contentMode: .fit)
         }
     }
 }
 
-/// The body drawing (shapes only). Sized to the container; aspect ~ 1.35.
+/// Product picture with a soft accent glow behind it.
+struct Apex4Hero: View {
+    var body: some View {
+        if let img = Apex4Render.hero {
+            Image(nsImage: img).resizable().interpolation(.high).aspectRatio(contentMode: .fit)
+                .shadow(color: Stage.glow.opacity(0.45), radius: 40, y: 12)
+                .shadow(color: .black.opacity(0.6), radius: 18, y: 14)
+        } else {
+            Apex4BodyShape().aspectRatio(Apex4Render.canvas, contentMode: .fit)
+        }
+    }
+}
+
+/// Fallback body drawing (shapes only) when the artwork is absent.
 struct Apex4BodyShape: View {
     var body: some View {
         GeometryReader { g in
             let w = g.size.width, h = g.size.height
             ZStack {
-                // grips
                 Capsule().fill(.white.opacity(0.06)).frame(width: w * 0.22, height: h * 0.62).rotationEffect(.degrees(12)).offset(x: -w * 0.30, y: h * 0.16)
                 Capsule().fill(.white.opacity(0.06)).frame(width: w * 0.22, height: h * 0.62).rotationEffect(.degrees(-12)).offset(x: w * 0.30, y: h * 0.16)
-                // body
                 RoundedRectangle(cornerRadius: w * 0.16).fill(.white.opacity(0.08)).frame(width: w * 0.78, height: h * 0.58).offset(y: -h * 0.02)
-                    .overlay(RoundedRectangle(cornerRadius: w * 0.16).strokeBorder(.white.opacity(0.10), lineWidth: 1).frame(width: w * 0.78, height: h * 0.58).offset(y: -h * 0.02))
-                // screen
                 RoundedRectangle(cornerRadius: 4).fill(.black.opacity(0.7)).frame(width: w * 0.16, height: h * 0.10).offset(y: -h * 0.24)
-                // sticks
                 Circle().fill(.white.opacity(0.10)).frame(width: w * 0.16).offset(x: -w * 0.26, y: -h * 0.10)
                 Circle().fill(.white.opacity(0.10)).frame(width: w * 0.16).offset(x: w * 0.12, y: h * 0.18)
-                // bumpers
-                Capsule().fill(.white.opacity(0.10)).frame(width: w * 0.20, height: h * 0.05).offset(x: -w * 0.26, y: -h * 0.40)
-                Capsule().fill(.white.opacity(0.10)).frame(width: w * 0.20, height: h * 0.05).offset(x: w * 0.26, y: -h * 0.40)
             }
             .frame(width: w, height: h)
         }

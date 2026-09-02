@@ -27,7 +27,7 @@ struct MainWindow: View {
                 case .profiles: ProfilesPage(showInspector: $showInspector)
                 case .sticks: SticksPage()
                 case .motion: MotionPage()
-                case .macros: ComingSoon(section: .macros, note: "Onboard macros: recorder and step editor.")
+                case .macros: MacrosPage()
                 case .lighting: LightingPage()
                 case .screen: ScreenPage()
                 }
@@ -135,33 +135,46 @@ struct ComingSoon: View {
 struct StatusPage: View {
     @Environment(ControllerModel.self) private var model
     var body: some View {
-        VStack(spacing: 16) {
-            StageView(height: 260) {
-                Apex4BodyShape().frame(width: 380, height: 280).offset(y: 20)
+        VStack(spacing: 20) {
+            StageView(height: 320) {
+                Apex4Hero().frame(height: 250).offset(y: 6)
             }
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 12)], spacing: 12) {
-                PropertyCard(title: "Connection", systemImage: "cable.connector") {
-                    switch model.connection {
-                    case .none: Text("Not connected").foregroundStyle(.secondary)
-                    case .dinput: Text("DInput · talking to the pad directly")
-                    case .xinput: Text("XInput · via the privileged helper")
+            Grid(horizontalSpacing: 12, verticalSpacing: 12) {
+                GridRow {
+                    PropertyCard(title: "Connection", systemImage: "cable.connector") {
+                        switch model.connection {
+                        case .none: Text("Not connected").foregroundStyle(.secondary)
+                        case .dinput: Text("DInput · talking to the pad directly")
+                        case .xinput: Text("XInput · via the privileged helper")
+                        }
+                        Text(model.connection == .none ? "Plug the controller in over USB, or use the 2.4 GHz receiver." : "Ready. Changes apply live and are saved on the pad.")
+                            .font(.caption).foregroundStyle(.secondary)
                     }
-                }
-                if let i = model.info {
                     PropertyCard(title: "Model", systemImage: "gamecontroller") {
-                        Text(DeviceCatalog.descriptor(for: i.deviceId)?.name ?? "Flydigi controller (id \(i.deviceId))")
-                        Text("Firmware \(i.firmware) · MAC \(i.mac)").font(.caption).foregroundStyle(.secondary)
-                    }
-                    PropertyCard(title: "Link", systemImage: i.wired ? "cable.connector" : "dot.radiowaves.left.and.right") {
-                        Text(i.wired ? "USB cable" : "2.4 GHz receiver")
-                        if !i.wired { Text("Screen uploads need the cable.").font(.caption).foregroundStyle(.secondary) }
+                        if let i = model.info {
+                            Text(DeviceCatalog.descriptor(for: i.deviceId)?.name ?? "Flydigi controller (id \(i.deviceId))")
+                            Text("Firmware \(i.firmware) · MAC \(i.mac)").font(.caption).foregroundStyle(.secondary)
+                        } else {
+                            Text("—").foregroundStyle(.secondary)
+                        }
                     }
                 }
-                PropertyCard(title: "USB mode", systemImage: "arrow.left.arrow.right") {
-                    Button("Switch XInput ⇄ DInput") { Task { await model.switchMode() } }.disabled(model.connection == .none || model.busy)
-                    Text("XInput is what games expect and what the screen needs; DInput lets the app talk without the helper.").font(.caption).foregroundStyle(.secondary)
+                GridRow {
+                    PropertyCard(title: "Link", systemImage: model.info?.wired == false ? "dot.radiowaves.left.and.right" : "cable.connector") {
+                        if let i = model.info {
+                            Text(i.wired ? "USB cable" : "2.4 GHz receiver")
+                            Text(i.wired ? "Everything is available, including screen uploads." : "Screen uploads need the cable.").font(.caption).foregroundStyle(.secondary)
+                        } else {
+                            Text("—").foregroundStyle(.secondary)
+                        }
+                    }
+                    PropertyCard(title: "USB mode", systemImage: "arrow.left.arrow.right") {
+                        Button("Switch XInput ⇄ DInput") { Task { await model.switchMode() } }.disabled(model.connection == .none || model.busy)
+                        Text("XInput is what games expect and what the screen needs; DInput lets the app talk without the helper.").font(.caption).foregroundStyle(.secondary)
+                    }
                 }
             }
+            .frame(maxWidth: 820)
             .padding(.horizontal)
         }
         .padding(.bottom)
@@ -176,11 +189,12 @@ struct ProfilesPage: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            StageView(height: 320) {
+            StageView(height: 380) {
                 ZStack {
-                    Apex4BodyShape().frame(width: 460, height: 340).offset(y: 10)
-                    HotspotLayer(showInspector: $showInspector).frame(width: 460, height: 340).offset(y: 10)
+                    Apex4Wireframe()
+                    HotspotLayer(showInspector: $showInspector).aspectRatio(Apex4Render.canvas, contentMode: .fit)
                 }
+                .frame(height: 350)
             }
             if let draft = profiles.draft {
                 VStack(alignment: .leading, spacing: 8) {
@@ -207,16 +221,27 @@ struct ProfilesPage: View {
 }
 
 /// Button hotspots floating over the stage — the one place with custom glass (docs/design.md §5).
+/// Geometry is Space Station's 508 × 421 canvas, scaled to whatever size the layer gets.
 struct HotspotLayer: View {
     @Environment(ProfileStore.self) private var profiles
+    @Environment(LiveInput.self) private var live
     @Binding var showInspector: Bool
 
     var body: some View {
         GeometryReader { g in
-            if #available(macOS 26, *) {
-                GlassEffectContainer(spacing: 10) { chips(in: g.size) }
-            } else {
-                chips(in: g.size)
+            let s = g.size.width / Apex4Render.canvas.width
+            ZStack {
+                ForEach(Apex4Render.stickWells.indices, id: \.self) { i in
+                    let r = Apex4Render.stickWells[i]
+                    Circle().strokeBorder(.white.opacity(0.14), lineWidth: 1)
+                        .frame(width: r.width * s, height: r.height * s)
+                        .position(x: r.midX * s, y: r.midY * s)
+                }
+                if #available(macOS 26, *) {
+                    GlassEffectContainer(spacing: 6) { chips(scale: s) }
+                } else {
+                    chips(scale: s)
+                }
             }
         }
     }
@@ -227,20 +252,43 @@ struct HotspotLayer: View {
         return true
     }
 
-    @ViewBuilder private func chips(in size: CGSize) -> some View {
+    @ViewBuilder private func chips(scale s: CGFloat) -> some View {
         ForEach(Apex4Render.hotspots) { h in
             let selected = profiles.selectedKey == h.key
             let changed = isChanged(h.key)
+            let pressed = live.pressedKeys.contains(h.key)
+            let tint: Color? = selected ? Color.accentColor : (pressed ? Color.white.opacity(0.8) : (changed ? Stage.glow.opacity(0.6) : nil))
+            let size = CGSize(width: h.rect.width * s, height: h.rect.height * s)
             Button {
+                guard h.clickable else { return }
                 profiles.selectedKey = h.key; showInspector = true
             } label: {
-                Text(h.label).font(.caption.weight(.semibold)).monospaced()
-                    .frame(minWidth: 28, minHeight: 22).padding(.horizontal, 4)
+                Text(h.label)
+                    .font(.system(size: max(9, min(13, size.height * 0.42)), weight: .semibold, design: .rounded))
+                    .minimumScaleFactor(0.6).lineLimit(1)
+                    .foregroundStyle(h.clickable ? Color.primary : Color.secondary)
+                    .frame(width: size.width, height: size.height)
             }
             .buttonStyle(.plain)
-            .floatingChip(tint: selected ? Color.accentColor : (changed ? Stage.glow.opacity(0.6) : nil))
-            .position(x: h.x * size.width, y: h.y * size.height)
+            .modifier(HotspotChipStyle(shape: h.shape, tint: tint, enabled: h.clickable))
+            .rotationEffect(.degrees(h.rotation))
+            .position(x: h.center.x * s, y: h.center.y * s)
             .accessibilityLabel("\(h.key) button\(changed ? ", remapped" : "")")
+            .allowsHitTesting(h.clickable)
+        }
+    }
+}
+
+/// Picks the concrete shape for a chip (glass needs a concrete `InsettableShape`).
+private struct HotspotChipStyle: ViewModifier {
+    let shape: Hotspot.Shape
+    let tint: Color?
+    let enabled: Bool
+    func body(content: Content) -> some View {
+        switch shape {
+        case .circle: content.floatingChip(tint: tint, in: Circle()).opacity(enabled ? 1 : 0.55)
+        case .roundRect: content.floatingChip(tint: tint, in: Capsule()).opacity(enabled ? 1 : 0.55)
+        case .rect: content.floatingChip(tint: tint, in: RoundedRectangle(cornerRadius: 7, style: .continuous)).opacity(enabled ? 1 : 0.55)
         }
     }
 }
@@ -248,7 +296,7 @@ struct HotspotLayer: View {
 struct MappingTable: View {
     let config: GamepadConfig
     @Binding var selected: ControllerKey?
-    private var rows: [ControllerKey] { Apex4Render.hotspots.map(\.key) }
+    private var rows: [ControllerKey] { Apex4Render.mappableKeys }
     var body: some View {
         Table(rows, selection: Binding<Set<UInt8>>(get: { selected.map { Set([$0.id]) } ?? [] }, set: { selected = $0.first.flatMap(ControllerKey.init(rawValue:)) })) {
             TableColumn("Button") { k in Text(String(describing: k)) }.width(min: 120)
@@ -307,7 +355,7 @@ struct ButtonInspector: View {
                 .pickerStyle(.segmented)
                 if kind == .remap || kind == .turbo {
                     Picker("Acts as", selection: Binding(get: { target }, set: { setTarget($0) })) {
-                        ForEach(Apex4Render.hotspots.map(\.key), id: \.self) { Text(String(describing: $0)).tag($0) }
+                        ForEach(Apex4Render.mappableKeys, id: \.self) { Text(String(describing: $0)).tag($0) }
                     }
                 }
                 if kind == .turbo {
@@ -319,7 +367,13 @@ struct ButtonInspector: View {
                         Text("\(Int(turboFreq)) Hz").monospacedDigit().frame(width: 44, alignment: .trailing)
                     }
                 }
-                if kind == .macro { Text("Bound to the on-board macro for this button. The macro editor lands with the Macros page.").font(.caption).foregroundStyle(.secondary) }
+                if kind == .macro {
+                    if let i = profiles.macroIndex(for: key), let m = profiles.draft?.macros[safe: i] {
+                        Text("Runs on-board macro with \(m.actions.count) step\(m.actions.count == 1 ? "" : "s"). Edit it in the Macros page.").font(.caption).foregroundStyle(.secondary)
+                    } else {
+                        Text("No macro is bound to this button yet. Create one in the Macros page.").font(.caption).foregroundStyle(.secondary)
+                    }
+                }
             }
         }
         .formStyle(.grouped).controlSize(.small)
@@ -330,7 +384,7 @@ struct ButtonInspector: View {
         case .default: profiles.setMapping(key, .identity)
         case .remap: profiles.setMapping(key, .key(target == key ? .a : target))
         case .turbo: profiles.setMapping(key, .turbo(target, enable: .press, frequency: 10))
-        case .macro: profiles.setMapping(key, .macro)
+        case .macro: if profiles.addMacro(for: key) == nil { profiles.setMapping(key, .macro) }
         }
     }
     private func setTarget(_ t: ControllerKey) {
@@ -351,7 +405,7 @@ struct LightingPage: View {
         VStack(spacing: 16) {
             StageView(height: 220) {
                 VStack(spacing: 14) {
-                    Apex4BodyShape().frame(width: 300, height: 220).offset(y: 30).opacity(0.7)
+                    Apex4Hero().frame(height: 200).offset(y: 10)
                     HStack(spacing: 6) { ForEach(colours.indices, id: \.self) { i in Capsule().fill(colours[i]).frame(width: 60, height: 8).shadow(color: colours[i].opacity(0.8), radius: 8) } }
                         .opacity(mode == .off ? 0.15 : brightness / 100 * 0.8 + 0.2)
                 }

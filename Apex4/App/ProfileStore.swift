@@ -73,6 +73,41 @@ final class ProfileStore {
 
     func setMapping(_ key: ControllerKey, _ mapping: GamepadConfig.KeyMapping) { draft?.keys[key] = mapping }
 
+    // MARK: Macros (on-board; the trigger button's mapping becomes 0x20 "macro", like Space Station does)
+
+    var maxMacros: Int { (draft?.protoVersion ?? 0x0300) >= 770 ? 10 : 5 }
+    var macroTick: Int { (draft?.protoVersion ?? 0x0300) >= 770 ? 1 : 10 }      // ms resolution of the timeline
+
+    func macroIndex(for key: ControllerKey) -> Int? { draft?.macros.firstIndex { $0.key == key.rawValue } }
+
+    /// Creates an empty macro bound to `key` (or returns the existing one). `nil` when the slot is full.
+    @discardableResult
+    func addMacro(for key: ControllerKey) -> Int? {
+        if let i = macroIndex(for: key) { return i }
+        guard let d = draft, d.macros.count < maxMacros else { return nil }
+        draft?.macros.append(.init(key: key.rawValue, count: 0, enable: .once, actions: []))
+        draft?.keys[key] = .macro
+        return draft!.macros.count - 1
+    }
+
+    func removeMacro(at i: Int) {
+        guard let m = draft?.macros[safe: i] else { return }
+        draft?.macros.remove(at: i)
+        if let k = ControllerKey(rawValue: m.key), case .macro? = draft?.keys[k] { draft?.keys[k] = .identity }
+    }
+
+    func updateMacro(at i: Int, _ change: (inout GamepadConfig.Macro) -> Void) {
+        guard var m = draft?.macros[safe: i] else { return }
+        let oldKey = m.key
+        change(&m)
+        m.count = m.actions.count
+        draft?.macros[i] = m
+        if m.key != oldKey {                                     // re-bind the trigger button
+            if let k = ControllerKey(rawValue: oldKey), case .macro? = draft?.keys[k] { draft?.keys[k] = .identity }
+            if let k = ControllerKey(rawValue: m.key) { draft?.keys[k] = .macro }
+        }
+    }
+
     // MARK: Apply
 
     func apply() async {
@@ -114,4 +149,8 @@ final class ProfileStore {
             }
         }.value
     }
+}
+
+extension Array {
+    subscript(safe i: Int) -> Element? { indices.contains(i) ? self[i] : nil }
 }

@@ -4,6 +4,7 @@
 import Foundation
 import GameController
 import Observation
+import FlydigiKit
 
 @MainActor @Observable
 final class LiveInput {
@@ -14,6 +15,18 @@ final class LiveInput {
     var rightTrigger: Float = 0
     var pressed: Set<String> = []
     var connected = false
+
+    /// Same information as `pressed`, as firmware key ids (triggers count as pressed past 50 %).
+    var pressedKeys: Set<ControllerKey> {
+        var s = Set(pressed.compactMap { Self.keyForLabel[$0] })
+        if leftTrigger > 0.5 { s.insert(.lt) }
+        if rightTrigger > 0.5 { s.insert(.rt) }
+        return s
+    }
+    private static let keyForLabel: [String: ControllerKey] = [
+        "A": .a, "B": .b, "X": .x, "Y": .y, "LB": .lb, "RB": .rb, "LS": .thumbL, "RS": .thumbR,
+        "▲": .up, "▼": .down, "◀": .left, "▶": .right, "≡": .start, "◧": .select,
+    ]
 
     private var observers: [NSObjectProtocol] = []
 
