@@ -8,8 +8,11 @@ public struct LEDConfig: Sendable, Hashable {
     public static let unitsPerGroup = 10
     static let groupsOffset = 20
 
+    /// Space Station's `LedType` (Unknown 0, FLOW 1, BREATH 2, GRADIENT 3, FEEDBACK 4, ON 5, Close 6, Default 7).
     public enum Mode: UInt8, Sendable, CaseIterable, Hashable {
-        case off = 0, streamlined = 1, breathing = 2, gradient = 3, feedback = 4, steady = 5
+        case unknown = 0, streamlined = 1, breathing = 2, gradient = 3, feedback = 4, steady = 5, off = 6, factoryDefault = 7
+        /// Modes the user can pick.
+        public static let selectable: [Mode] = [.off, .steady, .breathing, .gradient, .streamlined, .feedback]
     }
 
     /// One colour step of a group. Channels are **percent** (0–100), not 0–255.
@@ -25,9 +28,9 @@ public struct LEDConfig: Sendable, Hashable {
     }
 
     public var versionMajor: UInt8, versionMinor: UInt8
-    public var type: UInt8
-    public var loopStart: UInt8
-    public var loopEnd: UInt8
+    public var type: UInt8           // Space Station "ClickFeedback" flag (1 only in Feedback mode)
+    public var loopStart: UInt8      // always 0
+    public var loopEnd: UInt8        // last unit index the firmware cycles through — depends on the mode (see setCycle)
     public var speed: UInt8          // 0–100
     public var brightness: UInt8     // 0–100
     public var activeGroups: UInt8   // Apex 4: 4
@@ -56,23 +59,55 @@ public struct LEDConfig: Sendable, Hashable {
         return out
     }
 
-    // MARK: Convenience edits (mirror Space Station behaviour)
+    // MARK: Convenience edits (mirror Space Station's `ConvertLedConfigToBean` for k2)
+    //
+    // The firmware plays units `loopStart…loopEnd` of each group. Space Station encodes:
+    //   On (steady)  → every unit = the colour, loopEnd 0
+    //   Gradient     → units 0…n-1 = colours, loopEnd n-1
+    //   Breath       → units 0,2,4… = colours with black in between, loopEnd 2n-1 (the black is the dip)
+    //   Feedback     → units 0…n-1 = colours, loopEnd n, ClickFeedback flag = 1
+    //   Flow         → colours untouched, loopEnd = number of LED groups
+    //   Close        → mode 6
 
     /// Solid colour on every active group.
     public mutating func setSteady(_ colour: Unit) {
-        mode = .steady
-        for g in 0..<Int(activeGroups) {
-            groups[g] = [colour] + Array(repeating: .off, count: Self.unitsPerGroup - 1)
+        mode = .steady; type = 0; loopStart = 0; loopEnd = 0
+        for g in 0..<Int(activeGroups) { groups[g] = Array(repeating: colour, count: Self.unitsPerGroup) }
+    }
+
+    /// Multi-colour effect (gradient / breathing / streamlined / feedback) on every active group.
+    public mutating func setCycle(_ colours: [Unit], mode: Mode) {
+        precondition(!colours.isEmpty)
+        let n = min(colours.count, mode == .breathing ? Self.unitsPerGroup / 2 : Self.unitsPerGroup)
+        let cs = Array(colours.prefix(n))
+        self.mode = mode; loopStart = 0; type = mode == .feedback ? 1 : 0
+        var units = [Unit](repeating: .off, count: Self.unitsPerGroup)
+        switch mode {
+        case .breathing:
+            for (i, c) in cs.enumerated() { units[i * 2] = c }
+            loopEnd = UInt8(n * 2 - 1)
+        case .feedback:
+            for (i, c) in cs.enumerated() { units[i] = c }
+            loopEnd = UInt8(n)
+        case .streamlined:
+            loopEnd = activeGroups
+            return                                  // Space Station leaves the colours as they are
+        default:                                    // gradient
+            for (i, c) in cs.enumerated() { units[i] = c }
+            loopEnd = UInt8(n - 1)
+        }
+        for g in 0..<Int(activeGroups) { groups[g] = units }
+    }
+
+    public mutating func setOff() { mode = .off; type = 0 }
+
+    /// The user-facing colour list of a group, undoing the per-mode layout above.
+    public func colours(ofGroup g: Int) -> [Unit] {
+        let u = groups[g]
+        switch mode {
+        case .steady: return u.first.map { [$0] } ?? []
+        case .breathing: return stride(from: 0, to: u.count, by: 2).map { u[$0] }.filter { !$0.isOff }
+        default: return u.filter { !$0.isOff }
         }
     }
-
-    /// Multi-colour cycle (gradient/breathing/streamlined) on every active group.
-    public mutating func setCycle(_ colours: [Unit], mode: Mode) {
-        precondition(!colours.isEmpty && colours.count <= Self.unitsPerGroup)
-        self.mode = mode
-        let padded = colours + Array(repeating: .off, count: Self.unitsPerGroup - colours.count)
-        for g in 0..<Int(activeGroups) { groups[g] = padded }
-    }
-
-    public func colours(ofGroup g: Int) -> [Unit] { groups[g].filter { !$0.isOff } }
 }

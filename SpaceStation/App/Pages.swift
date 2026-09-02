@@ -538,6 +538,6 @@ struct MenuBarView: View {
         return parts.isEmpty ? "Connected" : parts.joined(separator: " · ")
     }
     private func lightingName(_ m: LEDConfig.Mode) -> String {
-        switch m { case .off: "Off"; case .streamlined: "Streamlined"; case .breathing: "Breathing"; case .gradient: "Gradient"; case .feedback: "Feedback"; case .steady: "Steady" }
+        switch m { case .off: "Off"; case .streamlined: "Streamlined"; case .breathing: "Breathing"; case .gradient: "Gradient"; case .feedback: "Feedback"; case .steady: "Steady"; case .factoryDefault: "Default"; case .unknown: "Unknown" }
     }
 }

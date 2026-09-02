@@ -234,3 +234,14 @@ press a key ("borrow the pad"), then hands the pad back to the system driver.
   **does not answer** `A5 50 07` in XInput, and in DInput `05 F2 03` returns `f2 03 0f ff` — usable bits
   0…3 only, none of the joystick functions — so these settings are for newer models. The code stays in
   `DeviceSession` for other controllers; the app does not show them for the Apex 4.
+
+## 12. LED blob per mode (from Space Station's `ConvertLedConfigToBean`, verified 2026-09-02)
+
+Header bytes: `[0..1]` version (0x0200 for the Apex 4), `[2]` ClickFeedback (1 only in Feedback mode),
+`[3]` loopStart (0), `[4]` **loopEnd**, `[5]` loop time, `[6]` brightness, `[7]` LED groups (4), `[8]` mode,
+`[9..19]` FF. Mode values are Space Station's `LedType`: 1 Flow (streamlined), 2 Breath, 3 Gradient,
+4 Feedback, **5 On (steady), 6 Close (off)**, 7 Default. The firmware cycles units `loopStart…loopEnd` of
+each group, so `loopEnd` must follow the mode: On → every unit = the colour, loopEnd 0 (leaving a stale
+loopEnd from a gradient makes a "steady" colour pulse); Gradient → units 0…n−1, loopEnd n−1; Breath →
+colours on even units with black in between, loopEnd 2n−1; Feedback → units 0…n−1, loopEnd n,
+ClickFeedback 1; Flow → colours untouched, loopEnd = groups.

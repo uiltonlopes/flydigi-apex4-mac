@@ -502,7 +502,7 @@ struct LightPanel: View {
             func pct(_ v: CGFloat) -> UInt8 { UInt8(max(0, min(100, (v * 100).rounded()))) }
             return LEDConfig.Unit(r: pct(n.redComponent), g: pct(n.greenComponent), b: pct(n.blueComponent))
         }
-        switch mode { case .steady: led.setSteady(units.first ?? .off); case .off: led.mode = .off; default: led.setCycle(units, mode: mode) }
+        switch mode { case .steady: led.setSteady(units.first ?? .off); case .off: led.setOff(); default: led.setCycle(units.isEmpty ? [.init(r: 100, g: 100, b: 100)] : units, mode: mode) }
         led.brightness = UInt8(brightness); led.speed = UInt8(speed)
         loaded = false                                   // model.led will change back → don't re-trigger
         await model.apply(led: led)
