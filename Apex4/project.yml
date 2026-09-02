@@ -35,6 +35,7 @@ targets:
         product: FlydigiTransport
       - package: FlydigiKit
         product: FlydigiHelperProtocol
+      - sdk: GameController.framework
       - target: Apex4Helper
         embed: true
         codeSign: true

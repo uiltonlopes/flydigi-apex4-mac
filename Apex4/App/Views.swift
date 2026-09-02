@@ -25,8 +25,8 @@ struct MainWindow: View {
                 switch section ?? .status {
                 case .status: StatusPage()
                 case .profiles: ProfilesPage(showInspector: $showInspector)
-                case .sticks: ComingSoon(section: .sticks, note: "Dead zones, sensitivity curves and ForceAdapt modes are already decoded; the editor lands next.")
-                case .motion: ComingSoon(section: .motion, note: "Gyro to stick mapping, curve and dead-zone compensation.")
+                case .sticks: SticksPage()
+                case .motion: MotionPage()
                 case .macros: ComingSoon(section: .macros, note: "Onboard macros: recorder and step editor.")
                 case .lighting: LightingPage()
                 case .screen: ScreenPage()

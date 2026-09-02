@@ -20,12 +20,14 @@ enum AppSection: String, CaseIterable, Identifiable {
 @main
 struct Apex4App: App {
     @State private var model = ControllerModel()
+    @State private var live = LiveInput()
 
     var body: some Scene {
         Window("Apex 4", id: "main") {
             MainWindow()
                 .environment(model)
                 .environment(model.profiles)
+                .environment(live)
                 .frame(minWidth: 900, minHeight: 600)
         }
         .commands {

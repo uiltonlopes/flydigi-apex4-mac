@@ -223,7 +223,12 @@ public final class DeviceSession: @unchecked Sendable {
     public func setScreenStatusBar(_ on: Bool) throws { try link.write(XInput.command(XInput.Cmd.module, 0x03, on ? 0 : 1)) }
     public func screenSleepTime() throws -> UInt8 { try xinputQuery(XInput.Cmd.module, [0x04], sub: 0x04)[17] }
     public func setScreenSleepTime(_ t: UInt8) throws { try link.write(XInput.command(XInput.Cmd.module, 0x05, t)) }
-    public func motorTest(left: UInt8, right: UInt8) throws { try link.write(XInput.command(XInput.Cmd.motorTest, left, right)) }
+    public func motorTest(left: UInt8, right: UInt8) throws {
+        switch channel {
+        case .xinput: try link.write(XInput.command(XInput.Cmd.motorTest, left, right))
+        case .dinput: try link.write(DInput.command(0x0F, left, right))          // `05 0F <L> <R>` (SS4)
+        }
+    }
     public func setMappingEnabled(_ on: Bool) throws { try link.write(XInput.command(XInput.Cmd.mappingEnable, on ? 2 : 1)) }
 
     // MARK: ForceAdapt triggers (`A5 30 06 <1=apply,0=preview> <side> <mode> <params…>`; payloads from SS4)
