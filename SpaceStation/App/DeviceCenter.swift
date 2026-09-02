@@ -121,15 +121,37 @@ struct DeviceCenterPage: View {
     }
 
     private var emptyCard: some View {
-        ZStack {
-            // Ghost outline of a controller, like SS4's welcome screen.
-            Apex4BodyShape().frame(width: 400, height: 260).opacity(0.5)
-            VStack(spacing: 14) {
-                Image(systemName: "plus.circle.dashed").font(.system(size: 22)).foregroundStyle(.white)
-                Text(model.busy ? "Looking for controllers…" : "Connect a controller").font(.system(size: 20, weight: .medium)).foregroundStyle(.white)
-                Text("USB-C cable or the charging base's receiver").font(.system(size: 13)).foregroundStyle(SS.n300)
+        // Same card as a connected pad, but dashed and dimmed, with the product photo greyed out.
+        VStack(spacing: 0) {
+            HStack {
+                Text("My Device").font(.system(size: 12)).foregroundStyle(SS.n400)
+                Spacer()
+                if model.busy { ProgressView().controlSize(.small) }
             }
+            .padding(14)
+            HStack(spacing: 8) {
+                Circle().fill(SS.n400).frame(width: 8, height: 8)
+                Text("Not connected").font(.system(size: 15, weight: .semibold)).foregroundStyle(SS.n300)
+            }
+            Spacer(minLength: 24)
+            if let img = Apex4Render.hero {
+                Image(nsImage: img).resizable().interpolation(.high).aspectRatio(contentMode: .fit)
+                    .frame(width: 200)
+                    .saturation(0).opacity(0.35)
+            }
+            Spacer(minLength: 24)
+            VStack(spacing: 8) {
+                Image(systemName: "plus.circle.dashed").font(.system(size: 22)).foregroundStyle(.white)
+                Text(model.busy ? "Looking for controllers…" : "Connect a controller").font(.system(size: 17, weight: .medium)).foregroundStyle(.white)
+                Text("USB-C cable or the charging dock's receiver").font(.system(size: 12)).foregroundStyle(SS.n300)
+                GhostButton(title: "Search again", icon: "arrow.clockwise", enabled: !model.busy) { Task { await model.refresh() } }
+                    .padding(.top, 6)
+            }
+            Spacer().frame(height: 22)
         }
-        .frame(height: 300)
+        .frame(width: 360, height: 450)
+        .background(LinearGradient(colors: [SS.n700.opacity(0.75), SS.n800.opacity(0.7)], startPoint: .top, endPoint: .bottom), in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [6, 5])).foregroundStyle(SS.n400))
     }
+
 }

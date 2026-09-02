@@ -2701,6 +2701,16 @@
         }
       }
     },
+    "Search again": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Procurar de novo"
+          }
+        }
+      }
+    },
     "Search games": {
       "localizations": {
         "pt-BR": {
@@ -3392,6 +3402,16 @@
       }
     },
     "USB-C cable or the charging base's receiver": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cabo USB-C ou o receptor da base de carregamento"
+          }
+        }
+      }
+    },
+    "USB-C cable or the charging dock's receiver": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
