@@ -140,27 +140,28 @@ struct Sidebar: View {
                 }
                 .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden)
             }
+            if let u = model.firmwareUpdate {
+                Button { route = .settings } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "arrow.up.circle.fill").font(.system(size: 11))
+                        Text("Firmware \(u.version) available").font(.system(size: 11, weight: .medium)).lineLimit(1)
+                        Spacer()
+                        Image(systemName: "chevron.right").font(.system(size: 9, weight: .semibold))
+                    }
+                    .foregroundStyle(SS.brand500)
+                    .padding(.horizontal, 8).frame(height: 24)
+                    .background(SS.brand.opacity(0.18), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+            }
         }
         .padding(12)
         .background(SS.n800, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(route == .home ? SS.brand500.opacity(0.7) : SS.n500))
         .contentShape(Rectangle())
         .onTapGesture { route = .home }
-        .overlay(alignment: .bottom) {
-            if let u = model.firmwareUpdate {
-                Button { route = .settings } label: {
-                    HStack(spacing: 5) {
-                        Image(systemName: "arrow.up.circle.fill").font(.system(size: 10, weight: .semibold))
-                        Text("Firmware \(u.version) available").font(.system(size: 10, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.8)
-                    }
-                    .foregroundStyle(.white).padding(.horizontal, 10).frame(height: 20)
-                    .background(SS.brand500, in: Capsule())
-                    .shadow(color: .black.opacity(0.4), radius: 4, y: 1)
-                }
-                .buttonStyle(.plain).offset(y: 10)
-            }
-        }
-        .padding(.bottom, model.firmwareUpdate != nil ? 12 : 0)
+
     }
 
     private var infoList: some View {

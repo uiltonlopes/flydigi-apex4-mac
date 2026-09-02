@@ -430,7 +430,7 @@ struct MenuBarView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
                 if let img = Apex4Render.productImage(deviceId: model.info?.deviceId), connected {
-                    Image(nsImage: img).resizable().aspectRatio(contentMode: .fit).frame(width: 56, height: 40)
+                    Image(nsImage: img).resizable().aspectRatio(contentMode: .fit).frame(width: 48, height: 34)
                 } else {
                     Image(systemName: "gamecontroller").font(.system(size: 26)).foregroundStyle(.secondary).frame(width: 56, height: 40)
                 }
@@ -446,6 +446,16 @@ struct MenuBarView: View {
                         Text(b.description).font(.caption.monospacedDigit()).foregroundStyle(.secondary)
                     }
                 }
+            }
+            if let u = model.firmwareUpdate {
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.up.circle.fill")
+                    Text("Firmware \(u.version) available").font(.caption.weight(.medium))
+                    Spacer()
+                    Button("Details") { openWindow(id: "main"); NSApp.activate() }.controlSize(.mini)
+                }
+                .foregroundStyle(SS.brand500).padding(.horizontal, 8).frame(height: 24)
+                .background(SS.brand.opacity(0.15), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
             }
             if connected, let i = model.info {
                 Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 4) {
@@ -474,7 +484,7 @@ struct MenuBarView: View {
             }
             .controlSize(.small)
         }
-        .padding(14).frame(width: 380)
+        .padding(12).frame(width: 340)
     }
 
     private var subtitle: String {

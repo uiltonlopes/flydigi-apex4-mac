@@ -531,6 +531,16 @@
         }
       }
     },
+    "Details": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Detalhes"
+          }
+        }
+      }
+    },
     "Device Firmware": {
       "localizations": {
         "pt-BR": {
