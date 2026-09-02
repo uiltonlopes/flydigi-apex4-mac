@@ -1,0 +1,2476 @@
+{
+  "sourceLanguage": "en",
+  "strings": {
+    "About": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sobre"
+          }
+        }
+      }
+    },
+    "Activate key": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tecla de ativação"
+          }
+        }
+      }
+    },
+    "Activate method": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modo de ativação"
+          }
+        }
+      }
+    },
+    "Acts as": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Age como"
+          }
+        }
+      }
+    },
+    "Adaptive Trigger": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gatilho adaptativo"
+          }
+        }
+      }
+    },
+    "Add Device": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicionar dispositivo"
+          }
+        }
+      }
+    },
+    "Add step": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Adicionar passo"
+          }
+        }
+      }
+    },
+    "Always on": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sempre ligado"
+          }
+        }
+      }
+    },
+    "App Settings": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustes do app"
+          }
+        }
+      }
+    },
+    "Apply": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplicar"
+          }
+        }
+      }
+    },
+    "Apply to Controller": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplicar no controle"
+          }
+        }
+      }
+    },
+    "Applying…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplicando…"
+          }
+        }
+      }
+    },
+    "Bind a new macro to a button": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vincular uma nova macro a um botão"
+          }
+        }
+      }
+    },
+    "Bind one to a button and record steps from the pad.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vincule uma a um botão e grave os passos pelo controle."
+          }
+        }
+      }
+    },
+    "Bound to": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vinculada a"
+          }
+        }
+      }
+    },
+    "Breathing": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Respiração"
+          }
+        }
+      }
+    },
+    "Brightness": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Brilho"
+          }
+        }
+      }
+    },
+    "Button": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Botões"
+          }
+        }
+      }
+    },
+    "Cancel": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancelar"
+          }
+        }
+      }
+    },
+    "Center (release)": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Centro (soltar)"
+          }
+        }
+      }
+    },
+    "Center dead zone": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zona morta central"
+          }
+        }
+      }
+    },
+    "Check for updates": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificar atualizações"
+          }
+        }
+      }
+    },
+    "Checked automatically when the controller connects.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificado automaticamente quando o controle conecta."
+          }
+        }
+      }
+    },
+    "Checking…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificando…"
+          }
+        }
+      }
+    },
+    "Choose a language": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolha um idioma"
+          }
+        }
+      }
+    },
+    "Choose another…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolher outro…"
+          }
+        }
+      }
+    },
+    "Clear all": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Limpar tudo"
+          }
+        }
+      }
+    },
+    "Click": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clique"
+          }
+        }
+      }
+    },
+    "Click any button on the controller image above to modify its mapping.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clique em qualquer botão na imagem do controle acima para alterar o mapeamento."
+          }
+        }
+      }
+    },
+    "Click to set macro": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clique para definir a macro"
+          }
+        }
+      }
+    },
+    "Close": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desligado"
+          }
+        }
+      }
+    },
+    "Color": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cor"
+          }
+        }
+      }
+    },
+    "Common": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Geral"
+          }
+        }
+      }
+    },
+    "Connect a controller": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecte um controle"
+          }
+        }
+      }
+    },
+    "Connect the controller and press Refresh.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecte o controle e clique em Atualizar."
+          }
+        }
+      }
+    },
+    "Connect the controller to edit its lighting.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecte o controle para editar a iluminação."
+          }
+        }
+      }
+    },
+    "Connect the controller to edit its profiles.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecte o controle para editar os perfis."
+          }
+        }
+      }
+    },
+    "Connect the controller to edit vibration.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecte o controle para editar a vibração."
+          }
+        }
+      }
+    },
+    "Connect the controller to see its firmware.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecte o controle para ver o firmware."
+          }
+        }
+      }
+    },
+    "Connecting a controller": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectando um controle"
+          }
+        }
+      }
+    },
+    "Controller Settings": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustes do controle"
+          }
+        }
+      }
+    },
+    "Custom": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Personalizada"
+          }
+        }
+      }
+    },
+    "Custom\nAnimation": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Animação\npersonalizada"
+          }
+        }
+      }
+    },
+    "Custom curve (drag the points)": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curva personalizada (arraste os pontos)"
+          }
+        }
+      }
+    },
+    "Cycle time": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tempo do ciclo"
+          }
+        }
+      }
+    },
+    "DInput — the app talks to the pad directly, no helper needed.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DInput — o app fala direto com o controle, sem helper."
+          }
+        }
+      }
+    },
+    "Dead zone": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zona morta"
+          }
+        }
+      }
+    },
+    "Default": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Padrão"
+          }
+        }
+      }
+    },
+    "Delete": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Excluir"
+          }
+        }
+      }
+    },
+    "Device Firmware": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firmware do dispositivo"
+          }
+        }
+      }
+    },
+    "Device firmware: %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firmware do dispositivo: %@"
+          }
+        }
+      }
+    },
+    "Disabled": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desativado"
+          }
+        }
+      }
+    },
+    "Discard and Switch": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descartar e trocar"
+          }
+        }
+      }
+    },
+    "Discard unsaved changes to this profile?": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Descartar as alterações não salvas deste perfil?"
+          }
+        }
+      }
+    },
+    "Down": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baixo"
+          }
+        }
+      }
+    },
+    "Down-left": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baixo-esquerda"
+          }
+        }
+      }
+    },
+    "Down-right": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baixo-direita"
+          }
+        }
+      }
+    },
+    "Download and verify (dry run)": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baixar e verificar (simulação)"
+          }
+        }
+      }
+    },
+    "Drag to move · scroll or pinch to zoom": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arraste para mover · rolagem ou pinça para zoom"
+          }
+        }
+      }
+    },
+    "Edge (active range)": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Borda (alcance ativo)"
+          }
+        }
+      }
+    },
+    "Edit macro": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Editar macro"
+          }
+        }
+      }
+    },
+    "Enabling gyro mapping will reduce controller polling rate": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ativar o mapeamento do giroscópio reduz a taxa de resposta do controle"
+          }
+        }
+      }
+    },
+    "End (full press)": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fim (pressão total)"
+          }
+        }
+      }
+    },
+    "English": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Inglês"
+          }
+        }
+      }
+    },
+    "Feedback": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feedback"
+          }
+        }
+      }
+    },
+    "Fill": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preencher"
+          }
+        }
+      }
+    },
+    "Firmware": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firmware"
+          }
+        }
+      }
+    },
+    "Firmware %@ · %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firmware %@ · %@"
+          }
+        }
+      }
+    },
+    "Firmware Update": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualização de firmware"
+          }
+        }
+      }
+    },
+    "Firmware update available: %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualização de firmware disponível: %@"
+          }
+        }
+      }
+    },
+    "Fit": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustar"
+          }
+        }
+      }
+    },
+    "Flashing from the Mac is being validated step by step (see the dry run below). Until it ships, update with Flydigi Space Station on a Windows PC: connect the controller with the USB cable, open Settings → Firmware Update → Update. Keep it plugged in until it restarts.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A gravação pelo Mac está sendo validada passo a passo (veja a simulação abaixo). Até ficar pronta, atualize pelo Flydigi Space Station em um PC Windows: conecte o controle pelo cabo USB, abra Ajustes → Atualização de firmware → Atualizar. Mantenha o cabo até ele reiniciar."
+          }
+        }
+      }
+    },
+    "Flashing is not enabled yet": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A gravação ainda não está habilitada"
+          }
+        }
+      }
+    },
+    "Flydigi's per-game trigger presets. Automatic switching when a game launches is planned; for now this is the reference list.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Predefinições de gatilho por jogo da Flydigi. A troca automática ao abrir o jogo está planejada; por enquanto esta é a lista de referência."
+          }
+        }
+      }
+    },
+    "Frame interval": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intervalo entre quadros"
+          }
+        }
+      }
+    },
+    "Frequency": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Frequência"
+          }
+        }
+      }
+    },
+    "Game list unavailable offline.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lista de jogos indisponível sem internet."
+          }
+        }
+      }
+    },
+    "General": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Normal"
+          }
+        }
+      }
+    },
+    "Gradient": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gradiente"
+          }
+        }
+      }
+    },
+    "Grip vibration": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vibração da empunhadura"
+          }
+        }
+      }
+    },
+    "Grip vibration intensity": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Intensidade da vibração"
+          }
+        }
+      }
+    },
+    "Gyro": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giroscópio"
+          }
+        }
+      }
+    },
+    "Helper": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helper"
+          }
+        }
+      }
+    },
+    "Hold": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segurar"
+          }
+        }
+      }
+    },
+    "Hold a button": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segurar um botão"
+          }
+        }
+      }
+    },
+    "Hold for turbo": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segurar para turbo"
+          }
+        }
+      }
+    },
+    "Hold to enable": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Segurar para ativar"
+          }
+        }
+      }
+    },
+    "How to activate": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Como ativar"
+          }
+        }
+      }
+    },
+    "How to update today": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Como atualizar hoje"
+          }
+        }
+      }
+    },
+    "Input": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Entrada"
+          }
+        }
+      }
+    },
+    "Install helper": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalar helper"
+          }
+        }
+      }
+    },
+    "Installed and registered with launchd.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalado e registrado no launchd."
+          }
+        }
+      }
+    },
+    "Joystick": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analógicos"
+          }
+        }
+      }
+    },
+    "Keep in profile": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manter no perfil"
+          }
+        }
+      }
+    },
+    "Keyboard and mouse mapping needs a companion driver on the Mac. It arrives in a later release.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mapear teclado e mouse precisa de um driver auxiliar no Mac. Chega em uma versão futura."
+          }
+        }
+      }
+    },
+    "Language": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Idioma"
+          }
+        }
+      }
+    },
+    "Left": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Esquerda"
+          }
+        }
+      }
+    },
+    "Left joystick": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analógico esquerdo"
+          }
+        }
+      }
+    },
+    "Left joystick (racing games)": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analógico esquerdo (jogos de corrida)"
+          }
+        }
+      }
+    },
+    "Left stick": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analógico esquerdo"
+          }
+        }
+      }
+    },
+    "Left stick direction": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direção do analógico esquerdo"
+          }
+        }
+      }
+    },
+    "Left trigger": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gatilho esquerdo"
+          }
+        }
+      }
+    },
+    "Library unavailable offline.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Biblioteca indisponível sem internet."
+          }
+        }
+      }
+    },
+    "Light": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Luz"
+          }
+        }
+      }
+    },
+    "Light mode": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modo da luz"
+          }
+        }
+      }
+    },
+    "Lighting": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iluminação"
+          }
+        }
+      }
+    },
+    "Link": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conexão"
+          }
+        }
+      }
+    },
+    "Listening on the controller for 6 s — press a button (paddles too), or pick one": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ouvindo o controle por 6 s — pressione um botão (paddles também) ou escolha um"
+          }
+        }
+      }
+    },
+    "Live": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ao vivo"
+          }
+        }
+      }
+    },
+    "Load this animation into the preview": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carregar esta animação na pré-visualização"
+          }
+        }
+      }
+    },
+    "Loading Flydigi's library…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carregando a biblioteca da Flydigi…"
+          }
+        }
+      }
+    },
+    "Loading profiles…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carregando perfis…"
+          }
+        }
+      }
+    },
+    "Loading…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carregando…"
+          }
+        }
+      }
+    },
+    "Lock": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Travar"
+          }
+        }
+      }
+    },
+    "Looking for controllers…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Procurando controles…"
+          }
+        }
+      }
+    },
+    "Macro": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Macro"
+          }
+        }
+      }
+    },
+    "Macros": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Macros"
+          }
+        }
+      }
+    },
+    "Mapping to": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mapear para"
+          }
+        }
+      }
+    },
+    "Match stroke": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Acompanhar o curso"
+          }
+        }
+      }
+    },
+    "Mode": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modo"
+          }
+        }
+      }
+    },
+    "Motion": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Movimento"
+          }
+        }
+      }
+    },
+    "My Device": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Meu dispositivo"
+          }
+        }
+      }
+    },
+    "Needs XInput mode.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Precisa do modo XInput."
+          }
+        }
+      }
+    },
+    "Needs the USB cable (the receiver does not forward screen data).": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Precisa do cabo USB (o receptor não encaminha os dados da tela)."
+          }
+        }
+      }
+    },
+    "New firmware available, please update the firmware": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Novo firmware disponível, atualize o firmware"
+          }
+        }
+      }
+    },
+    "New macro": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nova macro"
+          }
+        }
+      }
+    },
+    "No controller": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem controle"
+          }
+        }
+      }
+    },
+    "No game controller visible to the system.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhum controle visível para o sistema."
+          }
+        }
+      }
+    },
+    "No macros in this profile": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhuma macro neste perfil"
+          }
+        }
+      }
+    },
+    "No profile": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem perfil"
+          }
+        }
+      }
+    },
+    "No profile loaded": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhum perfil carregado"
+          }
+        }
+      }
+    },
+    "No steps yet": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ainda sem passos"
+          }
+        }
+      }
+    },
+    "Not affiliated with Flydigi. Controller artwork and app icon © Flydigi, used for interoperability (see NOTICE.md in the app bundle).": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem vínculo com a Flydigi. Arte do controle e ícone do app © Flydigi, usados para interoperabilidade (veja o NOTICE.md no pacote do app)."
+          }
+        }
+      }
+    },
+    "Not connected": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não conectado"
+          }
+        }
+      }
+    },
+    "Not connected.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não conectado."
+          }
+        }
+      }
+    },
+    "Not installed.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não instalado."
+          }
+        }
+      }
+    },
+    "Note:": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Observação:"
+          }
+        }
+      }
+    },
+    "Off": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desligado"
+          }
+        }
+      }
+    },
+    "Official selection": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Seleção oficial"
+          }
+        }
+      }
+    },
+    "On the controller": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No controle"
+          }
+        }
+      }
+    },
+    "Once per press": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Uma vez por toque"
+          }
+        }
+      }
+    },
+    "Open Settings…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir ajustes…"
+          }
+        }
+      }
+    },
+    "Open Space Station": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir o Space Station"
+          }
+        }
+      }
+    },
+    "Open the controller": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir o controle"
+          }
+        }
+      }
+    },
+    "Pick one on the left or press + to bind a new macro to a button. Steps play on the pad itself, so they work in any game and on any platform.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolha uma à esquerda ou use + para vincular uma nova macro a um botão. Os passos rodam no próprio controle, então funcionam em qualquer jogo e plataforma."
+          }
+        }
+      }
+    },
+    "Playback": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reprodução"
+          }
+        }
+      }
+    },
+    "Plug the controller in over USB-C, or plug its charging base in and power the controller on (2.4 GHz). It appears here automatically; Bluetooth cannot be configured.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecte o controle pelo USB-C ou conecte a base de carregamento e ligue o controle (2,4 GHz). Ele aparece aqui automaticamente; por Bluetooth não é possível configurar."
+          }
+        }
+      }
+    },
+    "Portuguese": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Português"
+          }
+        }
+      }
+    },
+    "Press": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pressionar"
+          }
+        }
+      }
+    },
+    "Press a button": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pressionar um botão"
+          }
+        }
+      }
+    },
+    "Press the button on the controller or pick one": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pressione o botão no controle ou escolha um"
+          }
+        }
+      }
+    },
+    "Press to toggle": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toque para alternar"
+          }
+        }
+      }
+    },
+    "Press to toggle turbo": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toque para alternar o turbo"
+          }
+        }
+      }
+    },
+    "Pressure level": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nível de pressão"
+          }
+        }
+      }
+    },
+    "Preview": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pré-visualização"
+          }
+        }
+      }
+    },
+    "Preview needs XInput mode.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A prévia precisa do modo XInput."
+          }
+        }
+      }
+    },
+    "Preview on controller": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Testar no controle"
+          }
+        }
+      }
+    },
+    "Privileged helper": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Helper privilegiado"
+          }
+        }
+      }
+    },
+    "Profile": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Perfil"
+          }
+        }
+      }
+    },
+    "Profile name (up to 10 characters)": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nome do perfil (até 10 caracteres)"
+          }
+        }
+      }
+    },
+    "Quick": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Rápida"
+          }
+        }
+      }
+    },
+    "Quit": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sair"
+          }
+        }
+      }
+    },
+    "Race": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Corrida"
+          }
+        }
+      }
+    },
+    "Racing": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Corrida"
+          }
+        }
+      }
+    },
+    "Read everything again from the controller": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ler tudo de novo do controle"
+          }
+        }
+      }
+    },
+    "Ready. Changes apply live and are saved on the pad.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pronto. As alterações valem na hora e ficam salvas no controle."
+          }
+        }
+      }
+    },
+    "Recoil": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recuo"
+          }
+        }
+      }
+    },
+    "Record from pad": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gravar pelo controle"
+          }
+        }
+      }
+    },
+    "Refresh": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualizar"
+          }
+        }
+      }
+    },
+    "Refresh Controller": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualizar controle"
+          }
+        }
+      }
+    },
+    "Release": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Soltar"
+          }
+        }
+      }
+    },
+    "Release a button": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Soltar um botão"
+          }
+        }
+      }
+    },
+    "Remove helper": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Remover helper"
+          }
+        }
+      }
+    },
+    "Rename profile…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Renomear perfil…"
+          }
+        }
+      }
+    },
+    "Repeat while held": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repetir enquanto segura"
+          }
+        }
+      }
+    },
+    "Reset to default": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Restaurar padrão"
+          }
+        }
+      }
+    },
+    "Resistance": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resistência"
+          }
+        }
+      }
+    },
+    "Restart now": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reiniciar agora"
+          }
+        }
+      }
+    },
+    "Revert Changes": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reverter alterações"
+          }
+        }
+      }
+    },
+    "Revert unsaved changes (⌘⇧Z)": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reverter alterações não salvas (⌘⇧Z)"
+          }
+        }
+      }
+    },
+    "Right": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direita"
+          }
+        }
+      }
+    },
+    "Right joystick": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analógico direito"
+          }
+        }
+      }
+    },
+    "Right joystick (shooting games)": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analógico direito (jogos de tiro)"
+          }
+        }
+      }
+    },
+    "Right stick": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analógico direito"
+          }
+        }
+      }
+    },
+    "Right stick direction": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direção do analógico direito"
+          }
+        }
+      }
+    },
+    "Right trigger": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gatilho direito"
+          }
+        }
+      }
+    },
+    "Runs as root only while talking to the controller in XInput mode, because Apple's Xbox driver owns the USB interface. Required for screen uploads, trigger previews and key capture in XInput.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Roda como root só enquanto fala com o controle em modo XInput, porque o driver Xbox da Apple é dono da interface USB. Necessário para enviar à tela, testar gatilhos e capturar teclas em XInput."
+          }
+        }
+      }
+    },
+    "Screen": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tela"
+          }
+        }
+      }
+    },
+    "Screen Settings": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustes da tela"
+          }
+        }
+      }
+    },
+    "Search games": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar jogos"
+          }
+        }
+      }
+    },
+    "Select a macro": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Selecione uma macro"
+          }
+        }
+      }
+    },
+    "Send to controller": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enviar ao controle"
+          }
+        }
+      }
+    },
+    "Sensitivity": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensibilidade"
+          }
+        }
+      }
+    },
+    "Sensitivity curve": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curva de sensibilidade"
+          }
+        }
+      }
+    },
+    "Set end here": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fim aqui"
+          }
+        }
+      }
+    },
+    "Set start here": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Início aqui"
+          }
+        }
+      }
+    },
+    "Settings": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ajustes"
+          }
+        }
+      }
+    },
+    "Shooting": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tiro"
+          }
+        }
+      }
+    },
+    "Shots per second": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toques por segundo"
+          }
+        }
+      }
+    },
+    "Slow": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Lenta"
+          }
+        }
+      }
+    },
+    "Sniper": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sniper"
+          }
+        }
+      }
+    },
+    "Source on GitHub": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Código no GitHub"
+          }
+        }
+      }
+    },
+    "Space Station for Mac": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Space Station para Mac"
+          }
+        }
+      }
+    },
+    "Space Station for Mac %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Space Station para Mac %@"
+          }
+        }
+      }
+    },
+    "Special": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Especial"
+          }
+        }
+      }
+    },
+    "Start (dead zone)": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Início (zona morta)"
+          }
+        }
+      }
+    },
+    "Status": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Status"
+          }
+        }
+      }
+    },
+    "Steady": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Fixa"
+          }
+        }
+      }
+    },
+    "Steps": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Passos"
+          }
+        }
+      }
+    },
+    "Stop": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parar"
+          }
+        }
+      }
+    },
+    "Stop preview": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parar teste"
+          }
+        }
+      }
+    },
+    "Streamlined": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Corrente"
+          }
+        }
+      }
+    },
+    "Strength": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Força"
+          }
+        }
+      }
+    },
+    "Stroke": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Curso"
+          }
+        }
+      }
+    },
+    "Switch to DInput": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trocar para DInput"
+          }
+        }
+      }
+    },
+    "Switch to DInput mode": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trocar para modo DInput"
+          }
+        }
+      }
+    },
+    "Switch to XInput": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trocar para XInput"
+          }
+        }
+      }
+    },
+    "Switch to XInput mode": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trocar para modo XInput"
+          }
+        }
+      }
+    },
+    "System": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sistema"
+          }
+        }
+      }
+    },
+    "Takes effect after restarting the app": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vale após reiniciar o app"
+          }
+        }
+      }
+    },
+    "Tap (press + release)": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Toque (pressionar + soltar)"
+          }
+        }
+      }
+    },
+    "The test needs XInput mode.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O teste precisa do modo XInput."
+          }
+        }
+      }
+    },
+    "Toggle on / off": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Alternar liga/desliga"
+          }
+        }
+      }
+    },
+    "Total time": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tempo total"
+          }
+        }
+      }
+    },
+    "Trigger": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gatilhos"
+          }
+        }
+      }
+    },
+    "Trigger mode": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modo do gatilho"
+          }
+        }
+      }
+    },
+    "Trim": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Recortar quadros"
+          }
+        }
+      }
+    },
+    "Turbo": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turbo"
+          }
+        }
+      }
+    },
+    "USB mode": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modo USB"
+          }
+        }
+      }
+    },
+    "USB-C cable or the charging base's receiver": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cabo USB-C ou o receptor da base de carregamento"
+          }
+        }
+      }
+    },
+    "Unsaved changes in the app — apply or revert there first.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Há alterações não salvas no app — aplique ou reverta lá primeiro."
+          }
+        }
+      }
+    },
+    "Up": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cima"
+          }
+        }
+      }
+    },
+    "Up to date": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualizado"
+          }
+        }
+      }
+    },
+    "Up-left": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cima-esquerda"
+          }
+        }
+      }
+    },
+    "Up-right": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cima-direita"
+          }
+        }
+      }
+    },
+    "Update": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualizar"
+          }
+        }
+      }
+    },
+    "Update available: %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualização disponível: %@"
+          }
+        }
+      }
+    },
+    "Upload": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enviar"
+          }
+        }
+      }
+    },
+    "Use mode": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Modo de uso"
+          }
+        }
+      }
+    },
+    "Verifying…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificando…"
+          }
+        }
+      }
+    },
+    "Version %@ — open-source (MIT), unofficial. Ported to macOS by Uilton Lopes.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versão %@ — código aberto (MIT), não oficial. Portado para macOS por Uilton Lopes."
+          }
+        }
+      }
+    },
+    "Vibration": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Vibração"
+          }
+        }
+      }
+    },
+    "Vibration test": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Testar vibração"
+          }
+        }
+      }
+    },
+    "Welcome to Space Station": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bem-vindo ao Space Station"
+          }
+        }
+      }
+    },
+    "Write this profile to the controller and save it (⌘S)": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gravar este perfil no controle e salvar (⌘S)"
+          }
+        }
+      }
+    },
+    "XInput — what games expect; the screen and trigger previews need it.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "XInput — o que os jogos esperam; a tela e o teste dos gatilhos precisam dele."
+          }
+        }
+      }
+    },
+    "Zoom": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Zoom"
+          }
+        }
+      }
+    }
+  },
+  "version": "1.0"
+}

@@ -283,7 +283,7 @@ struct Firmware: ParsableCommand {
         @OptionGroup var ch: ChannelOption
         func run() throws {
             let fw: String
-            if let installed { fw = installed } else { let s = try DeviceSession.open(preferring: ch.channel); defer { s.close() }; fw = try s.deviceInfo().firmware }
+            if let installed { fw = installed } else { let s = try ch.open(); defer { s.close() }; fw = try s.deviceInfo().firmware }
             let chips = try FlydigiAPI.firmwareUpdates(mainChip: fw)
             print("installed \(fw)")
             for (k, v) in chips.sorted(by: { $0.key < $1.key }) { print("\(k): \(v.version)\(FirmwareVersion.isNewer(v.version, than: fw) && k == "main_chip" ? "  ← newer" : "")  \(v.url.lastPathComponent)") }
