@@ -805,11 +805,11 @@ struct JoystickTab: View {
                                       options: [(.default, "Default"), (.quick, "Instant"), (.slow, "Delay"), (.custom, "Custom")], compact: true)
                             .padding(2).frame(maxWidth: .infinity).background(SS.n700, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
-                    SensitivityCurve(size: 360, p1: Binding(get: { (stick.p1x, stick.p1y) }, set: { v in set { $0.p1x = v.0; $0.p1y = v.1 } }),
+                    SensitivityCurve(p1: Binding(get: { (stick.p1x, stick.p1y) }, set: { v in set { $0.p1x = v.0; $0.p1y = v.1 } }),
                                      p2: Binding(get: { (stick.p2x, stick.p2y) }, set: { v in set { $0.p2x = v.0; $0.p2y = v.1 } }),
                                      deadZone: stick.deadZone, edge: stick.end, editable: stick.curve == .custom,
                                      live: live.connected ? Double(min(1, hypot(liveStick.x, liveStick.y))) : nil,
-                                     onEdit: { set { $0.curve = .custom } })
+                                     onEdit: { set { $0.curve = .custom } }, size: 360)
                     Text(stick.curve == .custom ? "Drag nodes to adjust curve" : (stick.curve == .default ? "Flydigi's factory curve: a slight lift near the centre (23 % output at 15 % travel), then linear. X: stick position, Y: output." : "Curve cannot be adjusted in current mode — X: stick position, Y: output"))
                         .font(.system(size: 11)).foregroundStyle(SS.n400)
                 }
