@@ -201,6 +201,16 @@
         }
       }
     },
+    "Buy me a coffee": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Me paga um café"
+          }
+        }
+      }
+    },
     "Cancel": {
       "localizations": {
         "pt-BR": {
@@ -1281,6 +1291,16 @@
         }
       }
     },
+    "Made by": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Feito por"
+          }
+        }
+      }
+    },
     "Mapping to": {
       "localizations": {
         "pt-BR": {
@@ -2211,6 +2231,16 @@
         }
       }
     },
+    "Space Station for Mac is free and open source, built in my spare time by reverse-engineering the controller. If it saved you a Windows install, you can buy me a coffee.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Space Station para Mac é gratuito e de código aberto, feito nas horas vagas fazendo engenharia reversa do controle. Se ele te poupou de instalar um Windows, você pode me pagar um café."
+          }
+        }
+      }
+    },
     "Special": {
       "localizations": {
         "pt-BR": {
@@ -2307,6 +2337,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Curso"
+          }
+        }
+      }
+    },
+    "Support the project": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Apoie o projeto"
           }
         }
       }
@@ -2697,6 +2737,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Zoom"
+          }
+        }
+      }
+    },
+    "· Issues and pull requests are welcome on GitHub.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "· Issues e pull requests são bem-vindos no GitHub."
           }
         }
       }

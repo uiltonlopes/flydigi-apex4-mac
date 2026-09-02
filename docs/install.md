@@ -45,3 +45,8 @@ Delete `Space Station.app`. To remove the helper first: Settings → **Remove he
 Everything the app writes (lighting, profiles, macros, screen) goes to the same flash areas Space
 Station writes, using the same commands, verified on real hardware. Firmware flashing is deliberately
 not implemented. If the screen ever gets stuck mid-upload, unplug and re-plug the controller.
+
+## Support
+
+Questions and bugs: open an issue on GitHub. If the app is useful to you, you can
+[buy the author a coffee](https://buymeacoffee.com/uiltonlopes).

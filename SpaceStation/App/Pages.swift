@@ -269,6 +269,23 @@ struct SettingsPage: View {
                             Text("Not affiliated with Flydigi. Controller artwork and app icon © Flydigi, used for interoperability (see NOTICE.md in the app bundle).")
                                 .font(.system(size: 12)).foregroundStyle(SS.n300)
                         }
+                        section("Support the project") {
+                            Text("Space Station for Mac is free and open source, built in my spare time by reverse-engineering the controller. If it saved you a Windows install, you can buy me a coffee.")
+                                .font(.system(size: 12)).foregroundStyle(SS.n300)
+                            Link(destination: URL(string: "https://buymeacoffee.com/uiltonlopes")!) {
+                                HStack(spacing: 8) {
+                                    Image(systemName: "cup.and.saucer.fill").font(.system(size: 13))
+                                    Text("Buy me a coffee").font(.system(size: 13, weight: .semibold))
+                                }
+                                .foregroundStyle(.black).padding(.horizontal, 14).frame(height: 32)
+                                .background(Color(hex: 0xFFDD00), in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            }
+                            HStack(spacing: 6) {
+                                Text("Made by").font(.system(size: 12)).foregroundStyle(SS.n300)
+                                Link("Uilton Lopes", destination: URL(string: "https://github.com/uiltonlopes")!).font(.system(size: 12, weight: .semibold)).tint(SS.brand500)
+                                Text("· Issues and pull requests are welcome on GitHub.").font(.system(size: 12)).foregroundStyle(SS.n300)
+                            }
+                        }
                     }
                     .padding(.horizontal, 28).padding(.vertical, 20).frame(maxWidth: 680, alignment: .leading)
                     .frame(maxWidth: .infinity)
@@ -483,6 +500,11 @@ struct MenuBarView: View {
                 Button("Quit") { NSApp.terminate(nil) }
             }
             .controlSize(.small)
+            HStack(spacing: 6) {
+                Text("Space Station for Mac · by Uilton Lopes").font(.caption2).foregroundStyle(.secondary)
+                Spacer()
+                Link("Buy me a coffee", destination: URL(string: "https://buymeacoffee.com/uiltonlopes")!).font(.caption2)
+            }
         }
         .padding(12).frame(width: 340)
     }

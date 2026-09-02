@@ -58,6 +58,15 @@ struct DeviceCenterPage: View {
                             .padding(16)
                         }
                         Spacer()
+                        HStack(spacing: 10) {
+                            Text("Made by").font(.system(size: 12)).foregroundStyle(SS.n400)
+                            Link("Uilton Lopes", destination: URL(string: "https://github.com/uiltonlopes")!).font(.system(size: 12, weight: .semibold)).tint(SS.n300)
+                            Link(destination: URL(string: "https://www.linkedin.com/in/uiltonlopes")!) { Image(systemName: "link").font(.system(size: 12)) }.tint(SS.n400).help("LinkedIn")
+                            Link(destination: URL(string: "https://buymeacoffee.com/uiltonlopes")!) {
+                                HStack(spacing: 5) { Image(systemName: "cup.and.saucer.fill"); Text("Buy me a coffee") }.font(.system(size: 12, weight: .medium))
+                            }
+                            .tint(Color(hex: 0xFFDD00)).help("Support the project")
+                        }
                     }
                     .padding(24)
                 }
