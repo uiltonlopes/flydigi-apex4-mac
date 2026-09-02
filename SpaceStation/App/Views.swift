@@ -933,8 +933,11 @@ struct Battery: CustomStringConvertible {
     let raw: UInt8
     var system: LiveInput.BatteryInfo? = nil
     var charging: Bool { system?.charging == true || raw >> 4 == 1 }
-    var known: Bool { system != nil || raw != 0 }
-    var percent: Int { if let s = system { return Int((s.level * 100).rounded()) }; return min(5, Int(raw & 0xF)) * 20 }
+    var known: Bool { (system?.level ?? 0) > 0 || raw != 0 }
+    var percent: Int {
+        if let s = system, s.level > 0 { return Int((s.level * 100).rounded()) }
+        return min(5, Int(raw & 0xF)) * 20
+    }
     var symbol: String {
         if charging { return "battery.100percent.bolt" }
         guard known else { return "battery.0percent" }

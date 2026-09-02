@@ -72,7 +72,9 @@ final class LiveInput {
     }
 
     private func readBattery(from pad: GCController) {
-        guard let b = pad.battery, b.batteryLevel >= 0 else { return }
+        // Over the 2.4 GHz receiver macOS exposes a battery object with state "unknown" and level 0 — that is
+        // no information, not an empty battery; leave it nil so the pad's own byte is used instead.
+        guard let b = pad.battery, b.batteryState != .unknown, b.batteryLevel > 0 else { battery = nil; return }
         battery = BatteryInfo(level: b.batteryLevel, charging: b.batteryState == .charging || b.batteryState == .full)
     }
 

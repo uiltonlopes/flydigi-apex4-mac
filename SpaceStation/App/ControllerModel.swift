@@ -393,7 +393,11 @@ final class ControllerModel {
         case .success(let v): onSuccess(v)
         case .failure(let e):
             let text = "\(e)"
-            if text.contains("no matching report") || text.contains("timeout") {
+            if text.contains("not found"), USBMonitor.currentConnection() == .none {
+                // The receiver / cable went away while we were talking to it: not an error, just gone.
+                connection = .none; info = nil; led = nil; firmwareUpdate = nil; firmwareCheckedFor = nil; lastError = nil
+                padPoll?.cancel(); padPoll = nil
+            } else if text.contains("no matching report") || text.contains("timeout") {
                 lastError = String(localized: "The controller did not answer in time. Press refresh to try again.")
                 if info != nil { padWentSilent() }       // it was there a moment ago: turned off / out of range
             } else {
