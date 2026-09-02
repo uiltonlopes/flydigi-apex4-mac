@@ -100,13 +100,18 @@ final class ControllerModel {
 
     /// Screen uploads need XInput + helper (see docs/protocol.md §6).
     func uploadScreen(url: URL) async {
+        guard let frames = try? ImageLoader.frames(url: url) else { lastError = "Cannot decode \(url.lastPathComponent)"; return }
+        await uploadScreen(frames: frames)
+    }
+
+    /// Sends already-encoded LVGL frames (from the screen editor).
+    func uploadScreen(frames: [[UInt8]]) async {
         uploadProgress = 0
         defer { uploadProgress = nil }
         let conn = connection
         await run {
             guard conn == .xinput else { throw HelperError.transport("Screen upload needs the controller in XInput mode. Use “Switch mode” below.") }
             guard #available(macOS 14.0, *) else { throw HelperError.notInstalled }
-            let frames = try ImageLoader.frames(url: url)
             try HelperClient.shared.uploadScreen(frames: frames) { done, total in
                 Task { @MainActor in self.uploadProgress = Double(done) / Double(total) }
             }

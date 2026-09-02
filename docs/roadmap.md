@@ -11,7 +11,7 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 
 ## Milestone 1 — what the community asked for first
 - [x] **LED** in the app: mode, colours, brightness, speed; persisted to flash. (Per-group colours: TODO.)
-- [x] **Screen** in the app: GIF/PNG/JPEG → 160×80 (aspect-fill), ≤35 frames, quantised preview, per-frame progress. TODO: fit/fill/crop choice, real frame period in the start packet, online library.
+- [x] **Screen** in the app: GIF/PNG/JPEG → 160×80, ≤35 frames (evenly thinned), quantised preview, per-frame progress, **editor** (pan/zoom/fit/fill, trim, interval), online library. TODO: send the chosen frame interval in the start packet.
 - [x] Screen sleep time / status bar: read, set and restore verified (`A5 30 02..05`).
 - [x] SwiftUI app `Apex4` — Status, Lighting and Screen verified on hardware through the helper (2026-09-01).
 - [x] **Redesign in the Space Station 4 layout** (2026-09-01, validated by the owner): 248 pt sidebar with device card, battery and rail (Adaptive Trigger · Screen · Settings); hero with SS4's wireframe, key silhouettes and hotspot geometry; profile dropdown + Apply/Revert; tabs Common · Button · Joystick · Gyro · Trigger · Macros. Reference captured from the real renderer (`docs/design-ss4-reference.md`, `tools/ss4-harness/`).

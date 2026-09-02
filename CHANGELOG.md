@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+- App renamed **Space Station for Mac** (repo `flydigi-space-station-mac`), Space Station's app icon.
+- Welcome / device-center screen with the connected model's picture, connection and battery.
+- Battery read through GameController when macOS provides it (no USB borrow), device-info byte otherwise.
+- Screen editor: drag / pinch / scroll to frame the image in a 2:1 viewport, Fit / Fill, GIF trimming with
+  filmstrip, frame interval, exact 160 × 80 preview; long GIFs are thinned evenly to 35 frames.
+- Key capture in XInput borrows the pad for a few seconds so paddles and Fn work everywhere.
+- Credits and links in Settings → About.
+
 ## 0.1.0 — 2026-09-02 (pre-release)
 
 First public build. Signed with a personal Apple Development certificate, not notarized: right-click →

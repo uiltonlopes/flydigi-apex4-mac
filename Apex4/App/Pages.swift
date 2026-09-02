@@ -11,15 +11,11 @@ import FlydigiHelperProtocol
 struct ScreenPage: View {
     let back: () -> Void
     @Environment(ControllerModel.self) private var model
-    @State private var file: URL?
-    @State private var preview: [NSImage] = []
-    @State private var frameIndex = 0
+    @State private var editor = ScreenEditorState()
     @State private var importing = false
     @State private var library: [FlydigiAPI.ScreenPic] = []
     @State private var libraryError: String?
     @State private var downloading: Int?
-    private let timer = Timer.publish(every: 0.12, on: .main, in: .common).autoconnect()
-
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             PageHeader(title: "Screen", back: back)
@@ -27,29 +23,31 @@ struct ScreenPage: View {
                 VStack(alignment: .leading, spacing: 20) {
                     Text("Screen Settings").font(.system(size: 14, weight: .semibold)).foregroundStyle(.white)
                     DarkCard {
-                        HStack(alignment: .top, spacing: 24) {
-                            VStack(alignment: .leading, spacing: 14) {
-                                HStack(spacing: 14) {
-                                    Text("Custom\nAnimation").font(.system(size: 12, weight: .medium)).foregroundStyle(.white)
-                                    PrimaryButton(title: "Upload", enabled: !model.busy) { importing = true }
-                                    Text("Supports jpg, png, gif formats · 160 × 80 · up to \(Screen.maxFrames) frames").font(.system(size: 12)).foregroundStyle(SS.n300)
-                                }
-                                if let file { Text(file.lastPathComponent).font(.system(size: 12)).foregroundStyle(SS.n300).lineLimit(1) }
-                                if let p = model.uploadProgress {
-                                    ProgressView(value: p).tint(SS.brand500).frame(width: 320)
-                                    Text("Uploading… \(Int(p * 100)) % — about \(Int((1 - p) * Double(max(1, preview.count)) * 3.5)) s left").font(.system(size: 12)).foregroundStyle(SS.n300)
-                                } else if !preview.isEmpty {
-                                    HStack(spacing: 10) {
-                                        PrimaryButton(title: "Send to controller", icon: "arrow.up.circle", enabled: file != nil && !model.busy && model.connection == .xinput) {
-                                            if let file { Task { await model.uploadScreen(url: file) } }
+                        VStack(alignment: .leading, spacing: 16) {
+                            HStack(spacing: 14) {
+                                Text("Custom\nAnimation").font(.system(size: 12, weight: .medium)).foregroundStyle(.white)
+                                PrimaryButton(title: editor.isEmpty ? "Upload" : "Choose another…", enabled: !model.busy) { importing = true }
+                                Text("GIF, PNG or JPEG · drop a file here · the screen is 160 × 80, up to \(Screen.maxFrames) frames").font(.system(size: 12)).foregroundStyle(SS.n300)
+                                Spacer()
+                                if let u = editor.url { Text(u.lastPathComponent).font(.system(size: 12)).foregroundStyle(SS.n400).lineLimit(1) }
+                            }
+                            if !editor.isEmpty {
+                                ScreenEditorView(state: editor)
+                                HStack(spacing: 12) {
+                                    if let p = model.uploadProgress {
+                                        ProgressView(value: p).tint(SS.brand500).frame(width: 260)
+                                        Text("Sending… \(Int(p * 100)) % — about \(Int((1 - p) * Double(max(1, editor.outputCount)) * 3.5)) s left").font(.system(size: 12)).foregroundStyle(SS.n300)
+                                    } else {
+                                        PrimaryButton(title: "Send to controller", icon: "arrow.up.circle", enabled: !model.busy && model.connection == .xinput && model.info?.wired != false) {
+                                            let frames = editor.encode(viewport: ScreenEditorView.viewportSize)
+                                            Task { await model.uploadScreen(frames: frames) }
                                         }
-                                        Text("\(preview.count) frame\(preview.count == 1 ? "" : "s")").font(.system(size: 12)).foregroundStyle(SS.n300)
+                                        if model.connection != .xinput { Text("Needs XInput mode.").font(.system(size: 12)).foregroundStyle(SS.yellow) }
+                                        else if model.info?.wired == false { Text("Needs the USB cable (the receiver does not forward screen data).").font(.system(size: 12)).foregroundStyle(SS.yellow) }
+                                        else { Text("About \(Int(Double(editor.outputCount) * 3.5)) s for \(editor.outputCount) frame\(editor.outputCount == 1 ? "" : "s").").font(.system(size: 12)).foregroundStyle(SS.n400) }
                                     }
-                                    if model.connection != .xinput { Text("Screen uploads need XInput mode over the USB cable.").font(.system(size: 12)).foregroundStyle(SS.yellow) }
                                 }
                             }
-                            Spacer()
-                            previewBox
                         }
                     }
                     .dropDestination(for: URL.self) { urls, _ in if let u = urls.first { load(u) }; return true }
@@ -77,20 +75,6 @@ struct ScreenPage: View {
         }
         .fileImporter(isPresented: $importing, allowedContentTypes: [.gif, .png, .jpeg]) { if case let .success(u) = $0 { load(u) } }
         .task { await loadLibrary() }
-    }
-
-    private var previewBox: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 6).fill(.black)
-            if preview.isEmpty {
-                Text("Preview").font(.system(size: 12)).foregroundStyle(SS.n400)
-            } else {
-                Image(nsImage: preview[min(frameIndex, preview.count - 1)]).interpolation(.none).resizable().aspectRatio(2, contentMode: .fit).padding(4)
-            }
-        }
-        .frame(width: 240, height: 120)
-        .overlay(RoundedRectangle(cornerRadius: 6).strokeBorder(SS.n500))
-        .onReceive(timer) { _ in if preview.count > 1 { frameIndex = (frameIndex + 1) % preview.count } }
     }
 
     private func libraryCell(_ pic: FlydigiAPI.ScreenPic) -> some View {
@@ -150,24 +134,7 @@ struct ScreenPage: View {
         if case .success(let u) = r { load(u) }
     }
 
-    private func load(_ url: URL) {
-        file = url
-        guard let frames = try? ImageLoader.frames(url: url) else { preview = []; return }
-        preview = frames.map { lvgl in
-            let w = Screen.width, h = Screen.height
-            var rgba = [UInt8](repeating: 255, count: w * h * 4)
-            for i in 0..<(w * h) {
-                let px = UInt16(lvgl[4 + i * 2]) << 8 | UInt16(lvgl[5 + i * 2])
-                rgba[i * 4] = UInt8((px >> 11) & 0x1F) << 3; rgba[i * 4 + 1] = UInt8((px >> 5) & 0x3F) << 2; rgba[i * 4 + 2] = UInt8(px & 0x1F) << 3
-            }
-            let provider = CGDataProvider(data: Data(rgba) as CFData)!
-            let cg = CGImage(width: w, height: h, bitsPerComponent: 8, bitsPerPixel: 32, bytesPerRow: w * 4,
-                             space: CGColorSpace(name: CGColorSpace.sRGB)!, bitmapInfo: CGBitmapInfo(rawValue: CGImageAlphaInfo.noneSkipLast.rawValue),
-                             provider: provider, decode: nil, shouldInterpolate: false, intent: .defaultIntent)!
-            return NSImage(cgImage: cg, size: NSSize(width: w, height: h))
-        }
-        frameIndex = 0
-    }
+    private func load(_ url: URL) { editor.load(url) }
 }
 
 // MARK: - Adaptive Trigger (game presets from Flydigi's list)
