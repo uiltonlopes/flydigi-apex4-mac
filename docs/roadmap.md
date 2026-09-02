@@ -14,22 +14,22 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 - [x] **Screen** in the app: GIF/PNG/JPEG → 160×80 (aspect-fill), ≤35 frames, quantised preview, per-frame progress. TODO: fit/fill/crop choice, real frame period in the start packet, online library.
 - [x] Screen sleep time / status bar: read, set and restore verified (`A5 30 02..05`).
 - [x] SwiftUI app `Apex4` — Status, Lighting and Screen verified on hardware through the helper (2026-09-01).
-- [~] **Redesign per `docs/design.md`** (2026-09-01 evening): NavigationSplitView shell, stage, toolbar (slot picker · Refresh/Revert · Apply ⌘S), inspector, Settings scene, menu bar `.window`; **Profiles & Buttons** page v1 (hotspots over the stage + mapping table + button inspector: default / remap / turbo / macro). Awaiting visual review.
+- [x] **Redesign in the Space Station 4 layout** (2026-09-01, validated by the owner): 248 pt sidebar with device card, battery and rail (Adaptive Trigger · Screen · Settings); hero with SS4's wireframe, key silhouettes and hotspot geometry; profile dropdown + Apply/Revert; tabs Common · Button · Joystick · Gyro · Trigger · Macros. Reference captured from the real renderer (`docs/design-ss4-reference.md`, `research/ss4-harness/`).
 
 ## Milestone 2 — controller configuration
 - [~] Profiles: read/apply config slot verified (`A5 20`, `A5 50 05`); per-slot read/write + import/export pending.
-- [~] Button mapping, macros, turbo: blob fields decoded; remap + macro write/read-back verified on hardware (`apex4 dev slot-write-test`, `dev macro-test`). UI pending.
-- [~] Joystick: dead zone/curve decoded in the blob (write path proven); resolution/return rate/centre sensitivity/rebounce/round type commands known (`A5 50 0A/0B/0D…`), untested.
+- [x] Button mapping, turbo, macros in the app: Click / Turbo / Macro / Special editor with "press the button on the pad" capture; Macros tab with step editor, timeline and recording from the pad. Remap + macro write/read-back verified on hardware.
+- [~] Joystick tab: curve (Default/Quick/Slow/Custom with draggable points), dead zone, edge, live gauge. Resolution/return rate/centre sensitivity/rebounce/round type commands known (`A5 50 0A/0B/0D…`), untested.
 - [ ] **Calibration wizard** (`A5 14 01/02` start/stop, `A5 F6 06` stick test): only as a guided flow with live stick readout — starting/stopping blindly can leave sticks with a bogus range.
-- [~] Triggers: ForceAdapt live command implemented (`A5 30 06`, Race/Sniper/Normal sent); dead zones/curves decoded in blob. Calibration, jitter TBD.
-- [~] Vibration motor test verified (`A5 12`); motion mapping decoded in the blob, UI pending.
-- [ ] 🔬 Live input viewer (GameController framework) for testing.
+- [x] Trigger tab: ForceAdapt modes with live preview and "keep in profile", start/end, live gauge (parameter layout partly inferred — see `Controls.swift`).
+- [x] Common tab: lighting (debounced live apply) and grip vibration with motor test; Gyro tab: mapping, activation key/type, sensitivity, dead zone, use mode.
+- [x] Live input: GameController framework in both modes, plus the **raw DInput status report** (paddles M1–M4, Fn, Home, sticks, triggers — `protocol.md` §9) so the hero lights every key and capture/recording see the paddles.
 
 ## Inputs from the Space Station 4 analysis (see `docs/spacestation4-analysis.md`)
-- [~] Online GIF library: `FlydigiAPI.screenPictures()` + `apex4 api gifs` (38 items, verified live) — app UI pending.
-- [~] Per-game trigger presets: `FlydigiAPI.gamePresets()` + `apex4 api games` (94 games, verified live) — feed Milestone 3.
+- [x] Online GIF library in the Screen page ("Official selection": pick → preview → send).
+- [~] Per-game trigger presets: `FlydigiAPI.gamePresets()` listed in the Adaptive Trigger page (94 games) — automatic switching is Milestone 3.
 - [x] Config blob (790 B) decoded/encoded in `GamepadConfig` (keys, sticks, triggers, ForceAdapt, motion, vibration, macros, title) with byte-exact round-trip; `apex4 config show`.
-- [~] Firmware availability notice: `FlydigiAPI.firmwareUpdates()` + `apex4 api firmware` (6.8.3.7 offered, verified live) — app UI pending. Flashing stays out of scope.
+- [x] Firmware availability notice in Settings ("Check Flydigi for updates"). Flashing stays out of scope.
 - [x] Re-tested the DInput details flagged by the SS4 analysis (see `protocol.md` §3): keep `EA`/`E7`; acks are 1-based; DInput commands need 12-byte padding.
 
 ## Milestone 3 — beyond Space Station
@@ -38,7 +38,8 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 - [ ] Shortcuts / URL scheme / CLI automation.
 
 ## Later / research
-- [x] 2.4 GHz dongle: LED/config work over the base's receiver (same XInput protocol). ❌ Screen upload gets no ack wirelessly — cable only.
+- [x] 2.4 GHz dongle: LED/config work over the base's receiver (same XInput protocol); device info (model, firmware, battery) comes from the pad. ❌ Screen upload gets no ack wirelessly — cable only.
+- [ ] Battery level in XInput/dongle refresh loop (currently read once per refresh; SS4 polls a heartbeat).
 - [ ] ❓ Firmware updates (MCU, dongle, trigger board, LCD via ESP32 bootloader). Highest risk; last.
 - [ ] Keyboard/mouse mapping **the macOS way** (Milestone 3): the firmware only flags a key as `0xFE`; Flydigi's Windows driver does the translation. On macOS the app can read the pad via GameController and post `CGEvent`s (needs Accessibility permission, app running) — no kernel driver.
 - [ ] 🚫 DualSense/DS-mode emulation — Windows kernel driver; a macOS equivalent would need a virtual HID driver (DriverKit). Out of scope.

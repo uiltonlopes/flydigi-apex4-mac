@@ -3,9 +3,28 @@
 Native, open-source macOS companion for the **Flydigi Apex 4** controller: LEDs, LCD animations,
 profiles and more — everything Flydigi Space Station does on Windows, on your Mac.
 
-> Status: **research complete, app in development.** The USB protocol has been reverse-engineered
-> and verified on real hardware (LED read/write with persistence, full 35-frame GIF upload to the
-> screen). See [`docs/protocol.md`](docs/protocol.md).
+> Status: **usable, pre-release.** The USB protocol is reverse-engineered and verified on real
+> hardware, and the app covers everything Space Station 4 offers for the Apex 4 except firmware
+> flashing and keyboard/mouse mapping. See [`docs/protocol.md`](docs/protocol.md) and
+> [`docs/roadmap.md`](docs/roadmap.md).
+
+## What the app does
+
+Laid out like Space Station 4 so owners feel at home, built with SwiftUI:
+
+- **Common** — lighting (mode, colours, brightness, cycle time; applied live) and grip vibration.
+- **Button** — click / turbo / macro / special per key, with "press the button on the pad" capture.
+- **Joystick** — curve (incl. custom two-point curve), dead zone, edge, live readout.
+- **Gyro** — map motion to a stick, activation key, sensitivity, dead zone.
+- **Trigger** — ForceAdapt modes (race, sniper, recoil, lock, vibration) with live preview, start/end.
+- **Macros** — on-board macros with a step editor, timeline and recording from the pad.
+- **Screen** — upload GIF/PNG/JPEG or pick from Flydigi's official library (cable, XInput).
+- **Adaptive Trigger** — Flydigi's per-game preset list; **Settings** — helper, USB mode, firmware notice.
+- 4 on-board profile slots with rename, apply and revert; battery, link and mode in the sidebar.
+
+Live input works in both USB modes; in DInput the app also reads the raw report, so paddles
+M1–M4, Fn and Home light up too. Controller artwork is Flydigi's (see
+[`Apex4/App/Resources/Flydigi/NOTICE.md`](Apex4/App/Resources/Flydigi/NOTICE.md)); all code is ours.
 
 ## Why
 
