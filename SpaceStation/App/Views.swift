@@ -162,9 +162,9 @@ struct Sidebar: View {
     }
     private func row(_ k: String, _ v: String) -> some View {
         HStack {
-            Text(k).font(.system(size: 12)).foregroundStyle(SS.n400)
+            Text(LocalizedStringKey(k)).font(.system(size: 12)).foregroundStyle(SS.n400)
             Spacer()
-            Text(v).font(.system(size: 12)).foregroundStyle(SS.n300).lineLimit(1)
+            Text(LocalizedStringKey(v)).font(.system(size: 12)).foregroundStyle(SS.n300).lineLimit(1)
         }
         .frame(height: 26)
     }

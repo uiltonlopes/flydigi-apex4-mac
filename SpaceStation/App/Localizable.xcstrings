@@ -1,6 +1,16 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "2.4 GHz receiver": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Receptor 2,4 GHz"
+          }
+        }
+      }
+    },
     "About": {
       "localizations": {
         "pt-BR": {
@@ -117,6 +127,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aplicando…"
+          }
+        }
+      }
+    },
+    "Battery": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bateria"
           }
         }
       }
@@ -391,6 +411,16 @@
         }
       }
     },
+    "Connected": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conectado"
+          }
+        }
+      }
+    },
     "Connecting a controller": {
       "localizations": {
         "pt-BR": {
@@ -447,6 +477,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tempo do ciclo"
+          }
+        }
+      }
+    },
+    "DInput": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "DInput"
           }
         }
       }
@@ -591,6 +631,16 @@
         }
       }
     },
+    "Dry run complete — nothing was written.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Simulação concluída — nada foi gravado."
+          }
+        }
+      }
+    },
     "Edge (active range)": {
       "localizations": {
         "pt-BR": {
@@ -691,6 +741,16 @@
         }
       }
     },
+    "Firmware update available": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualização de firmware disponível"
+          }
+        }
+      }
+    },
     "Firmware update available: %@": {
       "localizations": {
         "pt-BR": {
@@ -737,6 +797,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Predefinições de gatilho por jogo da Flydigi. A troca automática ao abrir o jogo está planejada; por enquanto esta é a lista de referência."
+          }
+        }
+      }
+    },
+    "Flydigi's release note (as published, in Chinese):": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nota de lançamento da Flydigi (como publicada, em chinês):"
           }
         }
       }
@@ -907,6 +977,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Instalar helper"
+          }
+        }
+      }
+    },
+    "Installed": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instalado"
           }
         }
       }
@@ -1351,6 +1431,16 @@
         }
       }
     },
+    "Not installed": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não instalado"
+          }
+        }
+      }
+    },
     "Not installed.": {
       "localizations": {
         "pt-BR": {
@@ -1411,6 +1501,16 @@
         }
       }
     },
+    "Open": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir"
+          }
+        }
+      }
+    },
     "Open Settings…": {
       "localizations": {
         "pt-BR": {
@@ -1457,6 +1557,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Reprodução"
+          }
+        }
+      }
+    },
+    "Plug in over USB-C or power on with the receiver": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecte pelo USB-C ou ligue com o receptor"
           }
         }
       }
@@ -1911,12 +2021,32 @@
         }
       }
     },
+    "Send": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enviar"
+          }
+        }
+      }
+    },
     "Send to controller": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Enviar ao controle"
+          }
+        }
+      }
+    },
+    "Sending…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enviando…"
           }
         }
       }
@@ -1987,6 +2117,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Toques por segundo"
+          }
+        }
+      }
+    },
+    "Slot %lld": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Slot %lld"
           }
         }
       }
@@ -2281,6 +2421,16 @@
         }
       }
     },
+    "USB cable": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cabo USB"
+          }
+        }
+      }
+    },
     "USB mode": {
       "localizations": {
         "pt-BR": {
@@ -2441,12 +2591,42 @@
         }
       }
     },
+    "Working…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Trabalhando…"
+          }
+        }
+      }
+    },
     "Write this profile to the controller and save it (⌘S)": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Gravar este perfil no controle e salvar (⌘S)"
+          }
+        }
+      }
+    },
+    "XInput": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "XInput"
+          }
+        }
+      }
+    },
+    "XInput (Xbox)": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "XInput (Xbox)"
           }
         }
       }

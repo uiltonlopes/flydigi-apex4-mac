@@ -294,8 +294,8 @@ struct SettingsPage: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("New firmware available, please update the firmware").font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
                         if !u.info.isEmpty {
-                            Text("Note:").font(.system(size: 12)).foregroundStyle(SS.n300)
-                            Text(u.info).font(.system(size: 12)).foregroundStyle(.white)
+                            Text("Flydigi's release note (as published, in Chinese):").font(.system(size: 12)).foregroundStyle(SS.n300)
+                            Text(verbatim: u.info).font(.system(size: 12)).foregroundStyle(.white)
                         }
                         Text("How to update today").font(.system(size: 12, weight: .semibold)).foregroundStyle(.white).padding(.top, 4)
                         Text("Flashing from the Mac is being validated step by step (see the dry run below). Until it ships, update with Flydigi Space Station on a Windows PC: connect the controller with the USB cable, open Settings → Firmware Update → Update. Keep it plugged in until it restarts.")
@@ -423,8 +423,8 @@ struct MenuBarView: View {
                 Grid(alignment: .leading, horizontalSpacing: 12, verticalSpacing: 4) {
                     GridRow { Text("Mode").foregroundStyle(.secondary); Text(model.connection == .xinput ? "XInput (Xbox)" : "DInput") }
                     GridRow { Text("Link").foregroundStyle(.secondary); Text(i.wired ? "USB cable" : "2.4 GHz receiver") }
-                    GridRow { Text("Firmware").foregroundStyle(.secondary); Text(i.firmware) }
-                    if let l = model.led { GridRow { Text("Lighting").foregroundStyle(.secondary); Text("\(lightingName(l.mode)) · \(l.brightness) %") } }
+                    GridRow { Text("Firmware").foregroundStyle(.secondary); Text(verbatim: i.firmware) }
+                    if let l = model.led { GridRow { Text("Lighting").foregroundStyle(.secondary); Text(verbatim: "\(NSLocalizedString(lightingName(l.mode), comment: "")) · \(l.brightness) %") } }
                     GridRow { Text("Helper").foregroundStyle(.secondary); Text(model.helperInstalled ? "Installed" : "Not installed") }
                 }
                 .font(.caption)
@@ -438,7 +438,7 @@ struct MenuBarView: View {
             }
             Divider()
             HStack(spacing: 8) {
-                Button("Open Space Station") { openWindow(id: "main"); NSApp.activate() }
+                Button("Open") { openWindow(id: "main"); NSApp.activate() }
                 Button(model.connection == .xinput ? "Switch to DInput" : "Switch to XInput") { Task { await model.switchMode() } }.disabled(!connected || model.busy)
                 Button { Task { await model.refresh(); await profiles.loadAll() } } label: { Image(systemName: "arrow.trianglehead.2.clockwise") }.disabled(model.busy)
                 Spacer()
@@ -446,7 +446,7 @@ struct MenuBarView: View {
             }
             .controlSize(.small)
         }
-        .padding(14).frame(width: 340)
+        .padding(14).frame(width: 380)
     }
 
     private var subtitle: String {
