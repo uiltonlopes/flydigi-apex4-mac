@@ -516,7 +516,7 @@ struct LightPanel: View {
         switch mode {
         case .steady: led.setSteady(units.first ?? .off)
         case .off: led.setOff()
-        case .factoryDefault: led.mode = .factoryDefault; led.type = 0; led.loopStart = 0; led.loopEnd = 0
+        case .factoryDefault: led.setFactoryDefault()
         default: led.setCycle(units.isEmpty ? [.init(r: 100, g: 100, b: 100)] : units, mode: mode)
         }
         led.brightness = UInt8(brightness); led.speed = UInt8(speed)

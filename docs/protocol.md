@@ -249,3 +249,6 @@ ClickFeedback 1; Flow → colours untouched, loopEnd = groups.
 Space Station's own mode list for the Apex 4 (`GetDefaultLedConfigsByDevice`) is **Default, Breath, Gradient,
 On, Close** — Flow is excluded for `k2` and Feedback exists only for the Vader 4 (`f4`). On hardware the k2
 indeed plays Flow like Breath. Colour counts in its UI: Gradient 2–5, Breath 1–5, On 1, Default/Close none.
+Two modes need more than the mode byte: **Close** also blanks every unit (loop 0…0), and **Default** copies
+the factory profile's loop and colours (k2 `default_mapping_*.dat`: loop 0…2, units blue/red/green, 4 groups)
+under mode 7 — with black units mode 7 stays dark.

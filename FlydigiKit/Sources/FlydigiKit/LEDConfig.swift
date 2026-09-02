@@ -99,6 +99,17 @@ public struct LEDConfig: Sendable, Hashable {
         for g in 0..<Int(activeGroups) { groups[g] = units }
     }
 
+    /// Space Station's "Default": mode 7 plus the loop and colours of the factory profile (k2
+    /// `default_mapping_*.dat`: version 2.0, loop 0…2, units blue / red / green, 4 groups). The firmware
+    /// does not fill these in by itself — sending mode 7 with black units stays dark.
+    public mutating func setFactoryDefault() {
+        mode = .factoryDefault; type = 0; loopStart = 0; loopEnd = 2
+        let factory: [Unit] = [.init(r: 0, g: 0, b: 100), .init(r: 100, g: 0, b: 0), .init(r: 0, g: 100, b: 0)]
+        for g in 0..<groups.count {
+            for u in 0..<groups[g].count { groups[g][u] = (g < Int(activeGroups) && u < factory.count) ? factory[u] : .off }
+        }
+    }
+
     /// Space Station's "Close": mode 6, loop 0…0 **and every unit black** — the firmware keeps playing the
     /// previous colours otherwise.
     public mutating func setOff() {

@@ -111,7 +111,8 @@ func fixture(_ name: String) throws -> [UInt8] {
         #expect(cfg.loopEnd == 2 && cfg.type == 0)
         cfg.setCycle([.init(r: 1, g: 2, b: 3)], mode: .feedback)
         #expect(cfg.loopEnd == 1 && cfg.type == 1)
-        cfg.setOff(); #expect(cfg.mode.rawValue == 6)
+        cfg.setOff(); #expect(cfg.mode.rawValue == 6); #expect(cfg.groups[0].allSatisfy { $0.isOff })
+        cfg.setFactoryDefault(); #expect(cfg.mode.rawValue == 7); #expect(cfg.loopEnd == 2); #expect(cfg.groups[0][0].b == 100 && cfg.groups[0][1].r == 100 && cfg.groups[0][2].g == 100)
         #expect(cfg.bytes.count == 500)
     }
     @Test func assembler() {
