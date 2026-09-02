@@ -231,7 +231,7 @@ struct PrimaryButton: View {
         Button(action: action) {
             HStack(spacing: 6) {
                 if let icon { Image(systemName: icon).font(.system(size: 12, weight: .semibold)) }
-                Text(LocalizedStringKey(title)).font(.system(size: 13, weight: .semibold))
+                Text(LocalizedStringKey(title)).font(.system(size: 13, weight: .semibold)).lineLimit(1).fixedSize()
             }
             .foregroundStyle(.white).padding(.horizontal, 14).frame(height: 32)
             .background(enabled ? SS.brand500 : SS.n500, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
@@ -252,7 +252,7 @@ struct GhostButton: View {
         Button(action: action) {
             HStack(spacing: 6) {
                 if let icon { Image(systemName: icon).font(.system(size: 12, weight: .semibold)) }
-                Text(LocalizedStringKey(title)).font(.system(size: 13))
+                Text(LocalizedStringKey(title)).font(.system(size: 13)).lineLimit(1).fixedSize()
             }
             .foregroundStyle(destructive ? SS.red : .white).padding(.horizontal, 14).frame(height: 32)
             .background(SS.n700, in: RoundedRectangle(cornerRadius: 8, style: .continuous))

@@ -1711,6 +1711,26 @@
         }
       }
     },
+    "Live on the controller as you adjust": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ao vivo no controle enquanto você ajusta"
+          }
+        }
+      }
+    },
+    "Live preview needs XInput mode": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A pré-visualização ao vivo precisa do modo XInput"
+          }
+        }
+      }
+    },
     "Live: every change is sent to the controller as you adjust it.": {
       "localizations": {
         "pt-BR": {

@@ -88,34 +88,48 @@ struct ForceAdaptPanel: View {
     @Environment(ProfileStore.self) private var profiles
     @Environment(ControllerModel.self) private var model
     @State private var cfg = ForceAdapt()
-    @State private var previewing = false
     @State private var pendingApply: Task<Void, Never>?
     @State private var rumbling = false
 
     private var trig: GamepadConfig.Trigger { profiles.draft![trigger: side] }
+    private var live: Bool { model.connection == .xinput }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             ForceAdaptEditor(cfg: $cfg)
             HStack(spacing: 8) {
-                GhostButton(title: previewing ? "Stop preview" : "Preview on controller", icon: previewing ? "stop.fill" : "play.fill", enabled: model.connection == .xinput && !model.busy) { Task { await preview(!previewing) } }
+                PrimaryButton(title: "Keep in profile", enabled: cfg != ForceAdapt(adapterBlock: trig.adapterParams)) { store() }
                 if cfg.mode == .vibration {
-                    // The trigger only moves when the grip rumbles; SS4's "vibration test" is a 5 s full rumble.
-                    GhostButton(title: rumbling ? "Rumbling…" : "Test vibration", icon: "waveform", enabled: previewing && !rumbling) { Task { await rumble() } }
+                    // The trigger only moves when the grip rumbles; SS4's "vibration test" is a full rumble.
+                    GhostButton(title: rumbling ? "Rumbling…" : "Test vibration", icon: "waveform", enabled: live && !rumbling) { Task { await rumble() } }
                         .help("Runs the grip motors for 3 s so you can feel the trigger follow them")
                 }
-                PrimaryButton(title: "Keep in profile", enabled: cfg != ForceAdapt(adapterBlock: trig.adapterParams)) { store() }
             }
-            if model.connection != .xinput { Text("Preview needs XInput mode.").font(.system(size: 12)).foregroundStyle(SS.n400) }
-            else if previewing { Text("Live: every change is sent to the controller as you adjust it.").font(.system(size: 12)).foregroundStyle(SS.n400) }
+            HStack(spacing: 6) {
+                Circle().fill(live ? SS.green : SS.n400).frame(width: 6, height: 6)
+                Text(live ? "Live on the controller as you adjust" : "Live preview needs XInput mode")
+                    .font(.system(size: 12)).foregroundStyle(SS.n400)
+            }
         }
-        .onAppear { cfg = ForceAdapt(adapterBlock: trig.adapterParams) }
-        .onChange(of: cfg) { _, _ in
-            guard previewing else { return }
+        // The tab itself is the preview: what you see is what the trigger is doing right now.
+        .onAppear { cfg = ForceAdapt(adapterBlock: trig.adapterParams); Task { await send(cfg) } }
+        .onChange(of: cfg) { _, c in
             pendingApply?.cancel()
-            pendingApply = Task { try? await Task.sleep(for: .milliseconds(250)); guard !Task.isCancelled else { return }; await preview(true) }
+            pendingApply = Task { try? await Task.sleep(for: .milliseconds(250)); guard !Task.isCancelled else { return }; await send(c) }
         }
-        .onDisappear { if previewing { Task { await preview(false) } } }
+        .onDisappear {
+            // Leave the pad on what the profile holds, not on an unsaved experiment.
+            pendingApply?.cancel()
+            let saved = ForceAdapt(adapterBlock: trig.adapterParams)
+            Task { await send(saved) }
+        }
+    }
+
+    private func send(_ c: ForceAdapt) async {
+        guard live, #available(macOS 14.0, *) else { return }
+        let params = c.liveParams
+        let sideByte: UInt8 = side == .left ? 1 : 2
+        _ = await Task.detached { Result { try HelperClient.shared.setForceTrigger(side: sideByte, params: params) } }.value
     }
 
     private func rumble() async {
@@ -134,13 +148,5 @@ struct ForceAdaptPanel: View {
         t.adapterType = UInt8(cfg.mode.rawValue)
         t.kind = cfg.isNormal ? .normal : .adapter
         profiles.draft?[trigger: side] = t
-    }
-
-    private func preview(_ on: Bool) async {
-        previewing = on
-        guard #available(macOS 14.0, *) else { return }
-        let params = on ? cfg.liveParams : [0]
-        let sideByte: UInt8 = side == .left ? 1 : 2
-        _ = await Task.detached { Result { try HelperClient.shared.setForceTrigger(side: sideByte, params: params) } }.value
     }
 }
