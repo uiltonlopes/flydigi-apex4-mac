@@ -248,6 +248,40 @@ public final class DeviceSession: @unchecked Sendable {
         return nil
     }
 
+    // MARK: Calibration & joystick hardware switches (docs/protocol.md §11)
+
+    /// ADC calibration window: `start` then, after the user has swept both sticks and both triggers to their
+    /// limits, `stop`. Stopping early stores a bogus range — the app only calls it from the guided wizard.
+    public func calibration(start: Bool) throws {
+        switch channel {
+        case .xinput: try link.write(XInput.command(0x14, start ? 1 : 2))
+        case .dinput: try link.write(DInput.command(0xE2, start ? 1 : 2))
+        }
+    }
+
+    public func readJoystickSettings() throws -> JoystickSettings {
+        link.discardPending()
+        switch channel {
+        case .xinput:
+            try link.write(XInput.command(XInput.Cmd.subFunc, 0x07))
+            return try link.waitForReport(timeout: 2) { JoystickSettings.fromXInput($0) }
+        case .dinput:
+            try link.write(DInput.command(DInput.Cmd.screenInfo, 0x03))
+            return try link.waitForReport(timeout: 2) { JoystickSettings.fromDInput($0) }
+        }
+    }
+
+    public enum JoystickOption: UInt8, Sendable { case debounce = 0x08, autoCalibration = 0x09, precision = 0x0B, sensitivity = 0x0D, rebound = 0x0E }
+    /// Toggles are inverted on the wire (0 = enabled, 1 = disabled); precision / sensitivity take the raw value.
+    public func setJoystickOption(_ opt: JoystickOption, value: UInt8) throws {
+        switch channel {
+        case .xinput: try link.write(XInput.command(XInput.Cmd.subFunc, opt.rawValue, value))
+        case .dinput: try link.write(DInput.command(DInput.Cmd.subFunc, opt.rawValue, value))
+        }
+        Thread.sleep(forTimeInterval: 0.15)
+    }
+    public func setJoystickToggle(_ opt: JoystickOption, enabled: Bool) throws { try setJoystickOption(opt, value: enabled ? 0 : 1) }
+
     public func motorTest(left: UInt8, right: UInt8) throws {
         switch channel {
         case .xinput: try link.write(XInput.command(XInput.Cmd.motorTest, left, right))

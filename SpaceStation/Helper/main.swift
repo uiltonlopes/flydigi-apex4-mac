@@ -117,6 +117,18 @@ final class HelperService: @unchecked Sendable {
             case let .motorTest(l, r):
                 try withSession { try $0.motorTest(left: l, right: r) }
                 releaseIfIdle(); return .ok
+            case .calibration(let start):
+                try withSession { try $0.calibration(start: start) }; return .ok
+            case .readJoystickSettings:
+                let j = try withSession { try $0.readJoystickSettings() }
+                releaseIfIdle()
+                return .joystickSettings(raw: j.raw, debounce: j.debounce, autoCalibration: j.autoCalibration, rebound: j.rebound, precision: j.precision, sensitivity: j.sensitivity, reportRate: j.reportRate, sleepTime: j.sleepTime)
+            case let .setJoystickOption(sub, value):
+                try withSession { s in
+                    guard let o = DeviceSession.JoystickOption(rawValue: sub) else { throw TransportError.protocolError("bad option") }
+                    try s.setJoystickOption(o, value: value)
+                }
+                return .ok
             case .captureKey(let ms):
                 let k = try withSession { try $0.captureKey(timeout: Double(ms) / 1000) }
                 return .key(k?.rawValue)

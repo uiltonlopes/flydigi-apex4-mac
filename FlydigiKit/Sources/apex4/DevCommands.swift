@@ -7,7 +7,7 @@ import FlydigiTransport
 
 struct Dev: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Developer experiments (protocol re-tests).", shouldDisplay: false,
-                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, DualOpen.self, DInputSlots.self, DInputCursor.self, DInputApply.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self])
+                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, DualOpen.self, DInputSlots.self, DInputCursor.self, DInputApply.self, HWStatus.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self])
 
     /// XInput (captured) version of hid-diff: optionally sends Space Station's "enable raw data"
     /// (`A5 50`) first, then prints changing bytes for N seconds. Needs root (USB capture).
@@ -393,6 +393,31 @@ extension Dev {
             s.configId = 0
             let t = (try? s.readBlob(.config)).flatMap { GamepadConfig(bytes: $0) }.map { "\"\($0.title)\" v\($0.dataVersion)" } ?? "no reply"
             print("apply \(slot) → read 0 → \(t)")
+        }
+    }
+}
+
+
+extension Dev {
+    /// Raw reply to the hardware-function status query (`A5 50 07` / `05 F2 03`) plus our parse.
+    struct HWStatus: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "hw-status")
+        @OptionGroup var ch: ChannelOption
+        func run() throws {
+            let s = try ch.open(); defer { s.close() }
+            s.link.discardPending()
+            switch s.channel {
+            case .xinput: try s.link.write(XInput.command(XInput.Cmd.subFunc, 0x07))
+            case .dinput: try s.link.write(DInput.command(DInput.Cmd.screenInfo, 0x03))
+            }
+            let t0 = Date(); var n = 0
+            while Date().timeIntervalSince(t0) < 1.5, n < 6 {
+                guard let r: [UInt8] = try? s.link.waitForReport(timeout: 0.5, { (r: [UInt8]) -> [UInt8]? in (s.channel == .xinput ? !(r.count > 1 && r[0] == 0 && r[1] == 0x14) : (r.count > 1 && r[1] != 0xFE)) ? r : nil }) else { break }
+                n += 1
+                print("reply: " + r.map { String(format: "%02x", $0) }.joined(separator: " "))
+                if let j = s.channel == .xinput ? JoystickSettings.fromXInput(r) : JoystickSettings.fromDInput(r) { print("parsed: \(j)") }
+            }
+            if n == 0 { print("no reply") }
         }
     }
 }

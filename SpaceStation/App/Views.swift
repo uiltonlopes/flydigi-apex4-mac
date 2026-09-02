@@ -745,7 +745,9 @@ struct KeyEditor: View {
 struct JoystickTab: View {
     @Environment(ProfileStore.self) private var profiles
     @Environment(LiveInput.self) private var live
+    @Environment(ControllerModel.self) private var model
     @State private var side: Side = .left
+    @State private var calibrating = false
 
     private var stick: GamepadConfig.Stick { profiles.draft![stick: side] }
     private func set(_ f: (inout GamepadConfig.Stick) -> Void) { var s = stick; f(&s); profiles.draft?[stick: side] = s }
@@ -787,8 +789,19 @@ struct JoystickTab: View {
                     if !live.connected { Text("No game controller visible to the system.").font(.system(size: 11)).foregroundStyle(SS.n400) }
                 }
             }
+            HDivider().padding(.vertical, 4)
+            HStack(alignment: .center, spacing: 16) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Calibration").font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+                    Text("Drifting centre or a stick that never reaches 100 %? Re-teach the controller its centre and limits.").font(.system(size: 12)).foregroundStyle(SS.n300)
+                }
+                Spacer()
+                GhostButton(title: "Calibrate sticks…", icon: "scope", enabled: model.connection != .none) { calibrating = true }
+            }
+            .frame(maxWidth: 1000)
         }
         .frame(maxWidth: .infinity)
+        .sheet(isPresented: $calibrating) { CalibrationWizard().environment(model).environment(live) }
     }
 }
 

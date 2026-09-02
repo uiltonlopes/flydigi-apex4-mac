@@ -126,3 +126,37 @@ public struct BlobAssembler: Sendable {
         return Array(out.prefix(expectedLength))
     }
 }
+
+
+/// Hardware "function" switches Space Station exposes under Controller Settings (docs/protocol.md §11).
+public struct JoystickSettings: Sendable, Hashable {
+    public var debounce: Bool           // "joystick debounce": filters ±0.001 jitter at rest
+    public var autoCalibration: Bool    // re-centres the stick when at rest
+    public var rebound: Bool            // filters the reverse spike when the stick is released
+    public var precision: UInt8         // raw value (SS4 JoystickPrecision enum)
+    public var sensitivity: UInt8       // raw value (SS4 JoystickSensitivity enum)
+    public var reportRate: UInt8        // raw value
+    public var sleepTime: UInt8         // minutes
+    public var raw: [UInt8]
+
+    public init(debounce: Bool, autoCalibration: Bool, rebound: Bool, precision: UInt8, sensitivity: UInt8, reportRate: UInt8, sleepTime: UInt8, raw: [UInt8]) {
+        self.debounce = debounce; self.autoCalibration = autoCalibration; self.rebound = rebound
+        self.precision = precision; self.sensitivity = sensitivity; self.reportRate = reportRate; self.sleepTime = sleepTime; self.raw = raw
+    }
+
+    /// XInput reply to `A5 50 07`: fields at r[17…27] (Space Station `ReadHardwareFunctionStatusCommandXInput`).
+    public static func fromXInput(_ r: [UInt8]) -> JoystickSettings? {
+        guard r.count > 27, r[14] == XInput.prefix, r[15] == 0x50, r[16] == 0x07 else { return nil }
+        return JoystickSettings(debounce: r[18] == 0, autoCalibration: r[19] == 0, rebound: r[25] == 0,
+                                precision: r[23], sensitivity: r[24], reportRate: r[22], sleepTime: r[20], raw: Array(r[17..<28]))
+    }
+    /// DInput reply to `05 F2 03` — layout inferred from Space Station's DInput parser (+1 for the report id): bit
+    /// fields at r[6] (usable) / r[7] (enabled): bit 4 debounce, 5 auto-calibration, 6 rebound; then sleep r[10],
+    /// report rate r[11], precision r[12], sensitivity r[13]. Verify with `apex4 dev hw-status`.
+    public static func fromDInput(_ r: [UInt8]) -> JoystickSettings? {
+        guard r.count > 14, r[3] == DInput.Cmd.screenInfo, r[4] == 0x03 else { return nil }
+        let en = r[7]
+        return JoystickSettings(debounce: en & 0x10 != 0, autoCalibration: en & 0x20 != 0, rebound: en & 0x40 != 0,
+                                precision: r[12], sensitivity: r[13], reportRate: r[11], sleepTime: r[10], raw: Array(r[3..<15]))
+    }
+}

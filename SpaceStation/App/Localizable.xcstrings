@@ -211,6 +211,46 @@
         }
       }
     },
+    "Calibrate sticks…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calibrar analógicos…"
+          }
+        }
+      }
+    },
+    "Calibration": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calibração"
+          }
+        }
+      }
+    },
+    "Calibration stored on the controller.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calibração gravada no controle."
+          }
+        }
+      }
+    },
+    "Calibration window open": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Janela de calibração aberta"
+          }
+        }
+      }
+    },
     "Cancel": {
       "localizations": {
         "pt-BR": {
@@ -601,6 +641,16 @@
         }
       }
     },
+    "Done": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concluído"
+          }
+        }
+      }
+    },
     "Down": {
       "localizations": {
         "pt-BR": {
@@ -647,6 +697,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Arraste para mover · rolagem ou pinça para zoom"
+          }
+        }
+      }
+    },
+    "Drifting centre or a stick that never reaches 100 %? Re-teach the controller its centre and limits.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Centro deslocado ou analógico que não chega a 100 %? Reensine ao controle o centro e os limites."
           }
         }
       }
@@ -727,6 +787,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Preencher"
+          }
+        }
+      }
+    },
+    "Finish": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concluir"
+          }
+        }
+      }
+    },
+    "Finish unlocks when every limit has been reached.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concluir libera quando todos os limites forem alcançados."
+          }
+        }
+      }
+    },
+    "Finish with what was captured": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Concluir com o que foi capturado"
           }
         }
       }
@@ -1051,12 +1141,32 @@
         }
       }
     },
+    "Keep calibrating": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Continuar calibrando"
+          }
+        }
+      }
+    },
     "Keep in profile": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Manter no perfil"
+          }
+        }
+      }
+    },
+    "Keep the controller still with the sticks and triggers released, then press Start.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deixe o controle parado, com analógicos e gatilhos soltos, e clique em Iniciar."
           }
         }
       }
@@ -1341,6 +1451,16 @@
         }
       }
     },
+    "Move the sticks in the Joystick tab and check that the dot rests at the centre and reaches the ring on every side. If anything feels off, run the calibration again.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mova os analógicos na aba Analógicos e confira se o ponto descansa no centro e alcança o anel em todos os lados. Se algo parecer errado, rode a calibração de novo."
+          }
+        }
+      }
+    },
     "My Device": {
       "localizations": {
         "pt-BR": {
@@ -1407,6 +1527,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nenhum controle visível para o sistema."
+          }
+        }
+      }
+    },
+    "No live input from the controller is visible yet — the wizard needs it to show progress.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ainda não há leitura ao vivo do controle — o assistente precisa dela para mostrar o progresso."
           }
         }
       }
@@ -1661,6 +1791,16 @@
         }
       }
     },
+    "Press both triggers fully": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pressione os dois gatilhos até o fim"
+          }
+        }
+      }
+    },
     "Press the button on the controller or pick one": {
       "localizations": {
         "pt-BR": {
@@ -1797,6 +1937,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Corrida"
+          }
+        }
+      }
+    },
+    "Re-teaches the controller the centre and the limits of both sticks and both triggers. Takes about a minute.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reensina ao controle o centro e os limites dos dois analógicos e dos dois gatilhos. Leva cerca de um minuto."
           }
         }
       }
@@ -2021,12 +2171,42 @@
         }
       }
     },
+    "Rotate each stick slowly along its edge, then press both triggers all the way. The rings fill in as you reach the limits.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gire cada analógico devagar pela borda e depois pressione os dois gatilhos até o fim. Os anéis vão preenchendo conforme você alcança os limites."
+          }
+        }
+      }
+    },
+    "Rotate each stick slowly along its outer edge three or four times, then press each trigger fully three times.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gire cada analógico devagar pela borda três ou quatro vezes e depois pressione cada gatilho até o fim três vezes."
+          }
+        }
+      }
+    },
     "Runs as root only while talking to the controller in XInput mode, because Apple's Xbox driver owns the USB interface. Required for screen uploads, trigger previews and key capture in XInput.": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Roda como root só enquanto fala com o controle em modo XInput, porque o driver Xbox da Apple é dono da interface USB. Necessário para enviar à tela, testar gatilhos e capturar teclas em XInput."
+          }
+        }
+      }
+    },
+    "Saving…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Salvando…"
           }
         }
       }
@@ -2251,6 +2431,16 @@
         }
       }
     },
+    "Start": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Iniciar"
+          }
+        }
+      }
+    },
     "Start (dead zone)": {
       "localizations": {
         "pt-BR": {
@@ -2291,12 +2481,32 @@
         }
       }
     },
+    "Stick calibration": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Calibração dos analógicos"
+          }
+        }
+      }
+    },
     "Stop": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Parar"
+          }
+        }
+      }
+    },
+    "Stop calibration now?": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Parar a calibração agora?"
           }
         }
       }
@@ -2421,12 +2631,32 @@
         }
       }
     },
+    "The controller did not accept the command.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O controle não aceitou o comando."
+          }
+        }
+      }
+    },
     "The controller did not answer in time. Press refresh to try again.": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "O controle não respondeu a tempo. Clique em atualizar para tentar de novo."
+          }
+        }
+      }
+    },
+    "The sticks and triggers have not reached all their limits yet. Finishing now may store a wrong range — you can always run the calibration again.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Analógicos e gatilhos ainda não alcançaram todos os limites. Concluir agora pode gravar um alcance errado — você sempre pode calibrar de novo."
           }
         }
       }
@@ -2491,12 +2721,32 @@
         }
       }
     },
+    "Triggers reached": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gatilhos ok"
+          }
+        }
+      }
+    },
     "Trim": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Recortar quadros"
+          }
+        }
+      }
+    },
+    "Try again": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tentar de novo"
           }
         }
       }
@@ -2631,6 +2881,16 @@
         }
       }
     },
+    "Use the USB cable for calibration.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Use o cabo USB para calibrar."
+          }
+        }
+      }
+    },
     "Verifying…": {
       "localizations": {
         "pt-BR": {
@@ -2677,6 +2937,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bem-vindo ao Space Station"
+          }
+        }
+      }
+    },
+    "When every axis shows a check mark, press Finish. The controller stores the result itself.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Quando todos os eixos mostrarem o check, clique em Concluir. O próprio controle guarda o resultado."
           }
         }
       }

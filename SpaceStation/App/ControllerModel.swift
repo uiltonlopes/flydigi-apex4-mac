@@ -211,6 +211,47 @@ final class ControllerModel {
         return result
     }
 
+    // MARK: Calibration & joystick hardware switches
+
+    var joystickSettings: JoystickSettings?
+
+    func loadJoystickSettings() async {
+        let conn = connection
+        await run({
+            switch conn {
+            case .dinput: let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }; return try s.readJoystickSettings()
+            case .xinput: return try HelperClient.shared.readJoystickSettings()
+            case .none: throw HelperError.transport("no controller")
+            }
+        }, onSuccess: { (j: JoystickSettings) in self.joystickSettings = j })
+    }
+
+    func setJoystickToggle(_ opt: DeviceSession.JoystickOption, enabled: Bool) async {
+        let conn = connection
+        await run({
+            switch conn {
+            case .dinput: let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }; try s.setJoystickToggle(opt, enabled: enabled)
+            case .xinput: try HelperClient.shared.setJoystickOption(opt, value: enabled ? 0 : 1)
+            case .none: throw HelperError.transport("no controller")
+            }
+        }, onSuccess: { (_: Void) in })
+        await loadJoystickSettings()
+    }
+
+    /// Opens / closes the calibration window on the pad. Only the wizard calls this.
+    func calibration(start: Bool) async -> Bool {
+        let conn = connection
+        var ok = false
+        await run({
+            switch conn {
+            case .dinput: let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }; try s.calibration(start: start)
+            case .xinput: try HelperClient.shared.calibration(start: start)
+            case .none: throw HelperError.transport("no controller")
+            }
+        }, onSuccess: { (_: Void) in ok = true })
+        return ok
+    }
+
     func installHelper() {
         guard #available(macOS 14.0, *) else { return }
         do { try HelperClient.shared.install() } catch { lastError = "\(error)" }

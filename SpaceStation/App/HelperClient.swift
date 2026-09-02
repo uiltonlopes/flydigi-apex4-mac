@@ -5,6 +5,7 @@ import XPC
 import ServiceManagement
 import FlydigiKit
 import FlydigiHelperProtocol
+import FlydigiTransport
 
 enum HelperError: Error, CustomStringConvertible {
     case notInstalled, remote(String), transport(String)
@@ -93,6 +94,12 @@ final class HelperClient: @unchecked Sendable {
     func writeConfig(slot: UInt8, bytes: [UInt8], persist: Bool = true) throws { _ = try send(.writeConfig(slot: slot, bytes: bytes, persist: persist)) }
     func setForceTrigger(side: UInt8, params: [UInt8]) throws { _ = try send(.setForceTrigger(side: side, mode: params)) }
     func motorTest(left: UInt8, right: UInt8) throws { _ = try send(.motorTest(left: left, right: right)) }
+    func calibration(start: Bool) throws { _ = try send(.calibration(start: start)) }
+    func readJoystickSettings() throws -> JoystickSettings {
+        guard case let .joystickSettings(raw, d, a, r, p, s, rr, st) = try send(.readJoystickSettings) else { throw HelperError.transport("unexpected reply") }
+        return JoystickSettings(debounce: d, autoCalibration: a, rebound: r, precision: p, sensitivity: s, reportRate: rr, sleepTime: st, raw: raw)
+    }
+    func setJoystickOption(_ opt: DeviceSession.JoystickOption, value: UInt8) throws { _ = try send(.setJoystickOption(sub: opt.rawValue, value: value)) }
     func captureKey(timeoutMs: Int) throws -> UInt8? { guard case let .key(k) = try send(.captureKey(timeoutMs: timeoutMs)) else { throw HelperError.transport("unexpected reply") }; return k }
 
     private func dropSession() { session?.cancel(reason: "reset"); session = nil }

@@ -32,6 +32,9 @@ public enum HelperRequest: Codable, Sendable {
     case setForceTrigger(side: UInt8, mode: [UInt8])          // raw params (see DeviceSession.ForceTrigger)
     case motorTest(left: UInt8, right: UInt8)
     case captureKey(timeoutMs: Int)                            // wait for a key press on the pad (raw report), nil on timeout
+    case calibration(start: Bool)                              // ADC calibration window (see DeviceSession.calibration)
+    case readJoystickSettings
+    case setJoystickOption(sub: UInt8, value: UInt8)
 }
 
 public enum BlobKindCode: Codable, Sendable { case config, led }
@@ -52,5 +55,6 @@ public enum HelperReply: Codable, Sendable {
     case frameDone(index: Int)
     case slot(UInt8)
     case key(UInt8?)
+    case joystickSettings(raw: [UInt8], debounce: Bool, autoCalibration: Bool, rebound: Bool, precision: UInt8, sensitivity: UInt8, reportRate: UInt8, sleepTime: UInt8)
     case error(String)
 }
