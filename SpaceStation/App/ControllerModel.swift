@@ -166,10 +166,12 @@ final class ControllerModel {
     }
 
     /// Sends already-encoded LVGL frames (from the screen editor).
-    func uploadScreen(frames: [[UInt8]]) async {
+    @discardableResult
+    func uploadScreen(frames: [[UInt8]]) async -> Bool {
         uploadProgress = 0
         defer { uploadProgress = nil }
         let conn = connection
+        var ok = false
         await run {
             guard conn == .xinput else { throw HelperError.transport("Screen upload needs the controller in XInput mode. Use “Switch mode” below.") }
             guard #available(macOS 14.0, *) else { throw HelperError.notInstalled }
@@ -177,7 +179,8 @@ final class ControllerModel {
                 Task { @MainActor in self.uploadProgress = Double(done) / Double(total) }
             }
             return ()
-        } onSuccess: { (_: Void) in }
+        } onSuccess: { (_: Void) in ok = true }
+        return ok
     }
 
     func switchMode() async {

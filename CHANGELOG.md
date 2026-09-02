@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Screen: GIPHY search next to Flydigi's library (shared beta key, or your own in Settings) and an "On the controller" card showing the last animation sent from this Mac, or the factory animation for the connected variant (the pad cannot be read back).
 - App renamed **Space Station for Mac** (repo `flydigi-space-station-mac`), Space Station's app icon.
 - Fix: the Screen editor crashed when a shorter GIF/image replaced a longer one (filmstrip indexed stale frames).
 - Lighting: mode list now matches Space Station's for the Apex 4 (Default, Steady, Breathing, Gradient, Off — no Flow/Feedback on this model), with per-mode colour limits (Steady 1, Gradient 2–5, Breathing up to 5). "Off" now blanks every LED unit like Space Station does (the pad kept playing the previous colours before). "Default" sends the factory loop and colours under mode 7 like Space Station.

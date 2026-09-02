@@ -17,13 +17,23 @@ struct ScreenPage: View {
     @State private var importing = false
     @State private var library: [FlydigiAPI.ScreenPic] = []
     @State private var libraryError: String?
-    @State private var downloading: Int?
+    @State private var downloading: String?
+    @State private var source: Source = .flydigi
+    @State private var giphyQuery = ""
+    @State private var giphy: [Giphy.Gif] = []
+    @State private var giphyError: String?
+    @State private var giphyLoading = false
+    @State private var current: ScreenStore.Current?
+    @State private var origin = ScreenOrigin(name: "", kind: .file, url: nil)
+    enum Source: Hashable { case flydigi, giphy }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             PageHeader(title: "Screen", back: back)
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     Text("Screen Settings").font(.system(size: 14, weight: .semibold)).foregroundStyle(.white)
+                    onController
                     DarkCard {
                         VStack(alignment: .leading, spacing: 16) {
                             HStack(spacing: 14) {
@@ -40,10 +50,7 @@ struct ScreenPage: View {
                                         ProgressView(value: p).tint(SS.brand500).frame(width: 260)
                                         Text("Sending… \(Int(p * 100)) % — about \(Int((1 - p) * Double(max(1, editor.outputCount)) * 3.5)) s left").font(.system(size: 12)).foregroundStyle(SS.n300)
                                     } else {
-                                        PrimaryButton(title: "Send to controller", icon: "arrow.up.circle", enabled: !model.busy && model.connection == .xinput && model.info?.wired != false) {
-                                            let frames = editor.encode(viewport: ScreenEditorView.viewportSize)
-                                            Task { await model.uploadScreen(frames: frames) }
-                                        }
+                                        PrimaryButton(title: "Send to controller", icon: "arrow.up.circle", enabled: !model.busy && model.connection == .xinput && model.info?.wired != false) { send() }
                                         if model.connection != .xinput { Text("Needs XInput mode.").font(.system(size: 12)).foregroundStyle(SS.yellow) }
                                         else if model.info?.wired == false { Text("Needs the USB cable (the receiver does not forward screen data).").font(.system(size: 12)).foregroundStyle(SS.yellow) }
                                         else { Text("About \(Int(Double(editor.outputCount) * 3.5)) s for \(editor.outputCount) frame\(editor.outputCount == 1 ? "" : "s").").font(.system(size: 12)).foregroundStyle(SS.n400) }
@@ -52,31 +59,100 @@ struct ScreenPage: View {
                             }
                         }
                     }
-                    .dropDestination(for: URL.self) { urls, _ in if let u = urls.first { load(u) }; return true }
+                    .dropDestination(for: URL.self) { urls, _ in if let u = urls.first { load(u, ScreenOrigin(name: u.lastPathComponent, kind: .file, url: nil)) }; return true }
 
-                    HStack(spacing: 0) {
-                        VStack(spacing: 6) {
-                            Text("Official selection").font(.system(size: 15, weight: .semibold)).foregroundStyle(.white)
-                            Rectangle().fill(SS.brand500).frame(height: 2)
-                        }.fixedSize()
+                    HStack(spacing: 14) {
+                        PillSegmented(selection: $source, options: [(.flydigi, "Official selection"), (.giphy, "GIPHY")])
+                            .padding(2).background(SS.n700, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        if source == .giphy {
+                            HStack(spacing: 6) {
+                                Image(systemName: "magnifyingglass").foregroundStyle(SS.n400)
+                                TextField("Search GIPHY", text: $giphyQuery).textFieldStyle(.plain).foregroundStyle(.white)
+                                if giphyLoading { ProgressView().controlSize(.small) }
+                                else if !giphyQuery.isEmpty { Button { giphyQuery = "" } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(SS.n400) }.buttonStyle(.plain) }
+                            }
+                            .padding(.horizontal, 10).frame(width: 300, height: 30)
+                            .background(SS.n700, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                            .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(SS.n500))
+                        }
                         Spacer()
-                        if let e = libraryError { Text(e).font(.system(size: 12)).foregroundStyle(SS.n400) }
+                        if source == .giphy { Text("Powered by GIPHY").font(.system(size: 11, weight: .semibold)).foregroundStyle(SS.n400) }
+                        else if let e = libraryError { Text(e).font(.system(size: 12)).foregroundStyle(SS.n400) }
                     }
                     .padding(.top, 8)
 
-                    if library.isEmpty && libraryError == nil {
-                        HStack(spacing: 8) { ProgressView().controlSize(.small); Text("Loading Flydigi's library…").font(.system(size: 12)).foregroundStyle(SS.n300) }
+                    if source == .flydigi {
+                        if library.isEmpty && libraryError == nil {
+                            HStack(spacing: 8) { ProgressView().controlSize(.small); Text("Loading Flydigi's library…").font(.system(size: 12)).foregroundStyle(SS.n300) }
+                        } else {
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 176), spacing: 14)], spacing: 14) {
+                                ForEach(library) { pic in libraryCell(pic) }
+                            }
+                        }
                     } else {
-                        LazyVGrid(columns: [GridItem(.adaptive(minimum: 176), spacing: 14)], spacing: 14) {
-                            ForEach(library) { pic in libraryCell(pic) }
+                        if let e = giphyError, giphy.isEmpty { Text(e).font(.system(size: 12)).foregroundStyle(SS.n400) }
+                        else if giphy.isEmpty { HStack(spacing: 8) { ProgressView().controlSize(.small); Text("Loading GIPHY…").font(.system(size: 12)).foregroundStyle(SS.n300) } }
+                        else {
+                            Text(giphyQuery.trimmingCharacters(in: .whitespaces).isEmpty ? "Trending now" : "Results").font(.system(size: 12)).foregroundStyle(SS.n400)
+                            LazyVGrid(columns: [GridItem(.adaptive(minimum: 176), spacing: 14)], spacing: 14) {
+                                ForEach(giphy) { g in giphyCell(g) }
+                            }
                         }
                     }
                 }
                 .padding(.horizontal, 20).padding(.bottom, 24)
             }
         }
-        .fileImporter(isPresented: $importing, allowedContentTypes: [.gif, .png, .jpeg]) { if case let .success(u) = $0 { load(u) } }
+        .fileImporter(isPresented: $importing, allowedContentTypes: [.gif, .png, .jpeg]) { if case let .success(u) = $0 { load(u, ScreenOrigin(name: u.lastPathComponent, kind: .file, url: nil)) } }
         .task { await loadLibrary() }
+        .task(id: "\(source)|\(giphyQuery)") {
+            guard source == .giphy else { return }
+            if !giphyQuery.isEmpty { try? await Task.sleep(for: .milliseconds(400)) }      // debounce typing
+            guard !Task.isCancelled else { return }
+            await searchGiphy()
+        }
+        .onAppear { current = ScreenStore.current(deviceId: model.info?.deviceId) }
+        .onChange(of: model.info?.deviceId) { _, _ in current = ScreenStore.current(deviceId: model.info?.deviceId) }
+    }
+
+    /// What the LCD shows right now, as far as this Mac knows (no read-back command exists).
+    private var onController: some View {
+        DarkCard {
+            HStack(spacing: 16) {
+                ZStack {
+                    Color.black
+                    if let c = current { AnimatedGIF(url: c.gif, token: c.token) }
+                }
+                .frame(width: 240, height: 120)
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 6, style: .continuous).strokeBorder(SS.n500))
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("On the controller").font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+                    if let r = current?.record {
+                        Text(r.name).font(.system(size: 13)).foregroundStyle(.white).lineLimit(1)
+                        Text("Sent from this Mac on \(r.date.formatted(date: .abbreviated, time: .shortened)) · \(r.frames) frames · \(r.sourceLabel)")
+                            .font(.system(size: 12)).foregroundStyle(SS.n300)
+                    } else {
+                        Text("Factory animation").font(.system(size: 13)).foregroundStyle(.white)
+                        Text("Nothing has been sent from this Mac yet.").font(.system(size: 12)).foregroundStyle(SS.n300)
+                    }
+                    Text("The controller cannot be read back; this is what was last sent from here.").font(.system(size: 11)).foregroundStyle(SS.n400)
+                }
+                Spacer()
+            }
+        }
+    }
+
+    private func send() {
+        let vp = ScreenEditorView.viewportSize
+        let frames = editor.encode(viewport: vp)
+        let images = editor.selectedImages(), crop = editor.crop(viewport: vp), interval = editor.intervalMs, o = origin
+        Task {
+            guard await model.uploadScreen(frames: frames) else { return }
+            let rec = ScreenRecord(name: o.name.isEmpty ? (editor.url?.lastPathComponent ?? "Animation") : o.name, source: o.kind.rawValue, url: o.url, date: Date(), frames: frames.count, intervalMs: interval)
+            do { try ScreenStore.save(images: images, crop: crop, intervalMs: interval, record: rec) } catch { model.lastError = "\(error)" }
+            current = ScreenStore.current(deviceId: model.info?.deviceId)
+        }
     }
 
     private func libraryCell(_ pic: FlydigiAPI.ScreenPic) -> some View {
@@ -85,13 +161,37 @@ struct ScreenPage: View {
                 ZStack {
                     RemoteThumb(url: pic.imagePath, aspect: 2)
                         .frame(height: 88).clipped()
-                    if downloading == pic.id { ProgressView().controlSize(.small) }
+                    if downloading == "flydigi-\(pic.id)" { ProgressView().controlSize(.small) }
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 HStack {
                     Text(displayTitle(pic)).font(.system(size: 12)).foregroundStyle(.white).lineLimit(1)
                     Spacer()
                     Text(pic.isGIF ? "GIF" : "JPG").font(.system(size: 10, weight: .semibold)).foregroundStyle(SS.n300)
+                        .padding(.horizontal, 5).frame(height: 16).background(SS.n500, in: RoundedRectangle(cornerRadius: 4))
+                }
+            }
+            .padding(8)
+            .background(SS.n700, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .help("Load this animation into the preview")
+    }
+
+    private func giphyCell(_ g: Giphy.Gif) -> some View {
+        Button { Task { await pick(g) } } label: {
+            VStack(alignment: .leading, spacing: 6) {
+                ZStack {
+                    RemoteThumb(url: g.still, aspect: 2)
+                        .frame(height: 88).clipped()
+                    if downloading == "giphy-\(g.id)" { ProgressView().controlSize(.small) }
+                }
+                .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                HStack {
+                    Text(g.title).font(.system(size: 12)).foregroundStyle(.white).lineLimit(1)
+                    Spacer()
+                    Text("GIF").font(.system(size: 10, weight: .semibold)).foregroundStyle(SS.n300)
                         .padding(.horizontal, 5).frame(height: 16).background(SS.n500, in: RoundedRectangle(cornerRadius: 4))
                 }
             }
@@ -119,8 +219,23 @@ struct ScreenPage: View {
         }
     }
 
+    private func searchGiphy() async {
+        giphyLoading = true
+        defer { giphyLoading = false }
+        do {
+            let r = try await Giphy.search(giphyQuery)
+            guard !Task.isCancelled else { return }
+            giphy = r
+            giphyError = r.isEmpty ? String(localized: "No results.") : nil
+        } catch is CancellationError {
+        } catch {
+            giphy = []
+            giphyError = error.localizedDescription
+        }
+    }
+
     private func pick(_ pic: FlydigiAPI.ScreenPic) async {
-        downloading = pic.id
+        downloading = "flydigi-\(pic.id)"
         defer { downloading = nil }
         let url = pic.imagePath
         let r: Result<URL, Error> = await Task.detached {
@@ -131,10 +246,17 @@ struct ScreenPage: View {
                 return dst
             }
         }.value
-        if case .success(let u) = r { load(u) }
+        if case .success(let u) = r { load(u, ScreenOrigin(name: displayTitle(pic), kind: .flydigi, url: url.absoluteString)) }
     }
 
-    private func load(_ url: URL) { editor.load(url) }
+    private func pick(_ g: Giphy.Gif) async {
+        downloading = "giphy-\(g.id)"
+        defer { downloading = nil }
+        do { load(try await Giphy.download(g), ScreenOrigin(name: g.title, kind: .giphy, url: g.download.absoluteString)) }
+        catch { model.lastError = error.localizedDescription }
+    }
+
+    private func load(_ url: URL, _ o: ScreenOrigin) { editor.load(url); origin = o }
 }
 
 // MARK: - Adaptive Trigger (game presets from Flydigi's list)
@@ -218,6 +340,7 @@ struct SettingsPage: View {
     @State private var checking = false
     @State private var dryRunning = false
     @State private var language = AppLanguage.current
+    @State private var giphyKey = UserDefaults.standard.string(forKey: Giphy.keyDefaultsKey) ?? ""
     @State private var needsRestart = false
 
     var body: some View {
@@ -226,7 +349,7 @@ struct SettingsPage: View {
             HStack(alignment: .top, spacing: 0) {
                 VStack(alignment: .leading, spacing: 4) {
                     navGroup("Controller Settings", ["Firmware Update", "USB mode"])
-                    navGroup("App Settings", ["Language", "Open at login", "Privileged helper"])
+                    navGroup("App Settings", ["Language", "GIPHY", "Open at login", "Privileged helper"])
                     navGroup("About", [])
                     Spacer()
                     VStack(alignment: .leading, spacing: 4) {
@@ -257,6 +380,14 @@ struct SettingsPage: View {
                                     GhostButton(title: "Restart now", icon: "arrow.clockwise") { AppLanguage.relaunch() }
                                 }
                             }
+                        }
+                        section("GIPHY") {
+                            Text("API key for the GIF search on the Screen page").font(.system(size: 13)).foregroundStyle(SS.n300)
+                            TextField("Leave empty to use the app's shared key", text: $giphyKey)
+                                .textFieldStyle(.roundedBorder).frame(width: 360)
+                                .onChange(of: giphyKey) { _, k in UserDefaults.standard.set(k, forKey: Giphy.keyDefaultsKey) }
+                            Text("The shared key is a GIPHY beta key, limited to about 100 searches per hour for everyone using this app. A free key of your own from developers.giphy.com gives you a private limit.")
+                                .font(.system(size: 12)).foregroundStyle(SS.n300)
                         }
                         section("Open at login") {
                             SwitchRow(title: "Start Space Station when I log in", isOn: Binding(get: { SMAppService.mainApp.status == .enabled }, set: { on in

@@ -132,6 +132,10 @@ Factory default observed: mode 3 (gradient), speed 50, brightness 50, 4 groups e
 
 ## 6. Screen (LCD) — image format and upload
 
+There is no command to read the current animation back; the app remembers what it sent (`ScreenStore`) and
+ships Space Station's factory animations (`default_screen_image_<id>.bin`, same LVGL frame format, 30–35 frames)
+as the fallback preview.
+
 ### Image binary (one per frame)
 LVGL v8 `lv_img_dsc_t`-style file, produced on Windows by `lvImage2bin_x64.dll`:
 ```

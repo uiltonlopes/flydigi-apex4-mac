@@ -41,6 +41,16 @@
         }
       }
     },
+    "API key for the GIF search on the Screen page": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Chave de API para a busca de GIFs na página Screen"
+          }
+        }
+      }
+    },
     "About": {
       "localizations": {
         "pt-BR": {
@@ -881,6 +891,16 @@
         }
       }
     },
+    "Factory animation": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Animação de fábrica"
+          }
+        }
+      }
+    },
     "Feedback": {
       "localizations": {
         "pt-BR": {
@@ -1037,6 +1057,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "A gravação ainda não está habilitada"
+          }
+        }
+      }
+    },
+    "Flydigi library": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Biblioteca Flydigi"
           }
         }
       }
@@ -1361,6 +1391,16 @@
         }
       }
     },
+    "Leave empty to use the app's shared key": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deixe vazio para usar a chave compartilhada do app"
+          }
+        }
+      }
+    },
     "Left": {
       "localizations": {
         "pt-BR": {
@@ -1507,6 +1547,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Carregando a biblioteca da Flydigi…"
+          }
+        }
+      }
+    },
+    "Loading GIPHY…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carregando GIPHY…"
           }
         }
       }
@@ -1791,6 +1841,16 @@
         }
       }
     },
+    "No results.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhum resultado."
+          }
+        }
+      }
+    },
     "No steps yet": {
       "localizations": {
         "pt-BR": {
@@ -1857,6 +1917,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Observação:"
+          }
+        }
+      }
+    },
+    "Nothing has been sent from this Mac yet.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nada foi enviado deste Mac ainda."
           }
         }
       }
@@ -2371,6 +2441,16 @@
         }
       }
     },
+    "Results": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Resultados"
+          }
+        }
+      }
+    },
     "Revert Changes": {
       "localizations": {
         "pt-BR": {
@@ -2531,6 +2611,16 @@
         }
       }
     },
+    "Search GIPHY": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscar no GIPHY"
+          }
+        }
+      }
+    },
     "Search games": {
       "localizations": {
         "pt-BR": {
@@ -2597,6 +2687,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Curva de sensibilidade"
+          }
+        }
+      }
+    },
+    "Sent from this Mac on %@ · %lld frames · %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enviado deste Mac em %1$@ · %2$lld quadros · %3$@"
           }
         }
       }
@@ -2981,6 +3081,16 @@
         }
       }
     },
+    "The controller cannot be read back; this is what was last sent from here.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O controle não permite ler o visor; isto é o que foi enviado por último daqui."
+          }
+        }
+      }
+    },
     "The controller did not accept the command.": {
       "localizations": {
         "pt-BR": {
@@ -3007,6 +3117,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "O controle não reporta movimento enquanto calibra — siga o cronômetro."
+          }
+        }
+      }
+    },
+    "The shared key is a GIPHY beta key, limited to about 100 searches per hour for everyone using this app. A free key of your own from developers.giphy.com gives you a private limit.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A chave compartilhada é uma chave beta do GIPHY, limitada a cerca de 100 buscas por hora para todo mundo que usa este app. Uma chave gratuita sua, criada em developers.giphy.com, dá um limite só seu."
           }
         }
       }
@@ -3057,6 +3177,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Traduzindo…"
+          }
+        }
+      }
+    },
+    "Trending now": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Em alta agora"
           }
         }
       }
@@ -3427,6 +3557,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "ativo"
+          }
+        }
+      }
+    },
+    "local file": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "arquivo local"
           }
         }
       }

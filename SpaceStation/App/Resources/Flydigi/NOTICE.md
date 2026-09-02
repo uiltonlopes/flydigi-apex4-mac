@@ -9,6 +9,7 @@ the official tool does:
 | `apex4-hero.png` | `assets/images/product/Controller/k2/84/main.png` | Product picture on the Status page |
 | `AppIcon.icns` | `assets/icons/mac/icon.icns` | App icon |
 | `products/k2-<id>.png` | `assets/images/product/Controller/k2/<id>/main.png` | Device card / hero picture per Apex 4 variant (84, 86, 87, 92, 93, 102, 103, 104) |
+| `screens/factory-k2-<id>.gif` | `Configs/Controller/k2/default/default_screen_image_<id>.bin` (LVGL frames, converted with `tools/lvgl2gif.py`) | "On the controller" preview before anything was sent from this Mac |
 | `apex4-wireframe.svg` | `assets/device_wireframe_k2-*.js` (React SVG, serialised back to plain SVG) | Outline the button hotspots are drawn over |
 
 The hotspot geometry in `SpaceStation/App/Stage/Apex4Render.swift` is transcribed from `device_config_k2-*.js`
