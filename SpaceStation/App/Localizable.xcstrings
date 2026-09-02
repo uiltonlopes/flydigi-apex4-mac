@@ -1031,6 +1031,16 @@
         }
       }
     },
+    "Firmware %@ available — open Settings to see the release notes": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firmware %@ disponível — abra Ajustes para ver as notas da versão"
+          }
+        }
+      }
+    },
     "Firmware %@ · %@": {
       "localizations": {
         "pt-BR": {
@@ -3441,6 +3451,16 @@
         }
       }
     },
+    "Update to %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualizar para %@"
+          }
+        }
+      }
+    },
     "Upload": {
       "localizations": {
         "pt-BR": {
@@ -3537,6 +3557,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Bem-vindo ao Space Station"
+          }
+        }
+      }
+    },
+    "Welcome to Space Station for Mac": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Bem-vindo ao Space Station para Mac"
           }
         }
       }

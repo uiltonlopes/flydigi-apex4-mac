@@ -115,12 +115,18 @@ struct Sidebar: View {
 
     private var deviceCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            HStack {
+            HStack(spacing: 8) {
                 Text("My Device").font(.system(size: 12)).foregroundStyle(SS.n300)
                 Spacer()
+                Button { Task { await model.refresh(); await profiles.loadAll() } } label: {
+                    Image(systemName: "arrow.clockwise").font(.system(size: 11, weight: .semibold)).foregroundStyle(SS.n400)
+                        .frame(width: 18, height: 18).contentShape(Rectangle())
+                }
+                .buttonStyle(.plain).disabled(model.busy).help("Refresh")
                 if connected, let i = model.info {
                     Image(systemName: i.wired ? "cable.connector" : "dot.radiowaves.left.and.right")
                         .font(.system(size: 11)).foregroundStyle(SS.n400)
+                        .help(i.wired ? "USB cable" : "2.4 GHz receiver")
                     let b = Battery(raw: i.batteryRaw, system: live.battery)
                     Image(systemName: b.symbol).font(.system(size: 11)).foregroundStyle(b.charging ? SS.green : SS.n400)
                         .help(b.description)
@@ -130,30 +136,22 @@ struct Sidebar: View {
                 Circle().fill(connected ? SS.green : SS.n400).frame(width: 7, height: 7)
                 Text(connected ? deviceName : "Not connected").font(.system(size: 13, weight: .medium)).foregroundStyle(.white).lineLimit(1)
                 Spacer()
-                Menu {
-                    Button("Refresh") { Task { await model.refresh(); await profiles.loadAll() } }
-                    Button(model.connection == .xinput ? "Switch to DInput mode" : "Switch to XInput mode") { Task { await model.switchMode() } }.disabled(!connected)
-                    Divider()
-                    Button("Open Settings…") { route = .settings }
-                } label: {
-                    Image(systemName: "chevron.down").font(.system(size: 11, weight: .semibold)).foregroundStyle(SS.n300).frame(width: 20, height: 20).contentShape(Rectangle())
-                }
-                .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden)
             }
             if let u = model.firmwareUpdate {
+                // Short label so it never truncates in the sidebar; the full story is in Settings.
                 Button { route = .settings } label: {
                     HStack(spacing: 6) {
-                        Image(systemName: "arrow.up.circle.fill").font(.system(size: 11))
-                        Text("Firmware \(u.version) available").font(.system(size: 11, weight: .medium)).lineLimit(1)
-                        Spacer()
-                        Image(systemName: "chevron.right").font(.system(size: 9, weight: .semibold))
+                        Image(systemName: "arrow.up.circle.fill").font(.system(size: 12))
+                        Text("Update to \(u.version)").font(.system(size: 11, weight: .semibold)).lineLimit(1)
+                        Spacer(minLength: 0)
                     }
-                    .foregroundStyle(SS.brand500)
-                    .padding(.horizontal, 8).frame(height: 24)
-                    .background(SS.brand.opacity(0.18), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10).frame(maxWidth: .infinity).frame(height: 26)
+                    .background(SS.brand, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
+                .help("Firmware \(u.version) available — open Settings to see the release notes")
             }
         }
         .padding(12)
@@ -161,12 +159,31 @@ struct Sidebar: View {
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(route == .home ? SS.brand500.opacity(0.7) : SS.n500))
         .contentShape(Rectangle())
         .onTapGesture { route = .home }
-
     }
 
     private var infoList: some View {
         VStack(alignment: .leading, spacing: 0) {
-            row("Mode", model.connection == .none ? "—" : (model.connection == .xinput ? "XInput" : "DInput"))
+            HStack {
+                Text("Mode").font(.system(size: 12)).foregroundStyle(SS.n400)
+                Spacer()
+                if connected {
+                    // Click to switch; no chevron, the swap icon says it all.
+                    Button { Task { await model.switchMode() } } label: {
+                        HStack(spacing: 4) {
+                            Text(model.connection == .xinput ? "XInput" : "DInput").font(.system(size: 12)).foregroundStyle(SS.n300)
+                            Image(systemName: "arrow.left.arrow.right").font(.system(size: 9, weight: .semibold)).foregroundStyle(SS.n400)
+                        }
+                        .padding(.horizontal, 6).frame(height: 20)
+                        .background(SS.n600, in: RoundedRectangle(cornerRadius: 5, style: .continuous))
+                        .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain).disabled(model.busy)
+                    .help(model.connection == .xinput ? "Switch to DInput mode" : "Switch to XInput mode")
+                } else {
+                    Text("—").font(.system(size: 12)).foregroundStyle(SS.n300)
+                }
+            }
+            .frame(height: 26)
             row("Link", model.info == nil ? "—" : (model.info!.wired ? "USB cable" : "2.4 GHz receiver"))
             row("Firmware", model.info.map { $0.firmware + (model.firmwareUpdate != nil ? "  ↑" : "") } ?? "—")
             if let i = model.info { let b = Battery(raw: i.batteryRaw, system: live.battery); if b.known { row("Battery", b.description) } }

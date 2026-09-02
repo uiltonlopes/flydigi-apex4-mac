@@ -21,7 +21,7 @@ struct DeviceCenterPage: View {
                     .rotationEffect(.degrees(35)).blur(radius: 120).offset(x: g.size.width * 0.35, y: -g.size.height * 0.35)
 
                 VStack(spacing: 0) {
-                    Text("Welcome to Space Station").font(.system(size: 40, weight: .semibold)).foregroundStyle(.white)
+                    Text("Welcome to Space Station for Mac").font(.system(size: 40, weight: .semibold)).foregroundStyle(.white)
                         .padding(.top, max(80, g.size.height * 0.16))
                     Spacer()
                     if connected { deviceCard } else { emptyCard }
