@@ -140,14 +140,20 @@ final class ControllerModel {
     func apply(led newLED: LEDConfig, persist: Bool = true) async {
         let conn = connection
         await run {
-            switch conn {
-            case .dinput:
-                let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }
-                try s.applyLED(newLED, persist: persist)
-            case .xinput:
-                guard #available(macOS 14.0, *) else { throw HelperError.notInstalled }
-                try HelperClient.shared.applyLED(newLED, persist: persist)
-            case .none: throw HelperError.transport("no controller")
+            // Write, then read back and compare; a lost parcel would otherwise leave a half-applied effect.
+            for attempt in 0..<2 {
+                switch conn {
+                case .dinput:
+                    let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }
+                    try s.applyLED(newLED, persist: persist)
+                    if try s.readLED().bytes == newLED.bytes { return newLED }
+                case .xinput:
+                    guard #available(macOS 14.0, *) else { throw HelperError.notInstalled }
+                    try HelperClient.shared.applyLED(newLED, persist: persist)
+                    if try HelperClient.shared.readLED().bytes == newLED.bytes { return newLED }
+                case .none: throw HelperError.transport("no controller")
+                }
+                if attempt == 1 { throw HelperError.transport(String(localized: "The lighting did not apply completely. Try again.")) }
             }
             return newLED
         } onSuccess: { (l: LEDConfig) in self.led = l }
