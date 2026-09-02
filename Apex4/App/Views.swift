@@ -107,10 +107,12 @@ struct Sidebar: View {
             HStack {
                 Text("My Device").font(.system(size: 12)).foregroundStyle(SS.n300)
                 Spacer()
-                if connected {
-                    Image(systemName: model.info?.wired == false ? "dot.radiowaves.left.and.right" : "cable.connector")
+                if connected, let i = model.info {
+                    Image(systemName: i.wired ? "cable.connector" : "dot.radiowaves.left.and.right")
                         .font(.system(size: 11)).foregroundStyle(SS.n400)
-                    Image(systemName: "battery.100percent").font(.system(size: 11)).foregroundStyle(SS.n400)
+                    let b = Battery(raw: i.batteryRaw)
+                    Image(systemName: b.symbol).font(.system(size: 11)).foregroundStyle(b.charging ? SS.green : SS.n400)
+                        .help(b.description)
                 }
             }
             HStack(spacing: 8) {
@@ -140,6 +142,7 @@ struct Sidebar: View {
             row("Mode", model.connection == .none ? "—" : (model.connection == .xinput ? "XInput" : "DInput"))
             row("Link", model.info == nil ? "—" : (model.info!.wired ? "USB cable" : "2.4 GHz receiver"))
             row("Firmware", model.info?.firmware ?? "—")
+            if let i = model.info, !i.wired || Battery(raw: i.batteryRaw).charging { row("Battery", Battery(raw: i.batteryRaw).description) }
             row("Helper", model.helperInstalled ? "Installed" : "Not installed")
             if let d = profiles.draft {
                 row("Profile", "Slot \(profiles.activeSlot + 1)\(d.title.isEmpty ? "" : " · \(d.title)")")
@@ -311,7 +314,7 @@ struct HeroHotspots: View {
             ZStack {
                 ForEach(Apex4Render.stickWells.indices, id: \.self) { i in
                     let r = Apex4Render.stickWells[i]
-                    Circle().strokeBorder(.white.opacity(0.12), lineWidth: 1)
+                    StickWell()
                         .frame(width: r.width * s, height: r.height * s)
                         .position(x: r.midX * s, y: r.midY * s)
                 }
@@ -327,10 +330,11 @@ struct HeroHotspots: View {
     }
 
     private func chipShape(_ h: Hotspot, scale s: CGFloat) -> AnyShape {
+        if let sil = KeySilhouette.shape(for: h.key) { return AnyShape(sil) }
         switch h.shape {
-        case .circle: AnyShape(Circle())
-        case .roundRect: AnyShape(Capsule())
-        case .rect: AnyShape(RoundedRectangle(cornerRadius: 6 * s, style: .continuous))
+        case .circle: return AnyShape(Circle())
+        case .roundRect: return AnyShape(Capsule())
+        case .rect: return AnyShape(RoundedRectangle(cornerRadius: 6 * s, style: .continuous))
         }
     }
 
@@ -338,17 +342,31 @@ struct HeroHotspots: View {
         let selected = profiles.selectedKey == h.key
         let changed = isChanged(h.key)
         let pressed = live.pressedKeys.contains(h.key)
-        let size = CGSize(width: h.rect.width * s, height: h.rect.height * s)
+        let isThumb = h.key == .thumbL || h.key == .thumbR
+        let silhouette = KeySilhouette.shape(for: h.key) != nil
+        // Silhouettes are drawn a little larger than the hit rect, like SS4's icons.
+        let grow: CGFloat = silhouette ? 1.08 : 1
+        let size = CGSize(width: h.rect.width * s * grow, height: h.rect.height * s * grow)
         let shape = chipShape(h, scale: s)
         let stroke: Color = selected ? SS.brand500 : (changed ? SS.brand.opacity(0.9) : SS.n400)
+        let fill: Color = pressed ? SS.brand500.opacity(0.85) : (silhouette ? SS.n600 : SS.chipFill.opacity(0.95))
         return Button { if h.clickable { onSelect(h.key) } } label: {
             ZStack {
-                shape.fill(pressed ? SS.brand500.opacity(0.85) : SS.chipFill.opacity(0.95))
-                shape.stroke(stroke, lineWidth: selected ? 2 : 1)
+                if !isThumb {
+                    shape.fill(fill)
+                    shape.stroke(stroke, lineWidth: selected ? 2 : (silhouette ? 1.5 : 1))
+                    if silhouette && !selected {
+                        // SS4's faint vertical highlight on the outline.
+                        shape.stroke(LinearGradient(colors: [.white.opacity(0), .white.opacity(0.35), .white.opacity(0)], startPoint: .top, endPoint: .bottom), lineWidth: 1.5)
+                    }
+                } else if selected || pressed {
+                    Circle().stroke(pressed ? SS.brand500 : SS.brand500, lineWidth: 2).frame(width: size.width, height: size.height)
+                }
                 Text(h.label)
-                    .font(.system(size: max(8, min(12, size.height * 0.42)), weight: .semibold, design: .rounded))
-                    .foregroundStyle(h.clickable ? .white : SS.n400)
+                    .font(.system(size: max(8, min(12, size.height * (silhouette ? 0.3 : 0.42))), weight: .semibold, design: .rounded))
+                    .foregroundStyle(h.clickable ? (isThumb ? SS.n300 : .white) : SS.n400)
                     .minimumScaleFactor(0.6).lineLimit(1)
+                    .offset(y: h.key == .m1 || h.key == .m2 ? size.height * 0.04 : 0)
             }
             .frame(width: size.width, height: size.height)
             .shadow(color: selected ? SS.brand500.opacity(0.7) : .clear, radius: 8)
@@ -809,4 +827,19 @@ struct TriggerTab: View {
         }
         .frame(maxWidth: .infinity)
     }
+}
+
+
+/// Battery byte from the device-info reply, decoded the way Space Station does
+/// (`HeartBeatCommandFactory`: high nibble 1 → charging, otherwise low nibble = 0…5 bars).
+struct Battery: CustomStringConvertible {
+    let raw: UInt8
+    var charging: Bool { raw >> 4 == 1 }
+    var bars: Int { min(5, Int(raw & 0xF)) }
+    var percent: Int { bars * 20 }
+    var symbol: String {
+        if charging { return "battery.100percent.bolt" }
+        switch bars { case 0: return "battery.0percent"; case 1: return "battery.25percent"; case 2, 3: return "battery.50percent"; case 4: return "battery.75percent"; default: return "battery.100percent" }
+    }
+    var description: String { charging ? "Charging" : "\(percent) %" }
 }

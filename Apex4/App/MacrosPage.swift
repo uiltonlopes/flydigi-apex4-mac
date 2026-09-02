@@ -32,6 +32,19 @@ struct MacrosPage: View {
 
     private var macroList: some View {
         VStack(spacing: 0) {
+            HStack {
+                Text("Macros").font(.system(size: 14, weight: .semibold)).foregroundStyle(.white)
+                Spacer()
+                Text("\(profiles.draft?.macros.count ?? 0)/\(profiles.maxMacros)").font(.system(size: 12).monospacedDigit()).foregroundStyle(SS.n300)
+            }
+            .padding(.horizontal, 16).frame(height: 44)
+            if (profiles.draft?.macros ?? []).isEmpty {
+                VStack(spacing: 8) {
+                    Text("No macros in this profile").font(.system(size: 13)).foregroundStyle(SS.n300)
+                    Text("Bind one to a button and record steps from the pad.").font(.system(size: 12)).foregroundStyle(SS.n400).multilineTextAlignment(.center)
+                }
+                .padding(16).frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
             List(selection: $selected) {
                 ForEach(Array((profiles.draft?.macros ?? []).enumerated()), id: \.offset) { i, m in
                     HStack {
@@ -48,20 +61,23 @@ struct MacrosPage: View {
                 }
             }
             .listStyle(.plain).scrollContentBackground(.hidden)
-            Divider()
-            HStack {
+            }
+            HStack(spacing: 8) {
                 Menu {
                     ForEach(availableKeys, id: \.self) { k in Button(String(describing: k)) { selected = profiles.addMacro(for: k) } }
-                } label: { Image(systemName: "plus") }
-                .menuIndicator(.hidden).fixedSize()
+                } label: {
+                    HStack(spacing: 6) { Image(systemName: "plus").font(.system(size: 12, weight: .semibold)); Text("New macro").font(.system(size: 13, weight: .semibold)) }
+                        .foregroundStyle(.white).frame(maxWidth: .infinity).frame(height: 32)
+                        .background(SS.brand500, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        .contentShape(Rectangle())
+                }
+                .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden)
                 .disabled((profiles.draft?.macros.count ?? 0) >= profiles.maxMacros || availableKeys.isEmpty)
                 .help("Bind a new macro to a button")
-                Button { if let s = selected { profiles.removeMacro(at: s) } } label: { Image(systemName: "minus") }
-                    .disabled(selected == nil)
-                Spacer()
-                Text("\(profiles.draft?.macros.count ?? 0)/\(profiles.maxMacros)").font(.caption).foregroundStyle(.secondary).monospacedDigit()
+                GhostButton(title: "", icon: "trash", enabled: selected != nil, destructive: true) { if let s = selected { profiles.removeMacro(at: s) } }
+                    .frame(width: 40)
             }
-            .buttonStyle(.borderless).padding(8)
+            .padding(12)
         }
     }
 

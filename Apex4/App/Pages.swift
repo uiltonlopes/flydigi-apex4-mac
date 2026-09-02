@@ -105,7 +105,7 @@ struct ScreenPage: View {
                 }
                 .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 HStack {
-                    Text(pic.title.isEmpty ? "#\(pic.id)" : pic.title).font(.system(size: 12)).foregroundStyle(.white).lineLimit(1)
+                    Text(displayTitle(pic)).font(.system(size: 12)).foregroundStyle(.white).lineLimit(1)
                     Spacer()
                     Text(pic.isGIF ? "GIF" : "JPG").font(.system(size: 10, weight: .semibold)).foregroundStyle(SS.n300)
                         .padding(.horizontal, 5).frame(height: 16).background(SS.n500, in: RoundedRectangle(cornerRadius: 4))
@@ -117,6 +117,14 @@ struct ScreenPage: View {
         }
         .buttonStyle(.plain)
         .help("Load this animation into the preview")
+    }
+
+    /// Flydigi names them "精选动画N" (featured) / "第三方无版权N" (third-party, royalty-free).
+    private func displayTitle(_ pic: FlydigiAPI.ScreenPic) -> String {
+        let t = pic.title
+        if t.hasPrefix("精选动画") { return "Featured \(t.dropFirst(4))" }
+        if t.hasPrefix("第三方无版权") { return "Community \(t.dropFirst(6))" }
+        return t.isEmpty ? "#\(pic.id)" : t
     }
 
     private func loadLibrary() async {
