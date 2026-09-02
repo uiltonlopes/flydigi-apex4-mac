@@ -56,6 +56,8 @@ enum Apex4Render {
 
     static let wireframe: NSImage? = load("apex4-wireframe", "svg")
     static let hero: NSImage? = load("apex4-hero", "png")
+    /// Space Station's "add device" silhouette shown when nothing is connected.
+    static let addDevice: NSImage? = load("add-device", "png")
     /// Product picture for a specific Apex 4 variant (Space Station's `k2/<id>/main.png`), falling back to the base model.
     static func productImage(deviceId: UInt8?) -> NSImage? {
         if let id = deviceId, let img = load("k2-\(id)", "png") { return img }

@@ -3421,6 +3421,16 @@
         }
       }
     },
+    "USB-C cable or the charging dock's receiver — detected automatically": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cabo USB-C ou o receptor da base de carregamento — detectado automaticamente"
+          }
+        }
+      }
+    },
     "Unsaved changes in the app — apply or revert there first.": {
       "localizations": {
         "pt-BR": {
