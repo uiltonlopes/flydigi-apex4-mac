@@ -84,3 +84,29 @@ Home, Back/Select, Start, Turbo) — that is what users search for.
 - No fixed-dark chrome: follow the system appearance by default, with the dark, accent-tinted *content*
   (controller illustration, cards) that keeps the gaming feel — details in `design.md`.
 - No member centre / mall / telemetry.
+
+## Verified against the running renderer (2026-09-01)
+
+Using `research/ss4-harness/`, the real SS4 4.2.2.3 UI was rendered at 1440 × 900 with a simulated Apex 4:
+
+- **Shell**: 248 px sidebar (`--neutral-700` #212225) holding the app title, a "My Device" card
+  (name, green dot, cable/battery glyphs, chevron) and a bottom rail with two square buttons
+  (Adaptive Trigger, Screen) plus a wide Settings button. Main area is `--neutral-800` #1c1d1f.
+- **Hero** (`.home-top`, ~50 % of the height, #181818): wireframe centred, blue radial glow from the
+  bottom, key chips drawn from `device_config_k2` (dark fill, grey 1 px stroke, blue when selected),
+  profile dropdown top-right ("Test ▾").
+- **Tabs** under the hero: Common · Button · Joystick · Gyro · Trigger, icon + label, 2 px blue underline.
+- **Common**: two columns separated by a vertical hairline — Light (mode select, colour swatches with
+  + / −, brightness and cycle-time "− slider +" boxes) and Vibration (switch, intensity slider,
+  "Vibration test").
+- **Button**: hint card until a chip is clicked; then a Click / Turbo / Macro / Special pill and an
+  "Input = [output box]" layout. Turbo adds an "Activate method" radio list and "Shots per second".
+  Macro shows a "Click to set macro ›" card with a preview strip. Special shows a disabled select.
+- **Joystick / Trigger**: Left / Right pill, then selects and sliders in two columns.
+- **Gyro**: blue notice, Mapping to / How to activate / Activate key selects, X/Y sensitivity boxes.
+- **Screen** (own route): "‹ Screen" header, "Screen Settings" card (Upload, formats hint, Restore
+  default) and an "Official selection" grid from `screen_pic/list`.
+- **Settings** (own route): left sub-navigation (Space Station / Controller / Update), right content
+  in labelled sections with switches and links.
+
+The macOS app mirrors this structure (`Apex4/App/Views.swift`, `Pages.swift`, `Theme.swift`).
