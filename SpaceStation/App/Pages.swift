@@ -5,7 +5,7 @@ import UniformTypeIdentifiers
 import FlydigiKit
 import FlydigiTransport
 import FlydigiHelperProtocol
-import Translation
+@preconcurrency import Translation
 
 // MARK: - Screen
 
@@ -368,7 +368,9 @@ struct ReleaseNote: View {
         }
         .onAppear { if !targetIsChinese { config = TranslationSession.Configuration(source: Locale.Language(identifier: "zh-Hans"), target: Locale.current.language) } }
         .translationTask(config) { session in
-            do { translated = try await session.translate(text).targetText } catch { translated = nil }
+            nonisolated(unsafe) let s = session
+            let out: String? = await Task.detached { (try? await s.translate(text))?.targetText }.value
+            translated = out
         }
     }
 }
