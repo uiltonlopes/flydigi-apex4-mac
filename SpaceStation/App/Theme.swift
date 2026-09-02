@@ -139,6 +139,7 @@ struct PillSegmented<T: Hashable>: View {
     @Binding var selection: T
     let options: [(T, String)]
     var compact = false          // tighter padding + smaller type for 4+ options in a narrow column
+    var fill = false             // segments share the full width of the container edge to edge
     var body: some View {
         HStack(spacing: 2) {
             ForEach(options, id: \.0) { o in
@@ -147,7 +148,7 @@ struct PillSegmented<T: Hashable>: View {
                     Text(LocalizedStringKey(o.1)).font(.system(size: compact ? 12 : 13, weight: on ? .semibold : .regular))
                         .lineLimit(1).fixedSize()
                         .foregroundStyle(on ? .white : SS.n300)
-                        .padding(.horizontal, compact ? 9 : 16).frame(height: 28)
+                        .padding(.horizontal, compact ? 9 : 16).frame(maxWidth: fill ? .infinity : nil).frame(height: 28)
                         .background(on ? SS.n500 : .clear, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
                         .contentShape(Rectangle())
                 }

@@ -802,7 +802,7 @@ struct JoystickTab: View {
                     Field("Sensitivity curve") {
                         // SS4's tabs: picking a preset also clears the dead zone and edge; touching anything makes it Custom.
                         PillSegmented(selection: Binding(get: { stick.curve }, set: { c in set { $0.applyCurvePreset(c) } }),
-                                      options: [(.default, "Default"), (.quick, "Instant"), (.slow, "Delay"), (.custom, "Custom")], compact: true)
+                                      options: [(.default, "Default"), (.quick, "Instant"), (.slow, "Delay"), (.custom, "Custom")], compact: true, fill: true)
                             .padding(2).frame(maxWidth: .infinity).background(SS.n700, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
                     SensitivityCurve(p1: Binding(get: { (stick.p1x, stick.p1y) }, set: { v in set { $0.p1x = v.0; $0.p1y = v.1 } }),
