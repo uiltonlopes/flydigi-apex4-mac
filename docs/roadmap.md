@@ -45,3 +45,5 @@ Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status
 - [ ] Keyboard/mouse mapping **the macOS way** (Milestone 3): the firmware only flags a key as `0xFE`; Flydigi's Windows driver does the translation. On macOS the app can read the pad via GameController and post `CGEvent`s (needs Accessibility permission, app running) — no kernel driver.
 - [ ] 🚫 DualSense/DS-mode emulation — Windows kernel driver; a macOS equivalent would need a virtual HID driver (DriverKit). Out of scope.
 - [ ] 🚫 Bluetooth configuration — Flydigi's BLE service only covers the BS1 cooler, not the Apex 4.
+
+See [ss4-gap-analysis.md](ss4-gap-analysis.md) (2026-09-02) for the feature-by-feature comparison with Space Station 4 and the suggested order.
