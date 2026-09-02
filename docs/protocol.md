@@ -220,3 +220,15 @@ press a key ("borrow the pad"), then hands the pad back to the system driver.
   remembers which slot the user chose and re-applies it with `A5 50 05 <slot>` (XInput) / `05 50 05 <slot>`
   (DInput) after any multi-slot read. In DInput, `05 EB <id>` with id 0…3 reads the slot directly
   (id 4 returns a blank "常规游戏配置" template).
+
+## 11. Calibration and joystick hardware switches (from Space Station's SDK, 2026-09-02)
+
+- **ADC calibration window**: XInput `A5 14 01` opens, `A5 14 02` closes; DInput `05 E2 01` / `05 E2 02`.
+  No acknowledgement. The pad learns centre and limits from whatever it sees in between, so the app only
+  sends `02` after every axis has been swept (guided wizard in the Joystick tab). Not yet exercised on
+  hardware by this project — the wizard is the first user of it.
+- **Hardware function switches** (`A5 50 07` read, `A5 50 08/09/0B/0D/0E <v>` set = joystick debounce,
+  auto-calibration, precision, sensitivity, rebounce; DInput read `05 F2 03`): the Apex 4 (fw 6.8.3.0)
+  **does not answer** `A5 50 07` in XInput, and in DInput `05 F2 03` returns `f2 03 0f ff` — usable bits
+  0…3 only, none of the joystick functions — so these settings are for newer models. The code stays in
+  `DeviceSession` for other controllers; the app does not show them for the Apex 4.
