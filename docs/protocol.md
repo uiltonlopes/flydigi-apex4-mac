@@ -245,3 +245,7 @@ each group, so `loopEnd` must follow the mode: On → every unit = the colour, l
 loopEnd from a gradient makes a "steady" colour pulse); Gradient → units 0…n−1, loopEnd n−1; Breath →
 colours on even units with black in between, loopEnd 2n−1; Feedback → units 0…n−1, loopEnd n,
 ClickFeedback 1; Flow → colours untouched, loopEnd = groups.
+
+Space Station's own mode list for the Apex 4 (`GetDefaultLedConfigsByDevice`) is **Default, Breath, Gradient,
+On, Close** — Flow is excluded for `k2` and Feedback exists only for the Vader 4 (`f4`). On hardware the k2
+indeed plays Flow like Breath. Colour counts in its UI: Gradient 2–5, Breath 1–5, On 1, Default/Close none.

@@ -141,7 +141,7 @@ struct GameRuleEditor: View {
 
     private var ledEditor: some View {
         let led = Binding(get: { rule.led ?? LEDPreset() }, set: { rule.led = $0 })
-        let modes: [(UInt8, String)] = [(LEDConfig.Mode.off.rawValue, "Off"), (LEDConfig.Mode.steady.rawValue, "Steady"), (LEDConfig.Mode.breathing.rawValue, "Breathing"), (LEDConfig.Mode.gradient.rawValue, "Gradient"), (LEDConfig.Mode.streamlined.rawValue, "Streamlined"), (LEDConfig.Mode.feedback.rawValue, "Feedback")]
+        let modes: [(UInt8, String)] = [(LEDConfig.Mode.steady.rawValue, "Steady"), (LEDConfig.Mode.breathing.rawValue, "Breathing"), (LEDConfig.Mode.gradient.rawValue, "Gradient"), (LEDConfig.Mode.off.rawValue, "Off")]
         return HStack(alignment: .top, spacing: 24) {
             VStack(alignment: .leading, spacing: 10) {
                 Field("Light mode") { DarkSelect(selection: led.mode, options: modes, width: 320) }
@@ -150,7 +150,7 @@ struct GameRuleEditor: View {
                         ForEach(led.wrappedValue.colours.indices, id: \.self) { i in
                             ColorPicker("", selection: Binding(get: { colour(led.wrappedValue.colours[i]) }, set: { c in var l = led.wrappedValue; l.colours[i] = pct(c); led.wrappedValue = l } ), supportsOpacity: false).labelsHidden().frame(width: 28, height: 28)
                         }
-                        Button { var l = led.wrappedValue; if l.colours.count < LEDConfig.unitsPerGroup { l.colours.append([100, 100, 100]) }; led.wrappedValue = l } label: { Image(systemName: "plus.circle").font(.system(size: 18)).foregroundStyle(SS.n300) }.buttonStyle(.plain)
+                        Button { var l = led.wrappedValue; if l.colours.count < (l.mode == LEDConfig.Mode.steady.rawValue ? 1 : 5) { l.colours.append([100, 100, 100]) }; led.wrappedValue = l } label: { Image(systemName: "plus.circle").font(.system(size: 18)).foregroundStyle(SS.n300) }.buttonStyle(.plain)
                         Button { var l = led.wrappedValue; if l.colours.count > 1 { l.colours.removeLast() }; led.wrappedValue = l } label: { Image(systemName: "minus.circle").font(.system(size: 18)).foregroundStyle(SS.n300) }.buttonStyle(.plain)
                     }
                 }

@@ -40,6 +40,7 @@ struct LEDPreset: Codable, Hashable {
         let m = LEDConfig.Mode(rawValue: mode) ?? .steady
         switch m {
         case .off: led.setOff()
+        case .factoryDefault: led.mode = .factoryDefault; led.type = 0; led.loopStart = 0; led.loopEnd = 0
         case .steady: led.setSteady(units.first ?? .off)
         default: led.setCycle(units.isEmpty ? [.init(r: 100, g: 100, b: 100)] : Array(units), mode: m)
         }

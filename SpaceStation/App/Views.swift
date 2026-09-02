@@ -431,8 +431,12 @@ struct LightPanel: View {
     @State private var loaded = false
     @State private var pending: Task<Void, Never>?
 
-    private let modes: [(LEDConfig.Mode, String)] = [(.off, "Off"), (.steady, "Steady"), (.breathing, "Breathing"), (.gradient, "Gradient"), (.streamlined, "Streamlined"), (.feedback, "Feedback")]
-    private var cycleDisabled: Bool { mode == .steady || mode == .off }
+    // Space Station offers exactly these for the Apex 4 (`GetDefaultLedConfigsByDevice`: no Flow, no Feedback on k2).
+    private let modes: [(LEDConfig.Mode, String)] = [(.factoryDefault, "Default"), (.steady, "Steady"), (.breathing, "Breathing"), (.gradient, "Gradient"), (.off, "Off")]
+    private var cycleDisabled: Bool { mode == .steady || mode == .off || mode == .factoryDefault }
+    private var colourDisabled: Bool { mode == .off || mode == .factoryDefault }
+    private var minColours: Int { mode == .gradient ? 2 : 1 }
+    private var maxColours: Int { mode == .steady ? 1 : 5 }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -447,7 +451,7 @@ struct LightPanel: View {
                     }
                     GridRow {
                         Field("Color") { colourRow }
-                        Field("Cycle time") { StepSlider(value: $speed, range: 0...100) }.opacity(cycleDisabled ? 0.4 : 1).disabled(cycleDisabled)
+                        Field("Cycle time") { StepSlider(value: $speed, range: 1...100) }.opacity(cycleDisabled ? 0.4 : 1).disabled(cycleDisabled)
                     }
                 }
                 if model.busy { HStack(spacing: 6) { ProgressView().controlSize(.mini); Text("Applying…").font(.system(size: 12)).foregroundStyle(SS.n300) } }
@@ -455,7 +459,13 @@ struct LightPanel: View {
         }
         .onAppear(perform: load)
         .onChange(of: model.led) { _, _ in load() }
-        .onChange(of: mode) { _, _ in schedule() }
+        .onChange(of: mode) { _, m in
+            // keep the colour list within what the mode accepts
+            if m == .steady, colours.count > 1 { colours = [colours[0]] }
+            if m == .gradient, colours.count < 2 { colours.append(.white) }
+            if colours.count > 5 { colours = Array(colours.prefix(5)) }
+            schedule()
+        }
         .onChange(of: brightness) { _, _ in schedule() }
         .onChange(of: speed) { _, _ in schedule() }
         .onChange(of: colours) { _, _ in schedule() }
@@ -466,13 +476,14 @@ struct LightPanel: View {
             ForEach(colours.indices, id: \.self) { i in
                 ColorPicker("", selection: $colours[i], supportsOpacity: false).labelsHidden().frame(width: 28, height: 28)
             }
-            Button { if colours.count < LEDConfig.unitsPerGroup { colours.append(.white) } } label: { Image(systemName: "plus.circle").font(.system(size: 18)).foregroundStyle(SS.n300) }
-                .buttonStyle(.plain).disabled(cycleDisabled || colours.count >= LEDConfig.unitsPerGroup)
-            Button { if colours.count > 1 { colours.removeLast() } } label: { Image(systemName: "minus.circle").font(.system(size: 18)).foregroundStyle(SS.n300) }
-                .buttonStyle(.plain).disabled(colours.count <= 1)
+            Button { if colours.count < maxColours { colours.append(.white) } } label: { Image(systemName: "plus.circle").font(.system(size: 18)).foregroundStyle(SS.n300) }
+                .buttonStyle(.plain).disabled(colourDisabled || colours.count >= maxColours)
+            Button { if colours.count > minColours { colours.removeLast() } } label: { Image(systemName: "minus.circle").font(.system(size: 18)).foregroundStyle(SS.n300) }
+                .buttonStyle(.plain).disabled(colourDisabled || colours.count <= minColours)
+            Text(mode == .steady ? "1 color" : (mode == .gradient ? "2 to 5 colors" : "up to 5 colors")).font(.system(size: 11)).foregroundStyle(SS.n400)
         }
         .frame(height: 36)
-        .opacity(mode == .off ? 0.4 : 1)
+        .opacity(colourDisabled ? 0.4 : 1)
     }
 
     private func load() {
@@ -502,7 +513,12 @@ struct LightPanel: View {
             func pct(_ v: CGFloat) -> UInt8 { UInt8(max(0, min(100, (v * 100).rounded()))) }
             return LEDConfig.Unit(r: pct(n.redComponent), g: pct(n.greenComponent), b: pct(n.blueComponent))
         }
-        switch mode { case .steady: led.setSteady(units.first ?? .off); case .off: led.setOff(); default: led.setCycle(units.isEmpty ? [.init(r: 100, g: 100, b: 100)] : units, mode: mode) }
+        switch mode {
+        case .steady: led.setSteady(units.first ?? .off)
+        case .off: led.setOff()
+        case .factoryDefault: led.mode = .factoryDefault; led.type = 0; led.loopStart = 0; led.loopEnd = 0
+        default: led.setCycle(units.isEmpty ? [.init(r: 100, g: 100, b: 100)] : units, mode: mode)
+        }
         led.brightness = UInt8(brightness); led.speed = UInt8(speed)
         loaded = false                                   // model.led will change back → don't re-trigger
         await model.apply(led: led)

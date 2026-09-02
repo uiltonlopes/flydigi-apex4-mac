@@ -11,6 +11,26 @@
         }
       }
     },
+    "1 color": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "1 cor"
+          }
+        }
+      }
+    },
+    "2 to 5 colors": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "2 a 5 cores"
+          }
+        }
+      }
+    },
     "2.4 GHz receiver": {
       "localizations": {
         "pt-BR": {
@@ -3417,6 +3437,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "ou casar pelo nome do app contendo"
+          }
+        }
+      }
+    },
+    "up to 5 colors": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "até 5 cores"
           }
         }
       }
