@@ -99,7 +99,12 @@ public struct LEDConfig: Sendable, Hashable {
         for g in 0..<Int(activeGroups) { groups[g] = units }
     }
 
-    public mutating func setOff() { mode = .off; type = 0 }
+    /// Space Station's "Close": mode 6, loop 0…0 **and every unit black** — the firmware keeps playing the
+    /// previous colours otherwise.
+    public mutating func setOff() {
+        mode = .off; type = 0; loopStart = 0; loopEnd = 0
+        for g in 0..<groups.count { for u in 0..<groups[g].count { groups[g][u] = .off } }
+    }
 
     /// The user-facing colour list of a group, undoing the per-mode layout above.
     public func colours(ofGroup g: Int) -> [Unit] {
