@@ -7,7 +7,12 @@
 - Screen editor: drag / pinch / scroll to frame the image in a 2:1 viewport, Fit / Fill, GIF trimming with
   filmstrip, frame interval, exact 160 × 80 preview; long GIFs are thinned evenly to 35 frames.
 - Key capture in XInput borrows the pad for a few seconds so paddles and Fn work everywhere.
-- Credits and links in Settings → About.
+- Credits and links in Settings → About and in the standard About panel.
+- Firmware: automatic update check on connect, update badges (welcome screen, sidebar, Settings), Flydigi's
+  note, how-to-update guidance, and a read-only dry run that downloads and validates the image (Telink CRC32)
+  and finds the OTA interface. Flashing itself stays disabled.
+- Settings reorganised (Controller → App → About), in-app language switch, pt-BR translation.
+- App renamed internally (Space Station.app, `com.uiltonlopes.spacestation`, SpaceStationHelper).
 
 ## 0.1.0 — 2026-09-02 (pre-release)
 

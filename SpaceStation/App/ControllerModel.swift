@@ -119,10 +119,7 @@ final class ControllerModel {
                     if OTALink.isPresent() {
                         let ota = try OTALink(); defer { ota.close() }
                         let sizes = ota.reportSizes
-                        log.append("OTA interface found (usage page FFEF) · report sizes in \(sizes.input) / out \(sizes.output)")
-                        let v = try ota.queryVersion()
-                        if let ver = v.version { log.append(String(format: "OTA version query → 0x%08x (crc 0x%08x)", ver, v.crc ?? 0)) }
-                        else { log.append("OTA version query → unexpected reply: " + v.raw.prefix(16).map { String(format: "%02x", $0) }.joined(separator: " ")) }
+                        log.append("OTA interface found (usage page FFEF) · report sizes in \(sizes.input) / out \(sizes.output) — ready for the flasher")
                     } else {
                         log.append("OTA interface (usage page FFEF) not present in this enumeration")
                     }

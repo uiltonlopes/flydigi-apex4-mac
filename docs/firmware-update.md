@@ -73,6 +73,15 @@ SS4 has no rollback, no stuck-device probe for controllers, one attempt, and "re
 Safety rests on the Telink OTA design (inactive bank + CRC + boot flag). `05 ED` on the `0xFFA0` interface
 is the only way back to XInput; the hardware combo also toggles modes.
 
+## 6b. Observed on hardware (2026-09-02, read-only)
+
+- In DInput the OTA interface is present: usage page `0xFFEF`, 64-byte input and output reports.
+- Sending the `0xFF00` version query (`05 02 02 00 00 FF …`) made the pad answer
+  `05 02 03 00 06 FF 09 00 02 00 00 00 02 00 00 00`, i.e. an **OTA result report with code 9**
+  (Telink: "firmware mark" / unexpected command) — the application firmware does not implement the version
+  query and reports the stray packet as an error. Nothing else changed; the pad kept working. The dry run no
+  longer sends it. So the only packets the OTA server accepts are START / DATA / END, exactly as SS4 sends.
+
 ## 7. Plan for this project
 
 Everything for the main chip is reachable **without root** once the pad is in DInput: `IOHIDManager` on

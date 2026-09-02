@@ -5,6 +5,7 @@ import UniformTypeIdentifiers
 import FlydigiKit
 import FlydigiTransport
 import FlydigiHelperProtocol
+import Translation
 
 // MARK: - Screen
 
@@ -226,15 +227,15 @@ struct SettingsPage: View {
                 .background(SS.n700)
 
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 28) {
-                        Text("Controller Settings").font(.system(size: 18, weight: .semibold)).foregroundStyle(.white)
+                    VStack(alignment: .leading, spacing: 22) {
+                        Text("Controller Settings").font(.system(size: 16, weight: .semibold)).foregroundStyle(.white)
                         section("Firmware Update") { firmware }
                         section("USB mode") {
                             Text(model.connection == .none ? "Not connected." : (model.connection == .xinput ? "XInput — what games expect; the screen and trigger previews need it." : "DInput — the app talks to the pad directly, no helper needed."))
                                 .font(.system(size: 13)).foregroundStyle(.white)
                             GhostButton(title: model.connection == .xinput ? "Switch to DInput" : "Switch to XInput", icon: "arrow.left.arrow.right", enabled: model.connection != .none && !model.busy) { Task { await model.switchMode() } }
                         }
-                        Text("App Settings").font(.system(size: 18, weight: .semibold)).foregroundStyle(.white).padding(.top, 8)
+                        Text("App Settings").font(.system(size: 16, weight: .semibold)).foregroundStyle(.white).padding(.top, 8)
                         section("Language") {
                             Text("Choose a language").font(.system(size: 13)).foregroundStyle(SS.n300)
                             DarkSelect(selection: $language, options: AppLanguage.allCases.map { ($0, $0.title) }, width: 260)
@@ -255,7 +256,7 @@ struct SettingsPage: View {
                                 GhostButton(title: "Remove helper", enabled: model.helperInstalled, destructive: true) { model.uninstallHelper() }
                             }
                         }
-                        Text("About").font(.system(size: 18, weight: .semibold)).foregroundStyle(.white).padding(.top, 8)
+                        Text("About").font(.system(size: 16, weight: .semibold)).foregroundStyle(.white).padding(.top, 8)
                         section("Space Station for Mac") {
                             Text("Version \(appVersion) — open-source (MIT), unofficial. Ported to macOS by Uilton Lopes.")
                                 .font(.system(size: 13)).foregroundStyle(.white)
@@ -269,7 +270,8 @@ struct SettingsPage: View {
                                 .font(.system(size: 12)).foregroundStyle(SS.n300)
                         }
                     }
-                    .padding(28).frame(maxWidth: 760, alignment: .leading)
+                    .padding(.horizontal, 28).padding(.vertical, 20).frame(maxWidth: 680, alignment: .leading)
+                    .frame(maxWidth: .infinity)
                 }
             }
         }
@@ -293,10 +295,7 @@ struct SettingsPage: View {
                 DarkCard(padding: 16) {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("New firmware available, please update the firmware").font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
-                        if !u.info.isEmpty {
-                            Text("Flydigi's release note (as published, in Chinese):").font(.system(size: 12)).foregroundStyle(SS.n300)
-                            Text(verbatim: u.info).font(.system(size: 12)).foregroundStyle(.white)
-                        }
+                        if !u.info.isEmpty { ReleaseNote(text: u.info) }
                         Text("How to update today").font(.system(size: 12, weight: .semibold)).foregroundStyle(.white).padding(.top, 4)
                         Text("Flashing from the Mac is being validated step by step (see the dry run below). Until it ships, update with Flydigi Space Station on a Windows PC: connect the controller with the USB cable, open Settings → Firmware Update → Update. Keep it plugged in until it restarts.")
                             .font(.system(size: 12)).foregroundStyle(SS.n300)
@@ -340,9 +339,36 @@ struct SettingsPage: View {
     }
 
     private func section<C: View>(_ title: String, @ViewBuilder content: () -> C) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(LocalizedStringKey(title)).font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
             content()
+        }
+    }
+}
+
+/// Flydigi's release note: original (Chinese) plus an on-device translation into the app's language
+/// (Apple's Translation framework; macOS asks once to download the language pair).
+struct ReleaseNote: View {
+    let text: String
+    @State private var translated: String?
+    @State private var config: TranslationSession.Configuration?
+
+    private var targetIsChinese: Bool { Locale.current.language.languageCode?.identifier == "zh" }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text("Flydigi's release note").font(.system(size: 12)).foregroundStyle(SS.n300)
+            if let translated, !targetIsChinese {
+                Text(verbatim: translated).font(.system(size: 12)).foregroundStyle(.white)
+                Text(verbatim: text).font(.system(size: 11)).foregroundStyle(SS.n400)
+            } else {
+                Text(verbatim: text).font(.system(size: 12)).foregroundStyle(.white)
+                if !targetIsChinese { Text("Translating…").font(.system(size: 11)).foregroundStyle(SS.n400) }
+            }
+        }
+        .onAppear { if !targetIsChinese { config = TranslationSession.Configuration(source: Locale.Language(identifier: "zh-Hans"), target: Locale.current.language) } }
+        .translationTask(config) { session in
+            do { translated = try await session.translate(text).targetText } catch { translated = nil }
         }
     }
 }

@@ -801,6 +801,16 @@
         }
       }
     },
+    "Flydigi's release note": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nota de lançamento da Flydigi"
+          }
+        }
+      }
+    },
     "Flydigi's release note (as published, in Chinese):": {
       "localizations": {
         "pt-BR": {
@@ -2377,6 +2387,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Tempo total"
+          }
+        }
+      }
+    },
+    "Translating…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Traduzindo…"
           }
         }
       }

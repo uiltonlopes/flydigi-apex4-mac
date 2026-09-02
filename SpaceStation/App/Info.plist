@@ -27,6 +27,8 @@
 	<key>LSMinimumSystemVersion</key>
 	<string>15.0</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>MIT — github.com/uiltonlopes/flydigi-space-station-mac</string>
+	<string>MIT · Ported to macOS by Uilton Lopes
+github.com/uiltonlopes · linkedin.com/in/uiltonlopes
+Not affiliated with Flydigi</string>
 </dict>
 </plist>

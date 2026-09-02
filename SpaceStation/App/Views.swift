@@ -146,6 +146,20 @@ struct Sidebar: View {
         .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(route == .home ? SS.brand500.opacity(0.7) : SS.n500))
         .contentShape(Rectangle())
         .onTapGesture { route = .home }
+        .overlay(alignment: .bottom) {
+            if let u = model.firmwareUpdate {
+                Button { route = .settings } label: {
+                    HStack(spacing: 5) {
+                        Image(systemName: "arrow.up.circle.fill").font(.system(size: 10, weight: .semibold))
+                        Text("Firmware update available: \(u.version)").font(.system(size: 10, weight: .semibold)).lineLimit(1)
+                    }
+                    .foregroundStyle(.white).padding(.horizontal, 8).frame(height: 20)
+                    .background(SS.brand500, in: Capsule())
+                }
+                .buttonStyle(.plain).offset(y: 10)
+            }
+        }
+        .padding(.bottom, model.firmwareUpdate != nil ? 10 : 0)
     }
 
     private var infoList: some View {
