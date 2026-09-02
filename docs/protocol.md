@@ -121,11 +121,22 @@ zone is "past the floor". Proof: SS4's `ForceTriggerConfigCommon` zeroes the fla
 lock always sends 1. Flydigi's own per-game presets (`/game/list`, `vibType 2`) are all "sync with grip":
 `[side, 2, filter, scale=10, stroke, 1, strength, frequency]`, e.g. Need for Speed `stroke 0, strength 255,
 frequency 70, filter 20`.
-**The pad's own "Trig mode" screen menu (Normal/Race/Sniper/Recoil/Trig Lock/Vibration) is not readable.**
-Tested 2026-09-02 (fw 6.8.3.0): switching it changes nothing in the profile blob (adapter block stays type 0),
-nothing in the 32-byte input report, and nothing in the `A5 10`, `A5 30 01/02/04`, `A5 50 07` replies
-(`apex4 dev info-watch`). Space Station 4 has no read command for it either (only `SetForceTrigger` /
-`TestForceTrigger` exist in its SDK); the presets are tables inside the firmware.
+**The pad's own "Trig mode" screen menu writes its preset into the active profile's adapter block** (read it
+back with `apex4 config dump`; nothing shows in the input report or in the `A5 10` / `A5 30 xx` replies).
+Values observed on fw 6.8.3.0, 2026-09-02 — these are the app's per-mode defaults:
+
+| menu | adapter block bytes 0..19 | meaning |
+|---|---|---|
+| Normal | `00 00 0a 32 64 01 ff 46 00 ff 00 00 00 00 00 ff…` | params all 0 |
+| Race | `01 00 0a 32 64 01 ff 46 00 ff 00 1e 00 00 00 ff…` | start 0, damping 30, match 0 |
+| Recoil | `02 00 0a 32 64 01 ff 46 00 ff 00 01 32 0f 01 ff…` | start 0, start force 1, strength 50, freq 15, match 1 |
+| Sniper | `03 00 0a 0a 64 01 ff 46 00 ff 32 1e 01 00 01 00…` | start 50, stroke 30, resistance 1, match 1 |
+| Trig Lock 1/2/3 | `04 00 0a 0a 64 01 ff 46 00 ff 28|50|78 fa 01 00 00 00…` | position 40 / 80 / 120, 250, 1 |
+| Vibration | `05 02 0a 32 01 01 01 5a 00 ff 01 01 01 5a 00 ff…` | bind 2, block 10, scale 50, stroke 1, freq 90 |
+
+The bind block the firmware keeps for the non-vibration modes is `filter 10, scale 50 (left) / 10 (right),
+params 100 1 255 70 0, mixed border 255`. The trigger "kind" byte (blob 123/130) stays 0 — the firmware
+does not need it set to 1 for the adapter block to be active.
 
 The Apex 4 has no trigger motors of its own (`IsSupportTriggerVibration` is false for k2), so SS4's
 "vibration test" for the Vibration mode is simply a full grip rumble (`A5 12 FF FF`) for 5 s — the trigger

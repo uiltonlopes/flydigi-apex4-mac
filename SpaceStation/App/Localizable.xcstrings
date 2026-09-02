@@ -681,6 +681,16 @@
         }
       }
     },
+    "Controller preset": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Preset do controle"
+          }
+        }
+      }
+    },
     "Create a key at developers.giphy.com": {
       "localizations": {
         "pt-BR": {
@@ -1707,6 +1717,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Gatilho esquerdo"
+          }
+        }
+      }
+    },
+    "Level": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nível"
           }
         }
       }
@@ -3671,6 +3691,16 @@
         }
       }
     },
+    "The trigger gets hard to push past this point, like a shorter trigger. Levels 1–3 are the pad's own menu presets.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O gatilho fica duro a partir deste ponto, como um gatilho mais curto. Os níveis 1 a 3 são os presets do menu do controle."
+          }
+        }
+      }
+    },
     "The trigger reports a full press once it reaches the breakthrough — the shot fires at the wall.": {
       "localizations": {
         "pt-BR": {
@@ -3717,6 +3747,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "O gatilho vibra junto com os motores da empunhadura."
+          }
+        }
+      }
+    },
+    "The values the Apex 4 itself uses for this mode in its screen menu": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os valores que o próprio Apex 4 usa para este modo no menu da tela"
           }
         }
       }

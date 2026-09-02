@@ -39,22 +39,23 @@ struct ForceAdapt: Codable, Hashable {
 
     static let labels: [(Mode, String)] = [(.normal, "General"), (.race, "Racing"), (.recoil, "Recoil"), (.sniper, "Sniper"), (.lock, "Trigger lock"), (.vibration, "Vibration")]
 
-    /// Starting point for a mode. Space Station has no per-mode defaults of its own (a freshly picked mode
-    /// starts from whatever the profile held, zeros included); these are sensible mid-range values, the
-    /// vibration ones taken from the Apex 4 factory profile (block 10, scale 50, frequency 90).
+    /// The pad's own presets — the values the Apex 4 firmware (6.8.3.0) writes into the profile when a mode
+    /// is picked in its on-screen "Trig mode" menu (read back with `apex4 config dump`, 2026-09-02).
+    /// Space Station itself has no per-mode defaults.
     static func defaults(for mode: Mode) -> ForceAdapt {
         var c = ForceAdapt(); c.mode = mode
         switch mode {
         case .normal: break
-        // Racing reports 100 % at the damping start (see header), so the start sits near the end of the travel.
-        case .race: c.start = 150; c.level = 128; c.outputFromStart = true
-        case .recoil: c.start = 60; c.level = 128; c.strength = 128; c.frequency = 100; c.outputFromStart = false
-        case .sniper: c.start = 90; c.level = 60; c.strength = 150; c.outputFromStart = false
-        case .lock: c.start = 100
-        case .vibration: c.strength = 50; c.block = 10; c.start = 100; c.frequency = 90
+        case .race: c.start = 0; c.level = 30; c.outputFromStart = false            // light damping over the whole travel, linear output
+        case .recoil: c.start = 0; c.level = 1; c.strength = 50; c.frequency = 15; c.outputFromStart = true
+        case .sniper: c.start = 50; c.level = 30; c.strength = 1; c.outputFromStart = true
+        case .lock: c.start = 40                                                    // menu level 1; levels 2/3 = 80/120
+        case .vibration: c.block = 10; c.strength = 50; c.start = 1; c.frequency = 90
         }
         return c
     }
+    /// The three "Trig Lock" levels of the pad's menu.
+    static let lockLevels = [40, 80, 120]
     var isDefault: Bool { self == ForceAdapt.defaults(for: mode) }
     static func label(_ m: Mode) -> String { labels.first { $0.0 == m }?.1 ?? "Normal" }
     var isNormal: Bool { mode == .normal }
@@ -91,7 +92,7 @@ struct ForceAdapt: Codable, Hashable {
         case .race: return [1, b(start, max: 192), b(level, min: 1), (outputFromStart && start > 0) ? 1 : 0]   // SS4 zeroes match at start 0
         case .recoil: return [2, b(start, max: 192), b(level, min: 1), b(strength, min: 1), b(frequency, min: 1), outputFromStart ? 1 : 0]
         case .sniper: return [3, b(start, max: 192), b(level, min: 1), b(strength, min: 1), 0, outputFromStart ? 1 : 0]
-        case .lock: return [4, b(start, min: 20, max: 200), 255, 1]
+        case .lock: return [4, b(start, min: 20, max: 200), 250, 1]                 // pad's presets store 250; SS4 sends 255
         case .vibration: return [5, b(block, min: 1), b(strength, max: 200), b(start, min: 1, max: 200), b(frequency, min: 1)]
         }
     }
@@ -100,7 +101,10 @@ struct ForceAdapt: Codable, Hashable {
     /// params, mixed border, 10 params), following SS4's `SaveTriggerAdapterConfig` + `ParseTriggerConfigToArray`.
     func adapterBlock(previous: [UInt8]) -> [UInt8] {
         var p = [UInt8](repeating: 0xFF, count: 20)
-        if previous.count >= 20 { p[2] = previous[2]; p[3] = previous[3]; for i in 4..<10 { p[i] = previous[i] } }
+        // Bind block (grip-sync parameters) as the firmware fills it for its own presets; keep what the
+        // profile already has when it is set.
+        let firmwareBind: [UInt8] = [10, 50, 100, 1, 255, 70, 0, 255]
+        for i in 2..<10 { p[i] = (previous.count >= 20 && previous[i] != 0xFF) ? previous[i] : firmwareBind[i - 2] }
         p[0] = UInt8(mode.rawValue); p[1] = mode == .vibration ? 2 : 0
         var params: [UInt8]
         switch mode {
@@ -108,7 +112,7 @@ struct ForceAdapt: Codable, Hashable {
         case .race: params = [b(start, max: 192), b(level, min: 1), 0, 0, outputFromStart ? 1 : 0]
         case .recoil: params = [b(start, max: 192), b(level, min: 1), b(strength, min: 1), b(frequency, min: 1), outputFromStart ? 1 : 0]
         case .sniper: params = [b(start, max: 192), b(level, min: 1), b(strength, min: 1), 0, outputFromStart ? 1 : 0]
-        case .lock: params = [b(start, min: 20, max: 200), 255, 1, 0, 0]
+        case .lock: params = [b(start, min: 20, max: 200), 250, 1, 0, 0]
         case .vibration:
             params = [b(start, min: 1, max: 200), b(frequency, min: 1), 1, 90, 0]
             p[2] = b(block, min: 1); p[3] = b(strength, max: 200)
@@ -164,7 +168,12 @@ struct ForceAdaptEditor: View {
                 slider("Breakthrough resistance", "Force required to push through once the trigger reaches the breakthrough start position.", $cfg.strength, 1...255)
                 toggle("Output data starting from the breakthrough start position", "The trigger reports a full press once it reaches the breakthrough — the shot fires at the wall.", $cfg.outputFromStart)
             case .lock:
-                slider("Lock position", "The trigger gets hard to push past this point, like a shorter trigger.", $cfg.start, 20...200)
+                Field("Level") {
+                    PillSegmented(selection: Binding(get: { ForceAdapt.lockLevels.firstIndex(of: cfg.start) ?? -1 }, set: { i in if i >= 0 { cfg.start = ForceAdapt.lockLevels[i] } }),
+                                  options: [(0, "1"), (1, "2"), (2, "3")])
+                        .padding(2).background(SS.n700, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                }
+                slider("Lock position", "The trigger gets hard to push past this point, like a shorter trigger. Levels 1–3 are the pad's own menu presets.", $cfg.start, 20...200)
             case .vibration:
                 Text("The trigger vibrates together with the grip motors (game rumble).").font(.system(size: 12)).foregroundStyle(SS.n400)
                 slider("Intensity coefficient", "Vibration intensity of the trigger.", $cfg.strength, 0...200)
@@ -173,7 +182,8 @@ struct ForceAdaptEditor: View {
                 slider("Frequency", nil, $cfg.frequency, 1...255)
             }
             if !cfg.isNormal {
-                GhostButton(title: "Restore defaults", icon: "arrow.counterclockwise", enabled: !cfg.isDefault) { cfg = .defaults(for: cfg.mode) }
+                GhostButton(title: "Controller preset", icon: "arrow.counterclockwise", enabled: !cfg.isDefault) { cfg = .defaults(for: cfg.mode) }
+                    .help("The values the Apex 4 itself uses for this mode in its screen menu")
             }
         }
         .frame(width: width)
