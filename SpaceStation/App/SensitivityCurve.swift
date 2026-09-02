@@ -17,10 +17,13 @@ struct SensitivityCurve: View {
     var live: Double? = nil      // current deflection 0…1, nil = no controller
     var onEdit: () -> Void = {}
 
-    // SS4 geometry
-    private let size: CGFloat = 280
-    private let x0: CGFloat = 14, x1: CGFloat = 274
-    private let y0: CGFloat = 266, y1: CGFloat = 6      // y0 = bottom (input 0), y1 = top (output 100)
+    // SS4 geometry (280 × 280, plot x 14…274 / y 6…266), scaled to `size`
+    var size: CGFloat = 280
+    private var k: CGFloat { size / 280 }
+    private var x0: CGFloat { 14 * k }
+    private var x1: CGFloat { size - 6 * k }
+    private var y0: CGFloat { size - 14 * k }           // bottom (input 0)
+    private var y1: CGFloat { 6 * k }                   // top (output 100)
     @State private var dragging: Int? = nil             // 1 or 2 while a handle is held
     @State private var dragPos: CGPoint = .zero
 
@@ -66,9 +69,9 @@ struct SensitivityCurve: View {
                     let gx = x0 + (x1 - x0) * f, gy = y0 - (y0 - y1) * f
                     ctx.stroke(Path { $0.move(to: CGPoint(x: gx, y: y1)); $0.addLine(to: CGPoint(x: gx, y: y0)) }, with: .color(SS.n500), lineWidth: 0.8)
                     ctx.stroke(Path { $0.move(to: CGPoint(x: x0, y: gy)); $0.addLine(to: CGPoint(x: x1, y: gy)) }, with: .color(SS.n500), lineWidth: 0.8)
-                    let label = Text("\(i * 10)").font(.system(size: 7)).foregroundStyle(SS.n400)
-                    ctx.draw(label, at: CGPoint(x: x0 - 7, y: gy), anchor: .center)
-                    if i > 0 { ctx.draw(label, at: CGPoint(x: gx, y: y0 + 8), anchor: .center) }
+                    let label = Text("\(i * 10)").font(.system(size: 7 * k)).foregroundStyle(SS.n400)
+                    ctx.draw(label, at: CGPoint(x: x0 - 7 * k, y: gy), anchor: .center)
+                    if i > 0 { ctx.draw(label, at: CGPoint(x: gx, y: y0 + 8 * k), anchor: .center) }
                 }
                 ctx.stroke(Path { $0.move(to: CGPoint(x: x0, y: y1)); $0.addLine(to: CGPoint(x: x0, y: y0)); $0.addLine(to: CGPoint(x: x1, y: y0)) }, with: .color(SS.n400), lineWidth: 0.8)
                 // dead zone / edge bands
@@ -93,7 +96,7 @@ struct SensitivityCurve: View {
                 let vx = Int(((q.x - x0) / (x1 - x0) * 100).rounded()), vy = Int(((y0 - q.y) / (y0 - y1) * 100).rounded())
                 Text("x: \(vx)\ny: \(vy)").font(.system(size: 10).monospacedDigit()).foregroundStyle(.white)
                     .padding(4).background(Color(hex: 0x232323), in: RoundedRectangle(cornerRadius: 4))
-                    .offset(x: q.x > 200 ? q.x - 52 : q.x + 12, y: q.y > 200 ? q.y - 44 : q.y + 12)
+                    .offset(x: q.x > size * 0.72 ? q.x - 52 : q.x + 12, y: q.y > size * 0.72 ? q.y - 44 : q.y + 12)
             }
         }
         .frame(width: size, height: size)
