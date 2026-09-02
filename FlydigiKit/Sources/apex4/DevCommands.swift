@@ -7,7 +7,7 @@ import FlydigiTransport
 
 struct Dev: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Developer experiments (protocol re-tests).", shouldDisplay: false,
-                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, DualOpen.self, DInputSlots.self, DInputCursor.self, DInputApply.self, HWStatus.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self, InfoWatch.self, VibTest.self])
+                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, DualOpen.self, DInputSlots.self, DInputCursor.self, DInputApply.self, HWStatus.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self, InfoWatch.self, VibTest.self, RumbleTest.self])
 
     /// XInput (captured) version of hid-diff: optionally sends Space Station's "enable raw data"
     /// (`A5 50`) first, then prints changing bytes for N seconds. Needs root (USB capture).
@@ -467,6 +467,31 @@ extension Dev {
             try s.motorTest(left: 0, right: 0)
             for side in [DeviceSession.TriggerSide.left, .right] { try s.setForceTriggerRaw([0], side: side); Thread.sleep(forTimeInterval: 0.1) }
             print("back to normal")
+        }
+    }
+
+    /// Two ways to rumble the grip, 3 s each with a pause: Flydigi's test command (`A5 12 L R`) and the Xbox
+    /// 360 rumble output packet games use (`00 08 00 L R 00 00 00`). Tells which one the trigger's
+    /// "sync with grip" mode follows. Optionally sets our live vibration mode first.
+    struct RumbleTest: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "rumble-test")
+        @Flag var setMode = false
+        @Flag var receiver = false
+        @Flag var skipFlydigi = false
+        @Option var seconds: Double = 3
+        func run() throws {
+            let s = try DeviceSession.open(preferring: .xinput); defer { s.close() }
+            if setMode { for side in [DeviceSession.TriggerSide.left, .right] { try s.setForceTriggerRaw([5, 10, 50, 1, 90], side: side); Thread.sleep(forTimeInterval: 0.1) }; print("live vibration mode set") }
+            if !skipFlydigi {
+                print("1) A5 12 rumble for \(seconds) s"); try s.motorTest(left: 255, right: 255); Thread.sleep(forTimeInterval: seconds); try s.motorTest(left: 0, right: 0)
+                Thread.sleep(forTimeInterval: 2)
+            }
+            // Wired pad: 8-byte X360 rumble. Through the receiver the wireless-receiver format is expected.
+            let on: [UInt8] = receiver ? [0x00, 0x01, 0x0F, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00] : [0x00, 0x08, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x00]
+            let off: [UInt8] = receiver ? [0x00, 0x01, 0x0F, 0xC0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00] : [0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]
+            print("2) Xbox 360 rumble packet (\(receiver ? "receiver" : "wired") format) for \(seconds) s")
+            do { try s.link.write(on); Thread.sleep(forTimeInterval: seconds); try s.link.write(off) } catch { print("   write failed: \(error)") }
+            print("done")
         }
     }
 
