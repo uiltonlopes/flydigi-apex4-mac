@@ -7,7 +7,7 @@ import FlydigiTransport
 
 struct Dev: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Developer experiments (protocol re-tests).", shouldDisplay: false,
-                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, DualOpen.self, DInputSlots.self, DInputCursor.self, DInputApply.self, HWStatus.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self, InfoWatch.self])
+                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, DualOpen.self, DInputSlots.self, DInputCursor.self, DInputApply.self, HWStatus.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self, InfoWatch.self, VibTest.self])
 
     /// XInput (captured) version of hid-diff: optionally sends Space Station's "enable raw data"
     /// (`A5 50`) first, then prints changing bytes for N seconds. Needs root (USB capture).
@@ -450,6 +450,23 @@ extension Dev {
                 }
                 Thread.sleep(forTimeInterval: 1.0)
             }
+        }
+    }
+
+    /// Puts both triggers in Vibration (grip-sync) mode with the pad's own preset, rumbles the grip for 3 s,
+    /// then returns them to Normal — to check the trigger follows the grip.
+    struct VibTest: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "vib-test")
+        @Option var seconds: Double = 3
+        func run() throws {
+            let s = try DeviceSession.open(preferring: .xinput); defer { s.close() }
+            for side in [DeviceSession.TriggerSide.left, .right] { try s.setForceTriggerRaw([5, 10, 50, 1, 90], side: side); Thread.sleep(forTimeInterval: 0.1) }
+            print("vibration mode set — rumbling for \(seconds) s")
+            try s.motorTest(left: 255, right: 255)
+            Thread.sleep(forTimeInterval: seconds)
+            try s.motorTest(left: 0, right: 0)
+            for side in [DeviceSession.TriggerSide.left, .right] { try s.setForceTriggerRaw([0], side: side); Thread.sleep(forTimeInterval: 0.1) }
+            print("back to normal")
         }
     }
 

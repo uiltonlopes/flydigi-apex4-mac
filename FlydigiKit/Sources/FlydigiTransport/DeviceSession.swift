@@ -321,6 +321,10 @@ public final class DeviceSession: @unchecked Sendable {
     public func setForceTriggerRaw(_ params: [UInt8], side: TriggerSide, apply: Bool = true) throws {
         guard channel == .xinput else { throw TransportError.protocolError("XInput only") }
         if params.first == 5, params.count >= 5 {
+            // `A5 30 08` only carries the grip-sync parameters; the trigger stays in whatever mode it was.
+            // Put it in mode 5 first with the plain set command (SS4 reaches mode 5 by writing the profile).
+            try link.write(XInput.command(XInput.Cmd.module, args: [0x06, apply ? 1 : 0, side.rawValue, 5, params[3], 1, params[2], params[4], 1]))
+            Thread.sleep(forTimeInterval: 0.05)
             try link.write(XInput.command(XInput.Cmd.module, args: [0x08, side.rawValue, 2, params[1], params[2], params[3], params[4], 1, 90]))
         } else {
             try link.write(XInput.command(XInput.Cmd.module, args: [0x06, apply ? 1 : 0, side.rawValue] + params))
