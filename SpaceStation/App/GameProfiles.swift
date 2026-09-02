@@ -65,7 +65,7 @@ final class GameProfileStore {
         if let d = try? Data(contentsOf: Self.file), let r = try? JSONDecoder().decode([GameRule].self, from: d) { rules = r }
         let nc = NSWorkspace.shared.notificationCenter
         observers.append(nc.addObserver(forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { [weak self] n in
-            let app = n.userInfo?[NSWorkspace.ApplicationUserInfoKey] as? NSRunningApplication
+            let app = n.userInfo?[NSWorkspace.applicationUserInfoKey] as? NSRunningApplication
             Task { @MainActor in self?.frontmostChanged(app) }
         })
         observers.append(nc.addObserver(forName: NSWorkspace.didTerminateApplicationNotification, object: nil, queue: .main) { [weak self] _ in
