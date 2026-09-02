@@ -50,6 +50,21 @@ public struct GamepadConfig: Sendable, Hashable {
         public var curve: Curve
         public var deadZone: UInt8      // "center", 0…127 scale
         public var p1x: UInt8, p1y: UInt8, p2x: UInt8, p2y: UInt8   // custom curve control points (0…127)
+
+        /// Space Station's preset curves for the Apex 4 (renderer: Default = device point (15, 23), Instant =
+        /// (64, 96), Delay = (64, 32), P2 always (127, 127); picking one clears centre and edge). Custom keeps
+        /// the current points.
+        public mutating func applyCurvePreset(_ c: Curve) {
+            curve = c
+            guard c != .custom else { return }
+            deadZone = 0; end = 127; p2x = 127; p2y = 127
+            switch c {
+            case .default: p1x = 15; p1y = 23
+            case .quick: p1x = 64; p1y = 96
+            case .slow: p1x = 64; p1y = 32
+            case .custom: break
+            }
+        }
         public var end: UInt8           // outer dead zone, 0…127
     }
 

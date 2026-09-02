@@ -52,34 +52,6 @@ struct TriggerGauge: View {
 }
 
 /// Two-point response curve editor (x = physical position, y = output), 0…127 both axes.
-struct CurveEditor: View {
-    @Binding var p1: (UInt8, UInt8)
-    @Binding var p2: (UInt8, UInt8)
-    var body: some View {
-        GeometryReader { g in
-            let s = g.size
-            ZStack {
-                Path { p in
-                    p.move(to: CGPoint(x: 0, y: s.height)); p.addLine(to: pt(p1, s)); p.addLine(to: pt(p2, s)); p.addLine(to: CGPoint(x: s.width, y: 0))
-                }.stroke(SS.brand500, lineWidth: 2)
-                Path { p in p.move(to: CGPoint(x: 0, y: s.height)); p.addLine(to: CGPoint(x: s.width, y: 0)) }.stroke(SS.n500, style: StrokeStyle(lineWidth: 1, dash: [4]))
-                handle(pt(p1, s)) { p1 = clamp($0, s) }
-                handle(pt(p2, s)) { p2 = clamp($0, s) }
-            }
-            .background(SS.n700, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
-        }
-        .frame(height: 160)
-        .accessibilityLabel("Sensitivity curve; two draggable points")
-    }
-    private func pt(_ p: (UInt8, UInt8), _ s: CGSize) -> CGPoint { CGPoint(x: CGFloat(p.0) / 127 * s.width, y: s.height - CGFloat(p.1) / 127 * s.height) }
-    private func clamp(_ p: CGPoint, _ s: CGSize) -> (UInt8, UInt8) {
-        (UInt8(Swift.max(0, Swift.min(127, p.x / s.width * 127))), UInt8(Swift.max(0, Swift.min(127, (s.height - p.y) / s.height * 127))))
-    }
-    private func handle(_ at: CGPoint, _ move: @escaping (CGPoint) -> Void) -> some View {
-        Circle().fill(.white).frame(width: 14, height: 14).overlay(Circle().strokeBorder(SS.brand500, lineWidth: 2)).position(at)
-            .gesture(DragGesture(minimumDistance: 0).onChanged { move($0.location) })
-    }
-}
 
 /// ForceAdapt (adaptive trigger resistance) — "Trigger mode" in SS4. Live preview goes straight to the
 /// pad; "Keep in profile" stores type + parameters in the profile blob (layout per SS4, partly inferred).

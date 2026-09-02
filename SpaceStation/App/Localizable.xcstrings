@@ -701,12 +701,22 @@
         }
       }
     },
+    "Curve cannot be adjusted in current mode — X: stick position, Y: output": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A curva não pode ser ajustada neste modo — X: posição do analógico, Y: saída"
+          }
+        }
+      }
+    },
     "Custom": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Personalizada"
+            "value": "Personalizado"
           }
         }
       }
@@ -817,6 +827,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Padrão"
+          }
+        }
+      }
+    },
+    "Delay": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atraso"
           }
         }
       }
@@ -937,6 +957,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Baixar e verificar (simulação)"
+          }
+        }
+      }
+    },
+    "Drag nodes to adjust curve": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Arraste os pontos para ajustar a curva"
           }
         }
       }
@@ -1567,6 +1597,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Instalado e registrado no launchd."
+          }
+        }
+      }
+    },
+    "Instant": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instantâneo"
           }
         }
       }

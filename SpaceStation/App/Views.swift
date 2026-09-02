@@ -801,23 +801,26 @@ struct JoystickTab: View {
                 VStack(alignment: .leading, spacing: 20) {
                     Field("Mapping to") { DarkSelect(selection: .constant(0), options: [(0, "Joystick")], disabled: true) }
                     Field("Sensitivity curve") {
-                        DarkSelect(selection: Binding(get: { stick.curve }, set: { v in set { $0.curve = v } }),
-                                   options: [(.default, "Default"), (.quick, "Quick"), (.slow, "Slow"), (.custom, "Custom")])
+                        // SS4's tabs: picking a preset also clears the dead zone and edge; touching anything makes it Custom.
+                        PillSegmented(selection: Binding(get: { stick.curve }, set: { c in set { $0.applyCurvePreset(c) } }),
+                                      options: [(.default, "Default"), (.quick, "Instant"), (.slow, "Delay"), (.custom, "Custom")])
+                            .padding(2).background(SS.n700, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
-                    if stick.curve == .custom {
-                        Field("Custom curve (drag the points)") {
-                            CurveEditor(p1: Binding(get: { (stick.p1x, stick.p1y) }, set: { v in set { $0.p1x = v.0; $0.p1y = v.1 } }),
-                                        p2: Binding(get: { (stick.p2x, stick.p2y) }, set: { v in set { $0.p2x = v.0; $0.p2y = v.1 } }))
-                        }
-                    }
+                    SensitivityCurve(p1: Binding(get: { (stick.p1x, stick.p1y) }, set: { v in set { $0.p1x = v.0; $0.p1y = v.1 } }),
+                                     p2: Binding(get: { (stick.p2x, stick.p2y) }, set: { v in set { $0.p2x = v.0; $0.p2y = v.1 } }),
+                                     deadZone: stick.deadZone, edge: stick.end, editable: stick.curve == .custom,
+                                     live: live.connected ? Double(min(1, hypot(liveStick.x, liveStick.y))) : nil,
+                                     onEdit: { set { $0.curve = .custom } })
+                    Text(stick.curve == .custom ? "Drag nodes to adjust curve" : "Curve cannot be adjusted in current mode — X: stick position, Y: output")
+                        .font(.system(size: 11)).foregroundStyle(SS.n400)
                 }
                 .frame(width: 300)
                 VStack(alignment: .leading, spacing: 20) {
                     Field("Center dead zone") {
-                        StepSlider(value: Binding(get: { Double(stick.deadZone) }, set: { v in set { $0.deadZone = UInt8(v) } }), range: 0...60, format: { "\(Int($0 / 127 * 100)) %" })
+                        StepSlider(value: Binding(get: { Double(stick.deadZone) }, set: { v in set { $0.deadZone = UInt8(v); $0.curve = .custom } }), range: 0...60, format: { "\(Int($0 / 127 * 100)) %" })
                     }
                     Field("Edge (active range)") {
-                        StepSlider(value: Binding(get: { Double(stick.end) }, set: { v in set { $0.end = UInt8(v) } }), range: 80...127, format: { "\(Int($0 / 127 * 100)) %" })
+                        StepSlider(value: Binding(get: { Double(stick.end) }, set: { v in set { $0.end = UInt8(v); $0.curve = .custom } }), range: 80...127, format: { "\(Int($0 / 127 * 100)) %" })
                     }
                 }
                 .frame(width: 300)
