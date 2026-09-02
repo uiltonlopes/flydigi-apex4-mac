@@ -129,6 +129,8 @@ public final class USBLink: Link, @unchecked Sendable {
     }
 
     /// Releases the interface and asks macOS to re-enumerate the device so Apple's driver comes back.
+    public func discardPending() { lock.lock(); inbox.removeAll(); lock.unlock() }
+
     public func close() { close(reattach: true) }
 
     /// Releases without `USBDeviceReEnumerate(0)`: the controller is about to re-enumerate itself.

@@ -24,12 +24,14 @@ public protocol Link: AnyObject, Sendable {
     /// Waits up to `timeout` for a report satisfying `match`; returns its result.
     func waitForReport<T>(timeout: TimeInterval, _ match: @Sendable @escaping ([UInt8]) -> T?) throws -> T
     func close()
+    /// Drop reports received so far (before issuing a new request).
+    func discardPending()
     /// Close without resetting/re-enumerating the device (use right after a mode-switch command,
     /// which makes the controller re-enumerate on its own — a reset would abort the switch).
     func closeWithoutReset()
 }
 
-public extension Link { func closeWithoutReset() { close() } }
+public extension Link { func closeWithoutReset() { close() }; func discardPending() {} }
 
 public final class HIDLink: Link, @unchecked Sendable {
     public let channel: Channel = .dinput
@@ -97,6 +99,8 @@ public final class HIDLink: Link, @unchecked Sendable {
             _ = arrived.wait(timeout: .now() + remaining)
         }
     }
+
+    public func discardPending() { lock.lock(); inbox.removeAll(); lock.unlock() }
 
     public func close() {
         guard !closed else { return }

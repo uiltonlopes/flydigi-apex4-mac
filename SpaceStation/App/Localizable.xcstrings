@@ -721,6 +721,16 @@
         }
       }
     },
+    "Firmware %@ available": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Firmware %@ disponível"
+          }
+        }
+      }
+    },
     "Firmware %@ · %@": {
       "localizations": {
         "pt-BR": {
@@ -2357,6 +2367,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Toque (pressionar + soltar)"
+          }
+        }
+      }
+    },
+    "The controller did not answer in time. Press refresh to try again.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O controle não respondeu a tempo. Clique em atualizar para tentar de novo."
           }
         }
       }

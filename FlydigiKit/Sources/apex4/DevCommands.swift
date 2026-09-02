@@ -7,7 +7,7 @@ import FlydigiTransport
 
 struct Dev: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Developer experiments (protocol re-tests).", shouldDisplay: false,
-                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self])
+                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, DualOpen.self, DInputSlots.self, DInputCursor.self, DInputApply.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self])
 
     /// XInput (captured) version of hid-diff: optionally sends Space Station's "enable raw data"
     /// (`A5 50`) first, then prints changing bytes for N seconds. Needs root (USB capture).
@@ -319,6 +319,80 @@ struct Dev: ParsableCommand {
             _ = target
             let cfg2 = try s.readBlob(.config), led2 = try s.readBlob(.led)
             print("config unchanged: \(cfg2 == cfg), led unchanged: \(led2 == led)")
+        }
+    }
+}
+
+extension Dev {
+    /// Opens the DInput vendor interface twice in one process (like the app: raw-input monitor + a
+    /// command session) and checks whether the second link still gets replies while the first streams.
+    struct DualOpen: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "dual-open")
+        func run() throws {
+            let monitor = try HIDLink(); defer { monitor.close() }
+            let stop = DispatchSemaphore(value: 0)
+            let counter = NSLock(); var seen = 0
+            let t = Thread {
+                while stop.wait(timeout: .now()) != .success {
+                    if let _: [UInt8] = try? monitor.waitForReport(timeout: 0.2, { (r: [UInt8]) -> [UInt8]? in r }) { counter.lock(); seen += 1; counter.unlock() }
+                }
+            }
+            t.start()
+            Thread.sleep(forTimeInterval: 0.5)
+            let session = try DeviceSession(link: try HIDLink()); defer { session.close() }
+            do { let i = try session.deviceInfo(); print("second link: deviceInfo OK → fw \(i.firmware)") } catch { print("second link: deviceInfo FAILED → \(error)") }
+            do { let b = try session.readBlob(.led); print("second link: LED blob OK (\(b.count) B)") } catch { print("second link: LED blob FAILED → \(error)") }
+            do { session.configId = 0; let c = try session.readBlob(.config); print("second link: config slot 0 OK title \"\(GamepadConfig(bytes: c)?.title ?? "?")\"") } catch { print("second link: config FAILED → \(error)") }
+            stop.signal()
+            counter.lock(); print("monitor link saw \(seen) reports meanwhile"); counter.unlock()
+        }
+    }
+}
+
+extension Dev {
+    /// DInput: what does `05 EB <id>` return for ids 0…4, and what does the random-id reply say is the config id?
+    struct DInputSlots: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "dinput-slots")
+        func run() throws {
+            let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }
+            for id in 0...4 {
+                s.configId = UInt8(id)
+                let title = (try? s.readBlob(.config)).flatMap { GamepadConfig(bytes: $0) }.map { "\"\($0.title)\" dataVersion \($0.dataVersion)" } ?? "no reply"
+                try? s.link.write(DInput.readRandomId(configId: UInt8(id)))
+                let rid: (id: UInt16, configId: UInt8)? = try? s.link.waitForReport(timeout: 1) { DInputReply.randomId($0) }
+                print("read id \(id): \(title) · randomId reply: \(rid.map { "id \($0.id) configId \($0.configId)" } ?? "none")")
+            }
+        }
+    }
+}
+
+extension Dev {
+    /// DInput cursor test: read ids in a sequence and see whether id 0 follows the last id read.
+    struct DInputCursor: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "dinput-cursor")
+        func run() throws {
+            let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }
+            for id in [0, 1, 0, 2, 0, 3, 0] {
+                s.configId = UInt8(id)
+                let t = (try? s.readBlob(.config)).flatMap { GamepadConfig(bytes: $0) }.map { "\"\($0.title)\" v\($0.dataVersion)" } ?? "no reply"
+                print("read \(id) → \(t)")
+            }
+        }
+    }
+}
+
+
+extension Dev {
+    /// DInput: does `05 50 05 <slot>` activate a slot, and does id 0 then read that slot?
+    struct DInputApply: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "dinput-apply")
+        @Argument var slot: UInt8
+        func run() throws {
+            let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }
+            try s.applyConfig(slot: slot)
+            s.configId = 0
+            let t = (try? s.readBlob(.config)).flatMap { GamepadConfig(bytes: $0) }.map { "\"\($0.title)\" v\($0.dataVersion)" } ?? "no reply"
+            print("apply \(slot) → read 0 → \(t)")
         }
     }
 }

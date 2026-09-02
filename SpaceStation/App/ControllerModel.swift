@@ -230,10 +230,17 @@ final class ControllerModel {
         busy = true; lastError = nil
         suppressNotificationsUntil = .distantFuture
         defer { busy = false; suppressNotificationsUntil = Date().addingTimeInterval(4) }   // release + re-match takes ~1–2 s
-        let result: Result<T, Error> = await Task.detached { Result { try work() } }.value
+        var result: Result<T, Error> = await Task.detached { Result { try work() } }.value
+        if case .failure(let e) = result, "\(e)".contains("no matching report") || "\(e)".contains("timeout") {
+            // Right after a mode switch or re-enumeration the pad ignores the first request; try once more.
+            try? await Task.sleep(for: .seconds(1.5))
+            result = await Task.detached { Result { try work() } }.value
+        }
         switch result {
         case .success(let v): onSuccess(v)
-        case .failure(let e): lastError = "\(e)"
+        case .failure(let e):
+            let text = "\(e)"
+            lastError = text.contains("no matching report") || text.contains("timeout") ? String(localized: "The controller did not answer in time. Press refresh to try again.") : text
         }
     }
 }

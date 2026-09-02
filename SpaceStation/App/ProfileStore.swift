@@ -13,7 +13,9 @@ final class ProfileStore {
     struct Slot: Identifiable { let index: UInt8; var config: GamepadConfig; var id: UInt8 { index } }
 
     var slots: [Slot] = []
-    var activeSlot: UInt8 = 0                 // what the user chose / the pad reports on first load
+    /// The slot the pad should run. Remembered per controller because `A5 20` reports the last slot *read*
+    /// (a cursor), not the active one — trusting it after reads would silently activate the wrong profile.
+    var activeSlot: UInt8 = 0 { didSet { UserDefaults.standard.set(Int(activeSlot), forKey: "activeSlot") } }
     var draft: GamepadConfig?                 // edited copy of the active slot
     var isDirty: Bool { guard let d = draft, let s = slots.first(where: { $0.index == activeSlot }) else { return false }; return d.bytes != s.config.bytes }
     var lastError: String?
@@ -29,6 +31,7 @@ final class ProfileStore {
         guard controller.connection != .none else { slots = []; draft = nil; return }
         busy = true; defer { busy = false }
         let conn = controller.connection
+        let wanted = UInt8(clamping: UserDefaults.standard.integer(forKey: "activeSlot"))
         let result: Result<(UInt8, [(UInt8, [UInt8])]), Error> = await Task.detached {
             Result {
                 switch conn {
@@ -36,15 +39,15 @@ final class ProfileStore {
                     let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }
                     var out: [(UInt8, [UInt8])] = []
                     for i in 0..<4 { s.configId = UInt8(i); out.append((UInt8(i), try s.readBlob(.config))) }
-                    return (0, out)
+                    try? s.applyConfig(slot: wanted)               // reads move the pad's cursor; put the chosen profile back
+                    return (wanted, out)
                 case .xinput:
                     guard #available(macOS 14.0, *) else { throw HelperError.notInstalled }
                     let h = HelperClient.shared
-                    let current = try h.currentSlot()
                     var out: [(UInt8, [UInt8])] = []
                     for i in 0..<4 { out.append((UInt8(i), try h.readConfig(slot: UInt8(i)))) }
-                    try h.applySlot(current)                       // undo the cursor move
-                    return (current, out)
+                    try h.applySlot(wanted)                        // reads move the pad's cursor; put the chosen profile back
+                    return (wanted, out)
                 case .none: throw HelperError.transport("no controller")
                 }
             }

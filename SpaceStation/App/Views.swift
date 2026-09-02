@@ -151,15 +151,16 @@ struct Sidebar: View {
                 Button { route = .settings } label: {
                     HStack(spacing: 5) {
                         Image(systemName: "arrow.up.circle.fill").font(.system(size: 10, weight: .semibold))
-                        Text("Firmware update available: \(u.version)").font(.system(size: 10, weight: .semibold)).lineLimit(1)
+                        Text("Firmware \(u.version) available").font(.system(size: 10, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.8)
                     }
-                    .foregroundStyle(.white).padding(.horizontal, 8).frame(height: 20)
+                    .foregroundStyle(.white).padding(.horizontal, 10).frame(height: 20)
                     .background(SS.brand500, in: Capsule())
+                    .shadow(color: .black.opacity(0.4), radius: 4, y: 1)
                 }
                 .buttonStyle(.plain).offset(y: 10)
             }
         }
-        .padding(.bottom, model.firmwareUpdate != nil ? 10 : 0)
+        .padding(.bottom, model.firmwareUpdate != nil ? 12 : 0)
     }
 
     private var infoList: some View {

@@ -48,6 +48,7 @@ public final class DeviceSession: @unchecked Sendable {
     public func readBlob(_ kind: BlobKind) throws -> [UInt8] {
         let length = kind == .config ? 790 : LEDConfig.length
         var asm = BlobAssembler(expectedLength: length)
+        link.discardPending()                                   // parcels left over from a previous read must not leak in
         switch channel {
         case .xinput: try link.write(XInput.readBlob(kind: kind, configId: configId))
         case .dinput: try link.write(DInput.readBlob(kind: kind, configId: configId))
@@ -64,6 +65,7 @@ public final class DeviceSession: @unchecked Sendable {
             }
             asm.add(index: parcel.index, data: parcel.data)
         }
+        Thread.sleep(forTimeInterval: 0.03); link.discardPending()   // trailing duplicates the pad sometimes appends
         return asm.assemble()!
     }
 
@@ -217,7 +219,12 @@ public final class DeviceSession: @unchecked Sendable {
 
     public func currentConfigId() throws -> UInt8 { try xinputQuery(XInput.Cmd.currentConfigId, [])[16] }
     /// Activates an on-board config slot (0…3).
-    public func applyConfig(slot: UInt8) throws { _ = try xinputQuery(XInput.Cmd.subFunc, [0x05, slot], sub: 0x05) }
+    public func applyConfig(slot: UInt8) throws {
+        switch channel {
+        case .xinput: _ = try xinputQuery(XInput.Cmd.subFunc, [0x05, slot], sub: 0x05)
+        case .dinput: try link.write(DInput.command(DInput.Cmd.subFunc, 0x05, slot)); Thread.sleep(forTimeInterval: 0.2)   // same sub-function over the HID channel
+        }
+    }
     public func moduleVersions() throws -> ModuleVersions { ModuleVersions(raw: Array(try xinputQuery(XInput.Cmd.module, [0x01], sub: 0x01)[17..<27])) }
     public func screenStatusBar() throws -> Bool { try xinputQuery(XInput.Cmd.module, [0x02], sub: 0x02)[17] == 0 }
     public func setScreenStatusBar(_ on: Bool) throws { try link.write(XInput.command(XInput.Cmd.module, 0x03, on ? 0 : 1)) }
