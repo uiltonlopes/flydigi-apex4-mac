@@ -70,6 +70,7 @@ struct GameRulesSection: View {
         if let b = r.bundleId { parts.append(b) } else if let p = r.processName { parts.append("“\(p)”") }
         if let s = r.slot { let t = profiles.slots.first { Int($0.index) == s }?.config.title ?? ""; parts.append("slot \(s + 1)\(t.isEmpty ? "" : " · \(t)")") }
         if !r.left.isNormal || !r.right.isNormal { parts.append("triggers " + ForceAdaptPreset.modes.first { $0.0 == r.left.mode }!.1 + " / " + ForceAdaptPreset.modes.first { $0.0 == r.right.mode }!.1) }
+        if r.led != nil { parts.append("lighting") }
         return parts.joined(separator: " · ")
     }
 }
@@ -125,6 +126,9 @@ struct GameRuleEditor: View {
             }
             if model.connection == .dinput { Text("Trigger presets apply in XInput mode only.").font(.system(size: 12)).foregroundStyle(SS.yellow) }
 
+            SwitchRow(title: "Change lighting while this game is in front", isOn: Binding(get: { rule.led != nil }, set: { on in rule.led = on ? (rule.led ?? LEDPreset()) : nil })).frame(width: 420)
+            if rule.led != nil { ledEditor }
+
             HStack {
                 GhostButton(title: "Cancel") { dismiss() }
                 Spacer()
@@ -133,6 +137,37 @@ struct GameRuleEditor: View {
         }
         .padding(24).frame(width: 720)
         .background(SS.n800).preferredColorScheme(.dark)
+    }
+
+    private var ledEditor: some View {
+        let led = Binding(get: { rule.led ?? LEDPreset() }, set: { rule.led = $0 })
+        let modes: [(UInt8, String)] = [(LEDConfig.Mode.off.rawValue, "Off"), (LEDConfig.Mode.steady.rawValue, "Steady"), (LEDConfig.Mode.breathing.rawValue, "Breathing"), (LEDConfig.Mode.gradient.rawValue, "Gradient"), (LEDConfig.Mode.streamlined.rawValue, "Streamlined"), (LEDConfig.Mode.feedback.rawValue, "Feedback")]
+        return HStack(alignment: .top, spacing: 24) {
+            VStack(alignment: .leading, spacing: 10) {
+                Field("Light mode") { DarkSelect(selection: led.mode, options: modes, width: 320) }
+                Field("Color") {
+                    HStack(spacing: 8) {
+                        ForEach(led.wrappedValue.colours.indices, id: \.self) { i in
+                            ColorPicker("", selection: Binding(get: { colour(led.wrappedValue.colours[i]) }, set: { c in var l = led.wrappedValue; l.colours[i] = pct(c); led.wrappedValue = l } ), supportsOpacity: false).labelsHidden().frame(width: 28, height: 28)
+                        }
+                        Button { var l = led.wrappedValue; if l.colours.count < LEDConfig.unitsPerGroup { l.colours.append([100, 100, 100]) }; led.wrappedValue = l } label: { Image(systemName: "plus.circle").font(.system(size: 18)).foregroundStyle(SS.n300) }.buttonStyle(.plain)
+                        Button { var l = led.wrappedValue; if l.colours.count > 1 { l.colours.removeLast() }; led.wrappedValue = l } label: { Image(systemName: "minus.circle").font(.system(size: 18)).foregroundStyle(SS.n300) }.buttonStyle(.plain)
+                    }
+                }
+            }
+            .frame(width: 320)
+            VStack(alignment: .leading, spacing: 10) {
+                Field("Brightness") { StepSlider(value: Binding(get: { Double(led.wrappedValue.brightness) }, set: { var l = led.wrappedValue; l.brightness = UInt8($0); led.wrappedValue = l }), range: 0...100) }
+                Field("Cycle time") { StepSlider(value: Binding(get: { Double(led.wrappedValue.speed) }, set: { var l = led.wrappedValue; l.speed = UInt8($0); led.wrappedValue = l }), range: 0...100) }
+            }
+            .frame(width: 320)
+        }
+    }
+    private func colour(_ c: [UInt8]) -> Color { Color(red: Double(c[0]) / 100, green: Double(c[1]) / 100, blue: Double(c[2]) / 100) }
+    private func pct(_ c: Color) -> [UInt8] {
+        let n = NSColor(c).usingColorSpace(.sRGB) ?? .white
+        func p(_ v: CGFloat) -> UInt8 { UInt8(max(0, min(100, (v * 100).rounded()))) }
+        return [p(n.redComponent), p(n.greenComponent), p(n.blueComponent)]
     }
 
     private var slotOptions: [(Int, String)] {

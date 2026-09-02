@@ -341,6 +341,16 @@
         }
       }
     },
+    "Change lighting while this game is in front": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mudar a iluminação enquanto este jogo estiver na frente"
+          }
+        }
+      }
+    },
     "Check for updates": {
       "localizations": {
         "pt-BR": {
