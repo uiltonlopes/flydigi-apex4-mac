@@ -26,6 +26,14 @@ final class ProfileStore {
 
     private unowned let controller: ControllerModel
     init(controller: ControllerModel) { self.controller = controller }
+    /// Same wording as ControllerModel for timeouts, so the banner never shows raw transport text.
+    private func report(_ e: Error) {
+        let text = "\(e)"
+        lastError = text.contains("no matching report") || text.contains("timeout")
+            ? String(localized: "The controller did not answer in time. Turn it on or reconnect the cable — it shows up by itself.")
+            : text
+    }
+
 
     // MARK: Load
 
@@ -168,13 +176,4 @@ final class ProfileStore {
 
 extension Array {
     subscript(safe i: Int) -> Element? { indices.contains(i) ? self[i] : nil }
-
-    /// Same wording as ControllerModel for timeouts, so the banner never shows raw transport text.
-    private func report(_ e: Error) {
-        let text = "\(e)"
-        lastError = text.contains("no matching report") || text.contains("timeout")
-            ? String(localized: "The controller did not answer in time. Turn it on or reconnect the cable — it shows up by itself.")
-            : text
-    }
-
 }
