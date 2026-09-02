@@ -116,8 +116,7 @@ struct GameRuleEditor: View {
             }
 
             Field("Profile slot") {
-                DarkSelect(selection: Binding(get: { rule.slot ?? -1 }, set: { rule.slot = $0 < 0 ? nil : $0 }),
-                           options: [(-1, "Keep current")] + (0..<4).map { i in (i, "Slot \(i + 1)" + ((profiles.slots.first { Int($0.index) == i }?.config.title).map { $0.isEmpty ? "" : " · \($0)" } ?? "")) }, width: 320)
+                DarkSelect(selection: Binding(get: { rule.slot ?? -1 }, set: { rule.slot = $0 < 0 ? nil : $0 }), options: slotOptions, width: 320)
             }
 
             HStack(alignment: .top, spacing: 24) {
@@ -134,6 +133,15 @@ struct GameRuleEditor: View {
         }
         .padding(24).frame(width: 720)
         .background(SS.n800).preferredColorScheme(.dark)
+    }
+
+    private var slotOptions: [(Int, String)] {
+        var out: [(Int, String)] = [(-1, "Keep current")]
+        for i in 0..<4 {
+            let title = profiles.slots.first { Int($0.index) == i }?.config.title ?? ""
+            out.append((i, title.isEmpty ? "Slot \(i + 1)" : "Slot \(i + 1) · \(title)"))
+        }
+        return out
     }
 
     private func presetEditor(_ title: String, _ p: Binding<ForceAdaptPreset>) -> some View {
