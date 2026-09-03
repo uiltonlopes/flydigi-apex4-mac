@@ -2,6 +2,11 @@
 
 ## One-time setup (Developer ID + notarization)
 
+> Status 2026-09-02: the Developer Program is active and the **Developer ID Application** certificate exists
+> (`Developer ID Application: UILTON LOPES DE MOURA (A2NY8257QF)`). The paid team kept the same Team ID as
+> the old Personal Team, so `DEVELOPMENT_TEAM` did not change. Remaining: store the notary credentials
+> (step 2) — after that `scripts/release.sh` notarizes and staples.
+
 1. **Certificate.** Xcode → Settings → Accounts → select the team → *Manage Certificates…* → **+** →
    **Developer ID Application**. (Or create it at developer.apple.com → Certificates.) Check with
    `security find-identity -v -p codesigning`; you should see `Developer ID Application: <name> (<TEAMID>)`.
