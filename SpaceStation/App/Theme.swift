@@ -176,7 +176,7 @@ struct StepSlider: View {
             Text(format(value)).font(.system(size: 12).monospacedDigit()).foregroundStyle(.white)
         }
         .padding(.horizontal, 12).padding(.top, 8).padding(.bottom, 6)
-        .background(SS.n700, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+        .background(SS.n600, in: RoundedRectangle(cornerRadius: 8, style: .continuous))   // readable on n700 cards and n800 pages alike
     }
     private func stepButton(_ name: String, _ action: @escaping () -> Void) -> some View {
         Button(action: action) { Image(systemName: name).font(.system(size: 11, weight: .semibold)).foregroundStyle(SS.n300).frame(width: 20, height: 20) }

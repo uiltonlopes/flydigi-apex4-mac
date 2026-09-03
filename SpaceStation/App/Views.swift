@@ -246,8 +246,8 @@ struct HomeView: View {
                                 }
                             }
                         }
-                        .padding(.horizontal, 36).padding(.vertical, 32)
-                        .frame(maxWidth: 1100)
+                        .padding(.horizontal, tab == .common ? 20 : 36).padding(.vertical, tab == .common ? 20 : 32)
+                        .frame(maxWidth: tab == .common ? .infinity : 1100)
                         .frame(maxWidth: .infinity)
                     }
                 }
@@ -452,13 +452,13 @@ struct HeroHotspots: View {
 
 struct CommonTab: View {
     var body: some View {
-        HStack(alignment: .top, spacing: 0) {
-            LightPanel().frame(maxWidth: .infinity)
-            VDivider().padding(.horizontal, 24)
-            VibrationPanel().frame(maxWidth: .infinity)
-            VDivider().padding(.horizontal, 24)
-            ControllerPanel().frame(maxWidth: .infinity)
+        // Three equal cards filling the tab, like the Macros page.
+        HStack(alignment: .top, spacing: 20) {
+            DarkCard { LightPanel() }.frame(maxWidth: .infinity, alignment: .topLeading)
+            DarkCard { VibrationPanel() }.frame(maxWidth: .infinity, alignment: .topLeading)
+            DarkCard { ControllerPanel() }.frame(maxWidth: .infinity, alignment: .topLeading)
         }
+        .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 }
 
