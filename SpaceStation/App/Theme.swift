@@ -80,11 +80,13 @@ struct PageHeader: View {
 
 struct DarkCard<Content: View>: View {
     var padding: CGFloat = 20
+    /// `true` lets the card stretch to the row height so siblings in an HStack end up the same size.
+    var fillHeight = false
     @ViewBuilder var content: Content
     var body: some View {
         content
             .padding(padding)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity, maxHeight: fillHeight ? .infinity : nil, alignment: .topLeading)
             .background(SS.n700, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
     }
 }

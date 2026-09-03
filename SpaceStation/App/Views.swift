@@ -454,10 +454,11 @@ struct CommonTab: View {
     var body: some View {
         // Three equal cards filling the tab, like the Macros page.
         HStack(alignment: .top, spacing: 20) {
-            DarkCard { LightPanel() }.frame(maxWidth: .infinity, alignment: .topLeading)
-            DarkCard { VibrationPanel() }.frame(maxWidth: .infinity, alignment: .topLeading)
-            DarkCard { ControllerPanel() }.frame(maxWidth: .infinity, alignment: .topLeading)
+            DarkCard(fillHeight: true) { LightPanel() }
+            DarkCard(fillHeight: true) { VibrationPanel() }
+            DarkCard(fillHeight: true) { ControllerPanel() }
         }
+        .fixedSize(horizontal: false, vertical: true)   // row height = tallest card; the others stretch to match
         .frame(maxWidth: .infinity, alignment: .topLeading)
     }
 }
@@ -536,18 +537,26 @@ struct LightPanel: View {
     }
 
     private var colourRow: some View {
-        HStack(spacing: 8) {
-            ForEach(colours.indices, id: \.self) { i in
-                ColorPicker("", selection: $colours[i], supportsOpacity: false).labelsHidden().frame(width: 28, height: 28)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                ForEach(colours.indices, id: \.self) { i in
+                    ColourChip(colour: $colours[i], removable: colours.count > minColours && !colourDisabled) { colours.remove(at: i) }
+                }
+                if colours.count < maxColours {
+                    Button { colours.append(.white) } label: {
+                        Image(systemName: "plus").font(.system(size: 13, weight: .semibold)).foregroundStyle(SS.n300)
+                            .frame(width: 36, height: 36)
+                            .background(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(SS.n500, style: StrokeStyle(lineWidth: 1, dash: [4, 3])))
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain).disabled(colourDisabled).help("Add a color")
+                }
             }
-            Button { if colours.count < maxColours { colours.append(.white) } } label: { Image(systemName: "plus.circle").font(.system(size: 18)).foregroundStyle(SS.n300) }
-                .buttonStyle(.plain).disabled(colourDisabled || colours.count >= maxColours)
-            Button { if colours.count > minColours { colours.removeLast() } } label: { Image(systemName: "minus.circle").font(.system(size: 18)).foregroundStyle(SS.n300) }
-                .buttonStyle(.plain).disabled(colourDisabled || colours.count <= minColours)
-            Text(mode == .steady ? "1 color" : (mode == .gradient ? "2 to 5 colors" : "up to 5 colors")).font(.system(size: 11)).foregroundStyle(SS.n400)
+            Text(mode == .steady ? "One color. Click the swatch to change it." : (mode == .gradient ? "2 to 5 colors. Click a swatch to change it; hover to remove." : "Up to 5 colors. Click a swatch to change it; hover to remove."))
+                .font(.system(size: 11)).foregroundStyle(SS.n400)
         }
-        .frame(height: 36)
         .opacity(colourDisabled ? 0.4 : 1)
+        .disabled(colourDisabled)
     }
 
     private func load() {
@@ -1007,4 +1016,32 @@ struct Battery: CustomStringConvertible {
         switch percent { case 0..<13: return "battery.0percent"; case 13..<38: return "battery.25percent"; case 38..<63: return "battery.50percent"; case 63..<88: return "battery.75percent"; default: return "battery.100percent" }
     }
     var description: String { charging ? "Charging" : (known ? "\(percent) %" : "—") }
+}
+
+
+/// One lighting colour: a flat swatch that opens the system colour panel, with a small remove badge on hover.
+struct ColourChip: View {
+    @Binding var colour: Color
+    var removable: Bool
+    var onRemove: () -> Void
+    @State private var hover = false
+    var body: some View {
+        ZStack(alignment: .topTrailing) {
+            RoundedRectangle(cornerRadius: 8, style: .continuous).fill(colour)
+                .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(.white.opacity(0.18), lineWidth: 1))
+                .frame(width: 36, height: 36)
+                // The system well is hard to restyle, so it sits on top almost invisible and just takes the click.
+                .overlay(ColorPicker("", selection: $colour, supportsOpacity: false).labelsHidden().opacity(0.02))
+            if removable && hover {
+                Button(action: onRemove) {
+                    Image(systemName: "xmark").font(.system(size: 8, weight: .bold)).foregroundStyle(.white)
+                        .frame(width: 16, height: 16).background(SS.n900, in: Circle())
+                        .overlay(Circle().strokeBorder(SS.n500, lineWidth: 1))
+                }
+                .buttonStyle(.plain).offset(x: 6, y: -6).help("Remove this color")
+            }
+        }
+        .onHover { hover = $0 }
+        .animation(.easeOut(duration: 0.12), value: hover)
+    }
 }
