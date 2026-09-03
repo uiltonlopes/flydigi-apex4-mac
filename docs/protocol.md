@@ -179,6 +179,8 @@ offset  size  field
 Factory default observed: mode 3 (gradient), speed 50, brightness 50, 4 groups each with units
 `(0,0,100) (100,0,0) (0,100,0)` → blue→red→green cycle.
 
+**The LED blob is per profile slot**: `A5 26 <cfgId>` / `A5 2A … <cfgId>` (DInput `05 E5 <cfgId>` / `05 E6 <cfgId> …`). Reading or writing with cfgId 0 while slot 2 is active makes the colours look shared between profiles (bug fixed 2026-09-02). The pad's own "Config Switch" menu is the same four slots.
+
 ## 6. Screen (LCD) — image format and upload
 
 There is no command to read the current animation back; the app remembers what it sent (`ScreenStore`) and

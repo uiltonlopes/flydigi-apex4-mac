@@ -15,8 +15,8 @@ public enum HelperConstants {
 public enum HelperRequest: Codable, Sendable {
     case ping
     case deviceInfo
-    case readLED
-    case applyLED(bytes: [UInt8], persist: Bool)
+    case readLED(slot: UInt8)                                 // lighting is stored per profile slot (A5 26/2A <cfgId>)
+    case applyLED(slot: UInt8, bytes: [UInt8], persist: Bool)
     case readBlob(kind: BlobKindCode)
     case writeBlob(kind: BlobKindCode, bytes: [UInt8], persist: Bool)
     /// Screen upload is chunked per frame so the app can show progress and the message stays small.

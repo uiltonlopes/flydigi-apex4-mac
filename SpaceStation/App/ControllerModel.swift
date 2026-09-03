@@ -103,15 +103,18 @@ final class ControllerModel {
         refreshHelperStatus()
         guard connection != .none else { info = nil; led = nil; firmwareUpdate = nil; firmwareCheckedFor = nil; lastError = nil; padPoll?.cancel(); padPoll = nil; return }
         let conn = connection, installed = helperInstalled
+        let slot = UInt8(clamping: UserDefaults.standard.integer(forKey: "activeSlot"))   // lighting lives in the profile slot
         await run {
             switch conn {
             case .dinput:
                 let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }
-                let i = try s.deviceInfo(), l = try s.readLED()
+                let i = try s.deviceInfo()
+                s.configId = slot
+                let l = try s.readLED()
                 return (HelperDeviceInfo(i), l)
             case .xinput:
                 guard installed, #available(macOS 14.0, *) else { throw HelperError.notInstalled }
-                return (try HelperClient.shared.deviceInfo(), try HelperClient.shared.readLED())
+                return (try HelperClient.shared.deviceInfo(), try HelperClient.shared.readLED(slot: slot))
             case .none:
                 throw HelperError.transport("no controller")
             }
@@ -227,20 +230,34 @@ final class ControllerModel {
 
     // MARK: Actions
 
+    /// Reads the lighting stored in a profile slot (each slot has its own 500-byte LED blob).
+    func loadLED(slot: UInt8) async {
+        let conn = connection, installed = helperInstalled
+        guard conn != .none else { return }
+        await run({
+            switch conn {
+            case .dinput: let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }; s.configId = slot; return try s.readLED()
+            case .xinput: guard installed, #available(macOS 14.0, *) else { throw HelperError.notInstalled }; return try HelperClient.shared.readLED(slot: slot)
+            case .none: throw HelperError.transport("no controller")
+            }
+        }, onSuccess: { (l: LEDConfig) in self.led = l })
+    }
+
     func apply(led newLED: LEDConfig, persist: Bool = true) async {
-        let conn = connection
+        let conn = connection, slot = profiles.shownSlot
         await run {
             // Write, then read back and compare; a lost parcel would otherwise leave a half-applied effect.
             for attempt in 0..<2 {
                 switch conn {
                 case .dinput:
                     let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }
+                    s.configId = slot
                     try s.applyLED(newLED, persist: persist)
                     if try s.readLED().bytes == newLED.bytes { return newLED }
                 case .xinput:
                     guard #available(macOS 14.0, *) else { throw HelperError.notInstalled }
-                    try HelperClient.shared.applyLED(newLED, persist: persist)
-                    if try HelperClient.shared.readLED().bytes == newLED.bytes { return newLED }
+                    try HelperClient.shared.applyLED(newLED, slot: slot, persist: persist)
+                    if try HelperClient.shared.readLED(slot: slot).bytes == newLED.bytes { return newLED }
                 case .none: throw HelperError.transport("no controller")
                 }
                 if attempt == 1 { throw HelperError.transport(String(localized: "The lighting did not apply completely. Try again.")) }

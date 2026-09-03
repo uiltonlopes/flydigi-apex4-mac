@@ -63,12 +63,12 @@ final class HelperService: @unchecked Sendable {
             case .deviceInfo:
                 let info = try withSession { try $0.deviceInfo() }
                 releaseIfIdle(); return .deviceInfo(HelperDeviceInfo(info))
-            case .readLED:
-                let led = try withSession { try $0.readBlob(.led) }
+            case let .readLED(slot):
+                let led = try withSession { s in s.configId = slot; defer { s.configId = 0 }; return try s.readBlob(.led) }
                 releaseIfIdle(); return .blob(led)
-            case let .applyLED(bytes, persist):
+            case let .applyLED(slot, bytes, persist):
                 guard let led = LEDConfig(bytes: bytes) else { return .error("invalid LED blob") }
-                try withSession { try $0.applyLED(led, persist: persist) }
+                try withSession { s in s.configId = slot; defer { s.configId = 0 }; try s.applyLED(led, persist: persist) }
                 releaseIfIdle(); return .ok
             case let .readBlob(kind):
                 let b = try withSession { try $0.readBlob(kind == .config ? .config : .led) }

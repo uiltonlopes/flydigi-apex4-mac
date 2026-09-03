@@ -80,12 +80,16 @@ final class ProfileStore {
         guard !isDirty || slot == activeSlot else { return }   // UI asks before discarding
         activeSlot = slot
         draft = slots.first { $0.index == slot }?.config
-        Task { await activateOnPad(slot) }
+        Task { await activateOnPad(slot); await controller.loadLED(slot: slot) }
     }
 
     func revert() { draft = slots.first { $0.index == activeSlot }?.config }
     /// Factory values in the draft (apply to write them to the pad).
-    func resetToFactory() { draft?.resetToFactory() }
+    func resetToFactory() {
+        draft?.resetToFactory()
+        // Lighting is part of the profile in Space Station too: back to the factory effect for this slot.
+        if var l = controller.led { l.setFactoryDefault(); l.brightness = 50; l.speed = 15; Task { await controller.apply(led: l) } }
+    }
 
     /// Reflect a slot the game-profile watcher activated without changing the remembered choice.
     func showTemporary(slot: UInt8) {

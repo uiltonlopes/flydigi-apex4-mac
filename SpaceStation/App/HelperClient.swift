@@ -71,12 +71,12 @@ final class HelperClient: @unchecked Sendable {
         return i
     }
 
-    func readLED() throws -> LEDConfig {
-        guard case let .blob(b) = try send(.readLED), let led = LEDConfig(bytes: b) else { throw HelperError.transport("bad LED blob") }
+    func readLED(slot: UInt8) throws -> LEDConfig {
+        guard case let .blob(b) = try send(.readLED(slot: slot)), let led = LEDConfig(bytes: b) else { throw HelperError.transport("bad LED blob") }
         return led
     }
 
-    func applyLED(_ led: LEDConfig, persist: Bool = true) throws { _ = try send(.applyLED(bytes: led.bytes, persist: persist)) }
+    func applyLED(_ led: LEDConfig, slot: UInt8, persist: Bool = true) throws { _ = try send(.applyLED(slot: slot, bytes: led.bytes, persist: persist)) }
 
     /// Uploads frames one by one; `progress` gets (framesDone, total).
     func uploadScreen(frames: [[UInt8]], period: UInt8 = 2, progress: @escaping @Sendable (Int, Int) -> Void) throws {
