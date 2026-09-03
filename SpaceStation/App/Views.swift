@@ -274,6 +274,7 @@ struct HeroView: View {
     @State private var renaming = false
     @State private var confirmReset = false
     @State private var showLibrary = false
+    @State private var confirmNS = false
 
     var body: some View {
         GeometryReader { g in
@@ -326,6 +327,7 @@ struct HeroView: View {
             Divider()
             Button("Rename profile…") { renaming = true }.disabled(profiles.draft == nil)
             Button("Restore default configuration…") { confirmReset = true }.disabled(profiles.draft == nil)
+            Button("Apply to NS mode…") { confirmNS = true }.disabled(profiles.draft == nil || model.connection == .none)
             Divider()
             Button("Saved profiles…") { showLibrary = true }
         } label: {
@@ -343,6 +345,9 @@ struct HeroView: View {
                 Button("Restore defaults", role: .destructive) { profiles.resetToFactory() }
             } message: { Text("Mappings, sticks, triggers, gyro, vibration and macros go back to their defaults in the editor. Nothing is written to the controller until you Apply.") }
             .sheet(isPresented: $showLibrary) { ProfileLibrarySheet().environment(profiles).environment(library) }
+            .confirmationDialog("Copy this profile to the controller's Nintendo Switch mode?", isPresented: $confirmNS) {
+                Button("Apply to NS mode") { Task { await profiles.applyToSwitchMode() } }
+            } message: { Text("The Apex 4 keeps a separate set of four profiles for Switch mode (slots 5–8 inside the controller). This copies the profile in the editor, and its lighting, into the matching Switch slot — keyboard/mouse mappings are dropped, as Space Station does.") }
         .disabled(profiles.slots.isEmpty)
         .popover(isPresented: $renaming, arrowEdge: .bottom) {
             VStack(alignment: .leading, spacing: 8) {

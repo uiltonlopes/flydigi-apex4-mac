@@ -301,6 +301,26 @@
         }
       }
     },
+    "Apply to NS mode": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplicar ao modo NS"
+          }
+        }
+      }
+    },
+    "Apply to NS mode…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Aplicar ao modo NS…"
+          }
+        }
+      }
+    },
     "Applying…": {
       "localizations": {
         "pt-BR": {
@@ -817,6 +837,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Preset do controle"
+          }
+        }
+      }
+    },
+    "Copy this profile to the controller's Nintendo Switch mode?": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar este perfil para o modo Nintendo Switch do controle?"
           }
         }
       }
@@ -4297,6 +4327,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Testar vibração"
+          }
+        }
+      }
+    },
+    "The Apex 4 keeps a separate set of four profiles for Switch mode (slots 5–8 inside the controller). This copies the profile in the editor, and its lighting, into the matching Switch slot — keyboard/mouse mappings are dropped, as Space Station does.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O Apex 4 guarda um segundo conjunto de quatro perfis para o modo Switch (slots 5 a 8 dentro do controle). Isto copia o perfil do editor, com a iluminação, para o slot Switch correspondente — mapeamentos de teclado/mouse são removidos, como o Space Station faz."
           }
         }
       }

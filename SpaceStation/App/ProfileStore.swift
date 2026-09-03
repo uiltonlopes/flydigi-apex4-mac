@@ -80,6 +80,38 @@ final class ProfileStore {
         }
     }
 
+    // MARK: Nintendo Switch mode
+
+    /// "Apply to NS mode": the pad keeps a second set of four profiles (config ids 4…7) used in Switch mode.
+    /// Like Space Station's old-protocol path, this copies the current draft — keyboard/mouse mappings
+    /// stripped back to identity — plus its lighting into slot `activeSlot + 4`. No separate save command.
+    func applyToSwitchMode() async {
+        guard var cfg = draft else { return }
+        busy = true; defer { busy = false }
+        for (k, m) in cfg.keys { if case .keyboardMouse = m { cfg.keys[k] = .identity } }
+        let conn = controller.connection, target = activeSlot + 4, bytes = cfg.bytes, led = controller.led
+        let result: Result<Void, Error> = await Task.detached {
+            Result {
+                switch conn {
+                case .dinput:
+                    let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }
+                    s.configId = target
+                    try s.writeBlob(bytes, kind: .config)
+                    if let led { try s.writeBlob(led.bytes, kind: .led) }
+                case .xinput:
+                    guard #available(macOS 14.0, *) else { throw HelperError.notInstalled }
+                    try HelperClient.shared.writeConfig(slot: target, bytes: bytes, persist: false)
+                    if let led { try HelperClient.shared.applyLED(led, slot: target, persist: false) }
+                case .none: throw HelperError.transport("no controller")
+                }
+            }
+        }.value
+        switch result {
+        case .success: lastError = nil
+        case .failure(let e): report(e)
+        }
+    }
+
     // MARK: Follow the pad's own slot switch (SELECT + A/B/X/Y, screen menu)
 
     private var padSlotWatch: Task<Void, Never>?

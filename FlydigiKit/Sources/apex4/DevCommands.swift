@@ -194,10 +194,11 @@ struct Dev: ParsableCommand {
     /// Reads and decodes every on-board config slot (0…3) without changing anything.
     struct Slots: ParsableCommand {
         static let configuration = CommandConfiguration(commandName: "slots")
+        @Option var count: Int = 4          // 8 = also the Switch-mode mirror slots 4…7
         func run() throws {
             let s = try DeviceSession.open(preferring: .xinput); defer { s.close() }
             let active = try? s.currentConfigId()
-            for slot in 0..<4 {
+            for slot in 0..<count {
                 s.configId = UInt8(slot)
                 guard let cfg = GamepadConfig(bytes: try s.readBlob(.config)) else { print("slot \(slot): bad blob"); continue }
                 let remapped = cfg.keys.filter { if case .identity = $0.value { return false } else { return true } }.count

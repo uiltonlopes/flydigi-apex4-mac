@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Profiles: "Apply to NS mode…" copies the profile (and lighting) into the controller's Switch-mode slot (config ids 4–7), like Space Station.
 - Fix: the macro editor crashed when a step or the macro itself was removed while its rows were still on screen (stale index in a binding).
 - Fix: on connect the app read the lighting before asking which slot the pad was on, which moved the pad's "current slot" cursor and then re-applied the wrong profile; a config read right after an LED read of the same slot also returned the previous profile (wrong name under profile 1). Both orderings fixed.
 - Profiles: the slot selected on the pad itself (fast swap, screen menu) is respected — the app asks the pad which slot is current before reading them, on connect and on Refresh, and in DInput keeps following switches made on the pad.

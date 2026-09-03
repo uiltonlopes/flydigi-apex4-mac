@@ -179,6 +179,11 @@ offset  size  field
 Factory default observed: mode 3 (gradient), speed 50, brightness 50, 4 groups each with units
 `(0,0,100) (100,0,0) (0,100,0)` → blue→red→green cycle.
 
+**Config ids 4…7 are the Nintendo Switch-mode profiles** (verified 2026-09-02, `apex4 dev slots --count 8`:
+factory titles 常规/枪战/格斗/赛车游戏配置 with 6 remapped keys — the NS button layout). Space Station's
+"Apply to NS mode" on slot *n* (old protocol = the Apex 4) is just `write config` + `write LED` to id *n+4*
+with keyboard/mouse mappings reverted to identity, and no save command.
+
 **The LED blob is per profile slot**: `A5 26 <cfgId>` / `A5 2A … <cfgId>` (DInput `05 E5 <cfgId>` / `05 E6 <cfgId> …`). Reading or writing with cfgId 0 while slot 2 is active makes the colours look shared between profiles (bug fixed 2026-09-02). The pad's own "Config Switch" menu is the same four slots.
 
 ## 6. Screen (LCD) — image format and upload
