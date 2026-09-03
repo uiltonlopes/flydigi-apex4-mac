@@ -6,13 +6,9 @@ over USB-C or through its charging base (2.4 GHz receiver).
 ## 1. Install the app
 
 1. Open the `.dmg` and drag **Space Station.app** to Applications.
-2. First launch: macOS will say the app is from an unidentified developer, because pre-release builds
-   are signed with a personal certificate and not notarized. **Right-click Space Station.app → Open → Open**
-   (once). If the button is missing, run in Terminal:
-
-   ```bash
-   xattr -dr com.apple.quarantine /Applications/Space Station.app
-   ```
+2. First launch: builds from the Releases page are signed with a Developer ID and notarized by Apple, so
+   the app opens like any other. (Only if you built it yourself with a personal certificate will macOS ask
+   you to right-click → Open once, or to run `xattr -dr com.apple.quarantine "/Applications/Space Station.app"`.)
 
 ## 2. Install the helper (needed in XInput mode)
 

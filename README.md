@@ -52,8 +52,8 @@ light up too. Languages: English and Português (Brasil).
 ## Install (pre-release)
 
 Download `SpaceStation-<version>.dmg` from the [Releases](https://github.com/uiltonlopes/flydigi-space-station-mac/releases)
-page, drag the app to Applications and follow [`docs/install.md`](docs/install.md) (first launch needs
-right-click → Open until builds are notarized; XInput mode needs the bundled helper).
+page, drag the app to Applications and follow [`docs/install.md`](docs/install.md) (release builds are
+Developer ID signed and notarized; XInput mode needs the bundled helper).
 Changes per version: [`CHANGELOG.md`](CHANGELOG.md).
 
 ## Why
