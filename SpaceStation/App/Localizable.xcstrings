@@ -151,6 +151,16 @@
         }
       }
     },
+    "Action": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ação"
+          }
+        }
+      }
+    },
     "Activate key": {
       "localizations": {
         "pt-BR": {
@@ -437,6 +447,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Botões"
+          }
+        }
+      }
+    },
+    "Button / direction": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Botão / direção"
           }
         }
       }
@@ -961,6 +981,16 @@
         }
       }
     },
+    "Delay before": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atraso antes"
+          }
+        }
+      }
+    },
     "Delete": {
       "localizations": {
         "pt-BR": {
@@ -1036,7 +1066,7 @@
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Desativado"
+            "value": "Desativada"
           }
         }
       }
@@ -2621,6 +2651,16 @@
         }
       }
     },
+    "No steps yet. Record from the pad or add steps by hand.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nenhum passo ainda. Grave pelo controle ou adicione passos à mão."
+          }
+        }
+      }
+    },
     "None": {
       "localizations": {
         "pt-BR": {
@@ -2907,6 +2947,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Escolha uma à esquerda ou use + para vincular uma nova macro a um botão. Os passos rodam no próprio controle, então funcionam em qualquer jogo e plataforma."
+          }
+        }
+      }
+    },
+    "Pick one on the left or press “New macro” to bind a sequence to a button. Steps play on the pad itself, so they work in any game and on any platform.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Escolha uma à esquerda ou clique em “Nova macro” para vincular uma sequência a um botão. Os passos rodam no próprio controle, então funcionam em qualquer jogo e plataforma."
           }
         }
       }
@@ -4431,12 +4481,32 @@
         }
       }
     },
+    "Timeline": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Linha do tempo"
+          }
+        }
+      }
+    },
+    "Times are the delay since the previous step (%lld ms resolution). Recording captures presses from the pad itself — enable the live readout if nothing arrives.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Os tempos são o atraso desde o passo anterior (resolução de %lld ms). A gravação captura os toques no próprio controle — ative a leitura ao vivo se nada chegar."
+          }
+        }
+      }
+    },
     "Toggle on / off": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
-            "value": "Alternar liga/desliga"
+            "value": "Liga / desliga"
           }
         }
       }
@@ -5141,6 +5211,16 @@
         }
       }
     },
+    "disabled": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "desativada"
+          }
+        }
+      }
+    },
     "frames %lld–%lld of %lld": {
       "localizations": {
         "pt-BR": {
@@ -5167,6 +5247,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "ou casar pelo nome do app contendo"
+          }
+        }
+      }
+    },
+    "plays once": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "toca uma vez"
+          }
+        }
+      }
+    },
+    "repeats while held": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "repete enquanto segura"
+          }
+        }
+      }
+    },
+    "toggles": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "liga/desliga"
           }
         }
       }
