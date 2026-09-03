@@ -511,15 +511,12 @@ struct LightPanel: View {
             if model.led == nil {
                 Text(model.connection == .none ? "Connect the controller to edit its lighting." : "Reading lighting…").font(.system(size: 13)).foregroundStyle(SS.n300)
             } else {
-                Grid(alignment: .topLeading, horizontalSpacing: 24, verticalSpacing: 20) {
-                    GridRow {
-                        Field("Light mode") { DarkSelect(selection: $mode, options: modes) }
-                        Field("Brightness") { StepSlider(value: $brightness, range: 0...100) }
-                    }
-                    GridRow {
-                        Field("Color") { colourRow }
-                        Field("Cycle time") { StepSlider(value: $speed, range: 1...100) }.opacity(cycleDisabled ? 0.4 : 1).disabled(cycleDisabled)
-                    }
+                // Stacked so every control spans the column: select, colours, then the two sliders side by side.
+                Field("Light mode") { DarkSelect(selection: $mode, options: modes) }
+                Field("Color") { colourRow }
+                HStack(alignment: .top, spacing: 20) {
+                    Field("Brightness") { StepSlider(value: $brightness, range: 0...100) }.frame(maxWidth: .infinity)
+                    Field("Cycle time") { StepSlider(value: $speed, range: 1...100) }.opacity(cycleDisabled ? 0.4 : 1).disabled(cycleDisabled).frame(maxWidth: .infinity)
                 }
                 if model.busy { HStack(spacing: 6) { ProgressView().controlSize(.mini); Text("Applying…").font(.system(size: 12)).foregroundStyle(SS.n300) } }
             }

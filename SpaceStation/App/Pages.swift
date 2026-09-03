@@ -400,8 +400,9 @@ struct SettingsPage: View {
                         if let i = model.info { Text("Device firmware: \(i.firmware)").font(.system(size: 11)).foregroundStyle(SS.n400) }
                     }
                 }
-                .padding(16).frame(width: 220).frame(maxHeight: .infinity)
-                .background(SS.n700)
+                .padding(16).frame(width: 220)
+                .background(SS.n700, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .padding(.leading, 20).padding(.vertical, 20)
 
                 ScrollViewReader { proxy in
                 ScrollView {
@@ -485,7 +486,7 @@ struct SettingsPage: View {
                             }
                         }
                     }
-                    .padding(.horizontal, 28).padding(.vertical, 20).frame(maxWidth: 720, alignment: .leading)
+                    .padding(.horizontal, 24).padding(.vertical, 20).frame(maxWidth: 760, alignment: .leading)
                     .frame(maxWidth: .infinity)
                 }
                 .onChange(of: scrollTarget) { _, t in if let t { withAnimation { proxy.scrollTo(t, anchor: .top) }; scrollTarget = nil } }
