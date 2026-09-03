@@ -112,7 +112,8 @@ struct MacroEditor: View {
     @Environment(LiveInput.self) private var live
     @State private var recorder = MacroRecorder()
 
-    private var macro: GamepadConfig.Macro { profiles.draft!.macros[index] }
+    // Safe against stale indices: SwiftUI can evaluate bindings for a row after the macro or a step was removed.
+    private var macro: GamepadConfig.Macro { profiles.draft?.macros[safe: index] ?? .init(key: 0xFF, count: 0, enable: .none, actions: []) }
     private func update(_ f: (inout GamepadConfig.Macro) -> Void) { profiles.updateMacro(at: index, f) }
 
     var body: some View {
@@ -134,8 +135,9 @@ struct MacroEditor: View {
                 Section {
                     timeline
                     ForEach(macro.actions.indices, id: \.self) { j in
-                        MacroStepRow(step: Binding(get: { macro.actions[j] }, set: { v in update { $0.actions[j] = v } }), tick: profiles.macroTick) {
-                            update { $0.actions.remove(at: j) }
+                        MacroStepRow(step: Binding(get: { macro.actions[safe: j] ?? .init(durationMs: 0, key: 0, event: .press) },
+                                                   set: { v in update { if $0.actions.indices.contains(j) { $0.actions[j] = v } } }), tick: profiles.macroTick) {
+                            update { if $0.actions.indices.contains(j) { $0.actions.remove(at: j) } }
                         }
                     }
                     .onMove { from, to in update { $0.actions.move(fromOffsets: from, toOffset: to) } }
