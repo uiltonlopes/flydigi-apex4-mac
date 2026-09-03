@@ -454,9 +454,38 @@ struct CommonTab: View {
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
             LightPanel().frame(maxWidth: .infinity)
-            VDivider().padding(.horizontal, 28)
+            VDivider().padding(.horizontal, 24)
             VibrationPanel().frame(maxWidth: .infinity)
+            VDivider().padding(.horizontal, 24)
+            ControllerPanel().frame(maxWidth: .infinity)
         }
+    }
+}
+
+/// Pad-level switches that live in Space Station's settings page; here they sit next to lighting and
+/// vibration so everything about the controller itself is on one tab.
+struct ControllerPanel: View {
+    @Environment(ControllerModel.self) private var model
+    private var mac: String { model.info?.mac ?? "" }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 20) {
+            SectionTitle("Controller", icon: "gamecontroller")
+            Field("Sleep time") {
+                DarkSelect(selection: Binding(get: { Int(model.sleepMinutes ?? 15) }, set: { v in Task { await model.setSleepTime(UInt8(v)) } }),
+                           options: [(1, "1 min"), (5, "5 min"), (15, "15 min"), (60, "1 h"), (180, "3 h"), (0, "Never")], disabled: model.connection == .none || model.busy)
+                Text("Idle time before the controller sleeps; Home wakes it.").font(.system(size: 11)).foregroundStyle(SS.n400)
+            }
+            Field("Fast swap") {
+                SwitchRow(title: "SELECT + A / B / X / Y switches profiles", isOn: Binding(get: { UserDefaults.standard.bool(forKey: "quickSwitch.\(mac)") }, set: { on in Task { await model.setQuickSwitch(on) } }))
+                    .disabled(model.connection == .none || model.busy)
+            }
+            Field("Turbo shortcut") {
+                SwitchRow(title: "Turbo + button auto-fires that button", isOn: Binding(get: { UserDefaults.standard.bool(forKey: "turboSwitch.\(mac)") }, set: { on in Task { await model.setTurboSwitch(on) } }))
+                    .disabled(model.connection == .none || model.busy)
+                Text("Turbo + Turbo clears. The controller does not report these two switches back; shown is the last value set from this Mac.").font(.system(size: 11)).foregroundStyle(SS.n400)
+            }
+        }
+        .task(id: model.connection) { await model.loadSleepTime() }
     }
 }
 

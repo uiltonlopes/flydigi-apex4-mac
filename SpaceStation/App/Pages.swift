@@ -391,7 +391,7 @@ struct SettingsPage: View {
             PageHeader(title: "Settings", back: back)
             HStack(alignment: .top, spacing: 0) {
                 VStack(alignment: .leading, spacing: 4) {
-                    navGroup("Controller Settings", ["Firmware Update", "USB mode", "Controller Sleep Time", "Fast Swap Config", "Turbo Function"])
+                    navGroup("Controller Settings", ["Firmware Update", "USB mode"])
                     navGroup("App Settings", ["Language", "GIPHY", "Open at login", "Privileged helper"])
                     navGroup("About", [])
                     Spacer()
@@ -403,33 +403,17 @@ struct SettingsPage: View {
                 .padding(16).frame(width: 220).frame(maxHeight: .infinity)
                 .background(SS.n700)
 
+                ScrollViewReader { proxy in
                 ScrollView {
                     VStack(alignment: .leading, spacing: 22) {
-                        Text("Controller Settings").font(.system(size: 16, weight: .semibold)).foregroundStyle(.white)
-                            .task(id: model.connection) { await model.loadSleepTime() }
+                        Text("Controller Settings").font(.system(size: 16, weight: .semibold)).foregroundStyle(.white).id("Controller Settings")
                         section("Firmware Update") { firmware }
                         section("USB mode") {
                             Text(model.connection == .none ? "Not connected." : (model.connection == .xinput ? "XInput — what games expect; the screen and trigger previews need it." : "DInput — the app talks to the pad directly, no helper needed."))
                                 .font(.system(size: 13)).foregroundStyle(.white)
                             GhostButton(title: model.connection == .xinput ? "Switch to DInput" : "Switch to XInput", icon: "arrow.left.arrow.right", enabled: model.connection != .none && !model.busy) { Task { await model.switchMode() } }
                         }
-                        section("Controller Sleep Time") {
-                            Text("If the controller is not used for this period of time, it will enter sleep mode and can be awakened by pressing the Home button.").font(.system(size: 12)).foregroundStyle(SS.n300)
-                            DarkSelect(selection: Binding(get: { Int(model.sleepMinutes ?? 15) }, set: { v in Task { await model.setSleepTime(UInt8(v)) } }),
-                                       options: [(1, "1 min"), (5, "5 min"), (15, "15 min"), (60, "1 h"), (180, "3 h"), (0, "Never")], width: 200, disabled: model.connection == .none || model.busy)
-                            if model.connection == .dinput { Text("In DInput mode the current value cannot be read; the choice is sent as is.").font(.system(size: 11)).foregroundStyle(SS.n400) }
-                        }
-                        section("Fast Swap Config") {
-                            SwitchRow(title: "Fast swap", isOn: Binding(get: { UserDefaults.standard.bool(forKey: "quickSwitch.\(model.info?.mac ?? "")") }, set: { on in Task { await model.setQuickSwitch(on) } }))
-                                .frame(maxWidth: 420).disabled(model.connection == .none || model.busy)
-                            Text("Enable Fast Swap, then press SELECT + A / B / X / Y on the controller to switch between profiles 1 / 2 / 3 / 4. The controller does not report this switch back, so the state shown is the last one set from this Mac.").font(.system(size: 12)).foregroundStyle(SS.n300)
-                        }
-                        section("Turbo Function") {
-                            SwitchRow(title: "Turbo shortcut on the controller", isOn: Binding(get: { UserDefaults.standard.bool(forKey: "turboSwitch.\(model.info?.mac ?? "")") }, set: { on in Task { await model.setTurboSwitch(on) } }))
-                                .frame(maxWidth: 420).disabled(model.connection == .none || model.busy)
-                            Text("With it on, hold Turbo + a button to make that button auto-fire, and Turbo + Turbo to clear. Works for A/B/X/Y, LB, LT, RB, RT, the D-pad and the stick clicks. Not reported back by the controller.").font(.system(size: 12)).foregroundStyle(SS.n300)
-                        }
-                        Text("App Settings").font(.system(size: 16, weight: .semibold)).foregroundStyle(.white).padding(.top, 8)
+                        Text("App Settings").font(.system(size: 16, weight: .semibold)).foregroundStyle(.white).padding(.top, 8).id("App Settings")
                         section("Language") {
                             Text("Choose a language").font(.system(size: 13)).foregroundStyle(SS.n300)
                             DarkSelect(selection: $language, options: AppLanguage.allCases.map { ($0, $0.title) }, width: 260)
@@ -470,7 +454,7 @@ struct SettingsPage: View {
                                 GhostButton(title: "Remove helper", enabled: model.helperInstalled, destructive: true) { model.uninstallHelper() }
                             }
                         }
-                        Text("About").font(.system(size: 16, weight: .semibold)).foregroundStyle(.white).padding(.top, 8)
+                        Text("About").font(.system(size: 16, weight: .semibold)).foregroundStyle(.white).padding(.top, 8).id("About")
                         section("Space Station for Mac") {
                             Text("Version \(appVersion) — open-source (MIT), unofficial. Ported to macOS by Uilton Lopes.")
                                 .font(.system(size: 13)).foregroundStyle(.white)
@@ -501,8 +485,10 @@ struct SettingsPage: View {
                             }
                         }
                     }
-                    .padding(.horizontal, 28).padding(.vertical, 20).frame(maxWidth: 680, alignment: .leading)
+                    .padding(.horizontal, 28).padding(.vertical, 20).frame(maxWidth: 720, alignment: .leading)
                     .frame(maxWidth: .infinity)
+                }
+                .onChange(of: scrollTarget) { _, t in if let t { withAnimation { proxy.scrollTo(t, anchor: .top) }; scrollTarget = nil } }
                 }
             }
         }
@@ -561,19 +547,30 @@ struct SettingsPage: View {
         }
     }
 
+    @State private var scrollTarget: String?
     private func navGroup(_ title: String, _ items: [String]) -> some View {
         VStack(alignment: .leading, spacing: 2) {
-            Text(LocalizedStringKey(title)).font(.system(size: 12, weight: .semibold)).foregroundStyle(.white).padding(.vertical, 8)
-            ForEach(items, id: \.self) { Text(LocalizedStringKey($0)).font(.system(size: 12)).foregroundStyle(SS.n300).padding(.vertical, 5) }
+            Button { scrollTarget = title } label: {
+                Text(LocalizedStringKey(title)).font(.system(size: 12, weight: .semibold)).foregroundStyle(.white).padding(.vertical, 8).contentShape(Rectangle())
+            }.buttonStyle(.plain)
+            ForEach(items, id: \.self) { item in
+                Button { scrollTarget = item } label: {
+                    Text(LocalizedStringKey(item)).font(.system(size: 12)).foregroundStyle(SS.n300).padding(.vertical, 5).contentShape(Rectangle())
+                }.buttonStyle(.plain)
+            }
         }
         .padding(.bottom, 8)
     }
 
+    /// One settings block: a dark card with a title, anchored for the left navigation.
     private func section<C: View>(_ title: String, @ViewBuilder content: () -> C) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(LocalizedStringKey(title)).font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
-            content()
+        DarkCard {
+            VStack(alignment: .leading, spacing: 10) {
+                Text(LocalizedStringKey(title)).font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
+                content()
+            }
         }
+        .id(title)
     }
 }
 

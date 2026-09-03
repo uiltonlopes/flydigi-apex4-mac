@@ -1861,6 +1861,16 @@
         }
       }
     },
+    "Idle time before the controller sleeps; Home wakes it.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tempo parado até o controle dormir; o Home acorda."
+          }
+        }
+      }
+    },
     "If the controller is not used for this period of time, it will enter sleep mode and can be awakened by pressing the Home button.": {
       "localizations": {
         "pt-BR": {
@@ -3671,6 +3681,16 @@
         }
       }
     },
+    "SELECT + A / B / X / Y switches profiles": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "SELECT + A / B / X / Y troca de perfil"
+          }
+        }
+      }
+    },
     "Save": {
       "localizations": {
         "pt-BR": {
@@ -3947,6 +3967,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Aparece só neste app (o Space Station também guarda isso localmente)."
+          }
+        }
+      }
+    },
+    "Sleep time": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tempo para dormir"
           }
         }
       }
@@ -4771,12 +4801,42 @@
         }
       }
     },
+    "Turbo + Turbo clears. The controller does not report these two switches back; shown is the last value set from this Mac.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turbo + Turbo limpa. O controle não informa esses dois estados de volta; o que aparece é o último valor enviado deste Mac."
+          }
+        }
+      }
+    },
+    "Turbo + button auto-fires that button": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Turbo + botão faz o botão disparar sozinho"
+          }
+        }
+      }
+    },
     "Turbo Function": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Função Turbo"
+          }
+        }
+      }
+    },
+    "Turbo shortcut": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atalho de Turbo"
           }
         }
       }
