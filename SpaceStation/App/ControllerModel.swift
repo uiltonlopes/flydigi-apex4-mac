@@ -2,6 +2,7 @@
 // operations the views call. Everything blocking runs off the main actor.
 
 import Foundation
+import OSLog
 import Observation
 import IOKit
 import FlydigiKit
@@ -20,6 +21,7 @@ final class ControllerModel {
     var info: HelperDeviceInfo?
     var led: LEDConfig?
     var helperInstalled = false
+    static let log = Logger(subsystem: "com.uiltonlopes.spacestation", category: "controller")
     var busy = false
     var lastError: String?
     var uploadProgress: Double?   // 0…1 while a screen upload runs
@@ -255,6 +257,7 @@ final class ControllerModel {
 
     func apply(led newLED: LEDConfig, persist: Bool = true) async {
         let conn = connection, slot = profiles.shownSlot
+        Self.log.info("LED write → slot \(slot) mode \(newLED.mode.rawValue) speed \(newLED.speed) brightness \(newLED.brightness) persist \(persist)")
         await run {
             // Write, then read back and compare; a lost parcel would otherwise leave a half-applied effect.
             for attempt in 0..<2 {

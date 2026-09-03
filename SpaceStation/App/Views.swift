@@ -525,8 +525,13 @@ struct LightPanel: View {
         mode = led.mode; brightness = Double(led.brightness); speed = Double(led.speed)
         let cs = led.colours(ofGroup: 0)
         if !cs.isEmpty { colours = cs.map { Color(red: Double($0.r) / 100, green: Double($0.g) / 100, blue: Double($0.b) / 100) } }
-        Task { @MainActor in try? await Task.sleep(for: .milliseconds(50)); loaded = true }
+        // The state changes above fire their onChange handlers on the next render pass; keep auto-apply
+        // off until well after that, so loading a slot's lighting can never write it (or stale state) back.
+        loadToken &+= 1
+        let token = loadToken
+        Task { @MainActor in try? await Task.sleep(for: .milliseconds(400)); if token == loadToken { loaded = true } }
     }
+    @State private var loadToken = 0
 
     /// Debounced live apply (the pad saves to flash on every write, so wait for the slider to settle).
     private func schedule() {
@@ -553,6 +558,7 @@ struct LightPanel: View {
         default: led.setCycle(units.isEmpty ? [.init(r: 100, g: 100, b: 100)] : units, mode: mode)
         }
         led.brightness = UInt8(brightness); led.speed = UInt8(speed)
+        guard led.bytes != model.led?.bytes else { return }   // nothing changed: never rewrite what was just read
         loaded = false                                   // model.led will change back → don't re-trigger
         await model.apply(led: led)
         loaded = true
