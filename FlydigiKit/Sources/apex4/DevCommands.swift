@@ -7,7 +7,7 @@ import FlydigiTransport
 
 struct Dev: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Developer experiments (protocol re-tests).", shouldDisplay: false,
-                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, DualOpen.self, DInputSlots.self, DInputCursor.self, DInputApply.self, HWStatus.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self, InfoWatch.self, VibTest.self, RumbleTest.self, RumbleVariants.self])
+                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, DualOpen.self, DInputSlots.self, DInputCursor.self, DInputApply.self, HWStatus.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self, InfoWatch.self, VibTest.self, RumbleTest.self, RumbleVariants.self, SlotProbe.self])
 
     /// XInput (captured) version of hid-diff: optionally sends Space Station's "enable raw data"
     /// (`A5 50`) first, then prints changing bytes for N seconds. Needs root (USB capture).
@@ -519,6 +519,27 @@ extension Dev {
                 Thread.sleep(forTimeInterval: 3)
             }
             print("done")
+        }
+    }
+
+    /// Step-by-step look at slot addressing: does reading the LED blob of slot N change what `A5 21 <id>`
+    /// returns afterwards? Prints the title read at each step.
+    struct SlotProbe: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "slot-probe")
+        @Option var apply: UInt8 = 2
+        func run() throws {
+            let s = try DeviceSession.open(preferring: .xinput); defer { s.close() }
+            func title(_ id: UInt8) -> String { s.configId = id; defer { s.configId = 0 }; return (try? s.readBlob(.config)).flatMap { GamepadConfig(bytes: $0) }.map { "\"\($0.title)\"" } ?? "no reply" }
+            func cur() -> String { (try? s.currentConfigId()).map { "\($0)" } ?? "?" }
+            try s.applyConfig(slot: apply); print("applied \(apply); A5 20 → \(cur())")
+            print("config 0 → \(title(0));  A5 20 → \(cur())")
+            print("config 1 → \(title(1));  A5 20 → \(cur())")
+            s.configId = 0; _ = try? s.readBlob(.led); print("read LED cfg 0;  A5 20 → \(cur())")
+            print("config 0 → \(title(0));  A5 20 → \(cur())")
+            print("config 2 → \(title(2));  A5 20 → \(cur())")
+            s.configId = 2; _ = try? s.readBlob(.led); print("read LED cfg 2;  A5 20 → \(cur())")
+            print("config 0 → \(title(0));  config 1 → \(title(1))")
+            try s.applyConfig(slot: apply); print("re-applied \(apply); A5 20 → \(cur())")
         }
     }
 

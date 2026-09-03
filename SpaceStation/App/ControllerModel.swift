@@ -24,6 +24,8 @@ final class ControllerModel {
     var lastError: String?
     var uploadProgress: Double?   // 0…1 while a screen upload runs
     var firmwareUpdate: FlydigiAPI.FirmwareChip?      // newer main-chip firmware Flydigi offers, nil = up to date / unknown
+    /// Slot the pad reported as current at the last refresh, read before anything moved the cursor (nil = unknown).
+    var padSlot: UInt8?
     /// USB link is up but the pad has not answered yet — the 2.4 GHz receiver with the pad off, typically.
     var awaitingPad: Bool { connection != .none && info == nil }
     /// USB product string of the matched device ("Flydigi VADER3" is the charging dock's receiver).
@@ -103,22 +105,30 @@ final class ControllerModel {
         refreshHelperStatus()
         guard connection != .none else { info = nil; led = nil; firmwareUpdate = nil; firmwareCheckedFor = nil; lastError = nil; padPoll?.cancel(); padPoll = nil; return }
         let conn = connection, installed = helperInstalled
-        let slot = UInt8(clamping: UserDefaults.standard.integer(forKey: "activeSlot"))   // lighting lives in the profile slot
+        let remembered = UInt8(clamping: UserDefaults.standard.integer(forKey: "activeSlot"))
         await run {
+            // Order matters: ask which slot is current *before* any blob read — reads move that cursor
+            // (docs/protocol.md §10) — then read the lighting of that slot.
             switch conn {
             case .dinput:
                 let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }
                 let i = try s.deviceInfo()
-                s.configId = slot
+                let cur = (try? s.currentConfigId()).flatMap { $0 < 4 ? $0 : nil }
+                s.configId = cur ?? remembered
                 let l = try s.readLED()
-                return (HelperDeviceInfo(i), l)
+                return (HelperDeviceInfo(i), l, cur)
             case .xinput:
                 guard installed, #available(macOS 14.0, *) else { throw HelperError.notInstalled }
-                return (try HelperClient.shared.deviceInfo(), try HelperClient.shared.readLED(slot: slot))
+                let i = try HelperClient.shared.deviceInfo()
+                let cur = (try? HelperClient.shared.currentSlot()).flatMap { $0 < 4 ? $0 : nil }
+                return (i, try HelperClient.shared.readLED(slot: cur ?? remembered), cur)
             case .none:
                 throw HelperError.transport("no controller")
             }
-        } onSuccess: { (i: HelperDeviceInfo, l: LEDConfig) in self.info = i; self.led = l }
+        } onSuccess: { (i: HelperDeviceInfo, l: LEDConfig, cur: UInt8?) in
+            self.info = i; self.led = l; self.padSlot = cur
+            if let cur { UserDefaults.standard.set(Int(cur), forKey: "activeSlot") }
+        }
         if let fw = info?.firmware, firmwareCheckedFor != fw { firmwareCheckedFor = fw; Task { await checkFirmware() } }
         if info == nil {
             padWentSilent()

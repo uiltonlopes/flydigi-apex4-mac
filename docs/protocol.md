@@ -277,6 +277,12 @@ press a key ("borrow the pad"), then hands the pad back to the system driver.
   assembler of the *next* blob accepts them — you get a config whose title is half from another slot
   (`"Padra置"`) or, in the worst case, a whole slot mis-attributed (id 0 showing slot 3). Drain the queue
   before every read and again ~30 ms after the last parcel (`Link.discardPending()`).
+- **A config read right after an LED read of the same id returns the previous config.** Probe 2026-09-02
+  (`apex4 dev slot-probe`): apply 2 → read cfg 0 "Padrao" → read cfg 1 "Safari" → read LED cfg 0 → read
+  **cfg 0 → "Safari"** (wrong) → read cfg 2 (right) → read LED cfg 2 → cfg 0 "Padrao" (right again). Slot ids
+  are otherwise absolute in XInput (verified with the pad applied to 0, 1 and 2). Mitigation: query `A5 20`
+  before any blob read on connect, read the LED of that slot, and burn one config read of that slot before
+  enumerating the four profiles.
 - **The cursor is not the active slot.** `A5 20` (XInput "current config id") reports the id of the last
   slot *read*, so reading slots 0…3 and then "re-applying the current slot" activates slot 3. The app now
   remembers which slot the user chose and re-applies it with `A5 50 05 <slot>` (XInput) / `05 50 05 <slot>`

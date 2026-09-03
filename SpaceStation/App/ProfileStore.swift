@@ -42,15 +42,16 @@ final class ProfileStore {
         guard controller.connection != .none else { slots = []; draft = nil; return }
         busy = true; defer { busy = false }
         let conn = controller.connection
-        let remembered = UInt8(clamping: UserDefaults.standard.integer(forKey: "activeSlot"))
+        // The slot the pad was on, captured by ControllerModel.refresh before any read moved the cursor.
+        let wanted = controller.padSlot ?? UInt8(clamping: UserDefaults.standard.integer(forKey: "activeSlot"))
         let result: Result<(UInt8, [(UInt8, [UInt8])]), Error> = await Task.detached {
             Result {
                 switch conn {
                 case .dinput:
                     let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }
-                    // Ask the pad which slot it is on *before* touching any slot (the on-pad quick switch or
-                    // screen menu may have changed it); reading slots moves that cursor.
-                    let wanted = (try? s.currentConfigId()).flatMap { $0 < 4 ? $0 : nil } ?? remembered
+                    // Quirk: a config read whose id equals the last LED read's id returns the *previous* config
+                    // instead (docs/protocol.md §10) — burn one read of that slot first.
+                    s.configId = wanted; _ = try? s.readBlob(.config)
                     var out: [(UInt8, [UInt8])] = []
                     for i in 0..<4 { s.configId = UInt8(i); out.append((UInt8(i), try s.readBlob(.config))) }
                     try? s.applyConfig(slot: wanted)               // reads move the pad's cursor; put the chosen profile back
@@ -58,7 +59,7 @@ final class ProfileStore {
                 case .xinput:
                     guard #available(macOS 14.0, *) else { throw HelperError.notInstalled }
                     let h = HelperClient.shared
-                    let wanted = (try? h.currentSlot()).flatMap { $0 < 4 ? $0 : nil } ?? remembered
+                    _ = try? h.readConfig(slot: wanted)             // same quirk as above: burn one read
                     var out: [(UInt8, [UInt8])] = []
                     for i in 0..<4 { out.append((UInt8(i), try h.readConfig(slot: UInt8(i)))) }
                     try h.applySlot(wanted)                        // reads move the pad's cursor; put the chosen profile back
