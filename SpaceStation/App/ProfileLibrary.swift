@@ -4,7 +4,7 @@
 //
 // Not done (yet): SS4's share codes. Its payload is the hex-dash serialisation of the *protobuf* profile bean
 // (`ControllerMappingConfigBean`), not the device blob, so exchanging codes with SS4 needs the bean ↔ blob
-// conversion (MappingConfigParser) — see docs/ss4-gap-analysis.md.
+// conversion (MappingConfigParser) — see docs/roadmap.md.
 
 import SwiftUI
 import UniformTypeIdentifiers

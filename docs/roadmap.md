@@ -1,56 +1,43 @@
-# Roadmap
+# Roadmap and status
 
-Feature parity with Flydigi Space Station 3.4.4.3 (Windows), then beyond. Status legend:
-✅ proven on hardware · 🔬 protocol known, not implemented · ❓ needs reverse-engineering · 🚫 not applicable on macOS
+What is done, what still needs a test on hardware, and what is left. Feature-by-feature parity with
+Flydigi Space Station 4 (Windows) for the Apex 4 is the baseline; everything below "Beyond" is ours.
+Legend: ✅ verified on hardware · 🧪 implemented, needs a hardware test · ❌ not done · 🚫 not on macOS.
 
-## Milestone 0 — foundations
-- [x] `FlydigiKit` package: packet framing (XInput/DInput), CRC, device info, config/LED blob read/write, save-to-flash, LVGL RGB565 encoder, screen upload state machine — with tests using the captured blobs.
-- [x] Privileged helper: `SpaceStationHelper` (XPCListener, Codable protocol, IOUSBLib capture) registered via `SMAppService.daemon` — **validated on hardware from inside the launchd daemon** (device info/LED through the app). IOUSBHost capture was abandoned after a kernel panic.
-- [~] Helper hardening: XPC peer must be signed by our team (`XPCPeerRequirement.isFromSameTeam()`, macOS 26+). TODO: audit-token check on macOS 14–15; idle exit.
-- [x] `apex4` CLI: `info`, `led`, `screen`, `config dump/restore`, `mode` — info/LED/screen verified on hardware in both channels (`mode` untested).
+## Done (parity with Space Station 4 for the Apex 4)
 
-## Milestone 1 — what the community asked for first
-- [x] **LED** in the app: mode, colours, brightness, speed; persisted to flash. (Per-group colours: TODO.)
-- [x] **Screen** in the app: GIF/PNG/JPEG → 160×80, ≤35 frames (evenly thinned), quantised preview, per-frame progress, **editor** (pan/zoom/fit/fill, trim, interval), online library. TODO: send the chosen frame interval in the start packet.
-- [x] Screen sleep time / status bar: read, set and restore verified (`A5 30 02..05`).
-- [x] SwiftUI app `Apex4` — Status, Lighting and Screen verified on hardware through the helper (2026-09-01).
-- [x] **Redesign in the Space Station 4 layout** (2026-09-01, validated by the owner): 248 pt sidebar with device card, battery and rail (Adaptive Trigger · Screen · Settings); hero with SS4's wireframe, key silhouettes and hotspot geometry; profile dropdown + Apply/Revert; tabs Common · Button · Joystick · Gyro · Trigger · Macros. Reference captured from the real renderer (`docs/design-ss4-reference.md`, `tools/ss4-harness/`).
+- ✅ Transports: DInput HID directly (no privileges), XInput through the `SMAppService` helper (IOUSBLib capture), USB-C and the charging base's 2.4 GHz receiver (waiting state while the pad is off, reconnection, battery over the receiver).
+- ✅ Profiles: the 4 on-board slots, the slot the pad itself selected is respected (fast swap, screen menu), rename, apply/revert, restore default configuration, per-slot lighting, "Apply to NS mode" (Switch slots 4–7), local library with `.fdgprofile` export/import.
+- ✅ General: lighting modes Default / Steady / Breathing / Gradient / Off with per-mode colour limits, brightness and cycle time applied live; grip vibration with test; sleep time, fast swap config, Turbo hardware shortcut.
+- ✅ Buttons: click / turbo / macro / special per key with "press it on the pad" capture (paddles included).
+- ✅ Sticks: SS4's sensitivity curve (Default / Instant / Delay / Custom with draggable nodes, live dot), dead zone, edge, report-rate meter, circularity test, guided calibration.
+- ✅ Gyro: mapping, activation key and second key, sensitivity, dead zone, use mode.
+- ✅ Triggers: ForceAdapt General / Racing / Recoil / Sniper / Trigger lock / Vibration with SS4's parameters, the pad's own presets as defaults, live preview while dragging, vibration test.
+- ✅ Macros: on-board macros with step editor, recording from the pad, local library with `.fdgmacro` export/import.
+- ✅ Screen: image/GIF editor (pan, zoom, fit/fill, trim, frame interval sent to the pad), Flydigi's animation library, factory animations, GIPHY search, "on the controller" record, restore default animation.
+- ✅ Settings: firmware update check with Flydigi's note, USB mode switch, language (en, pt-BR), GIPHY key, open at login, helper install/remove, device nickname.
+- ✅ Release pipeline: Developer ID signing, notarization and stapling of app and DMG (`scripts/release.sh`).
 
-## Milestone 2 — controller configuration
-- [~] Profiles: read/apply config slot verified (`A5 20`, `A5 50 05`); per-slot read/write + import/export pending.
-- [x] Button mapping, turbo, macros in the app: Click / Turbo / Macro / Special editor with "press the button on the pad" capture; Macros tab with step editor, timeline and recording from the pad. Remap + macro write/read-back verified on hardware.
-- [~] Joystick tab: curve (Default/Quick/Slow/Custom with draggable points), dead zone, edge, live gauge. Resolution/return rate/centre sensitivity/rebounce/round type commands known (`A5 50 0A/0B/0D…`), untested.
-- [x] **Calibration wizard** (`A5 14 01/02`): timed guided flow in the Joystick tab (the pad reports no input while the window is open); verified on hardware 2026-09-02.
-- [x] Trigger tab: ForceAdapt modes with live preview and "keep in profile", start/end, live gauge (parameter layout partly inferred — see `Controls.swift`).
-- [x] Common tab: lighting (debounced live apply) and grip vibration with motor test; Gyro tab: mapping, activation key/type, sensitivity, dead zone, use mode.
-- [x] Live input: GameController framework in both modes, plus the **raw DInput status report** (paddles M1–M4, Fn, Home, sticks, triggers — `protocol.md` §9) so the hero lights every key and capture/recording see the paddles.
+## Needs a hardware test
 
-## Inputs from the Space Station 4 analysis (see `docs/spacestation4-analysis.md`)
-- [x] Online GIF library in the Screen page ("Official selection": pick → preview → send).
-- [~] Per-game trigger presets: `FlydigiAPI.gamePresets()` listed in the Adaptive Trigger page (94 games) — automatic switching is Milestone 3.
-- [x] Config blob (790 B) decoded/encoded in `GamepadConfig` (keys, sticks, triggers, ForceAdapt, motion, vibration, macros, title) with byte-exact round-trip; `apex4 config show`.
-- [x] Firmware availability notice in Settings ("Check Flydigi for updates"). Flashing stays out of scope.
-- [x] Re-tested the DInput details flagged by the SS4 analysis (see `protocol.md` §3): keep `EA`/`E7`; acks are 1-based; DInput commands need 12-byte padding.
+- 🧪 **Macros end to end**: record from the pad, edit, apply, and confirm the pad plays the macro (once / hold-to-loop / toggle) in a game.
+- 🧪 **Per-app game profiles** with a real game: slot + ForceAdapt + lighting switch when the game comes to the front, restore when it leaves (verified only with ordinary apps).
+- 🧪 **NS mode**: the profile is written to slots 4–7; confirm on a Switch that the pad uses it.
+- 🧪 Other Apex 4 editions (device ids 86, 87, 92, 93, 102, 103, 104): same protocol, artwork present, never connected here.
 
-## Milestone 3 — beyond Space Station
-- [x] Per-app game profiles (2026-09-02): rules matched by bundle id or app name via `NSWorkspace`; switch profile slot and ForceAdapt presets when the app is frontmost, restore afterwards; Flydigi's list as a starting point. Space Station's game *mods* (DLL injection) stay Windows-only.
-- [ ] Racing telemetry (Forza "Data Out" UDP, F1/Dirt/WRC): drive trigger resistance from ABS/traction data — works with the game on a console too.
-- [ ] Shareable community presets (LED themes, GIF packs, game profiles).
-- [ ] Shortcuts / URL scheme / CLI automation.
+## Open
 
-## Later / research
-- [x] 2.4 GHz dongle: LED/config work over the base's receiver (same XInput protocol); device info (model, firmware, battery) comes from the pad. ❌ Screen upload gets no ack wirelessly — cable only.
-- [ ] Battery level in XInput/dongle refresh loop (currently read once per refresh; SS4 polls a heartbeat).
-- [ ] ❓ Firmware updates (MCU, dongle, trigger board, LCD via ESP32 bootloader). Highest risk; last.
-- [ ] Keyboard/mouse mapping **the macOS way** (Milestone 3): the firmware only flags a key as `0xFE`; Flydigi's Windows driver does the translation. On macOS the app can read the pad via GameController and post `CGEvent`s (needs Accessibility permission, app running) — no kernel driver.
-- [ ] 🚫 DualSense/DS-mode emulation — Windows kernel driver; a macOS equivalent would need a virtual HID driver (DriverKit). Out of scope.
-- [ ] 🚫 Bluetooth configuration — Flydigi's BLE service only covers the BS1 cooler, not the Apex 4.
+- ❌ **Share codes** compatible with Space Station: its codes carry the protobuf `ControllerMappingConfigBean` / `MacroItem`, not the device blob, so a bean ↔ blob converter is needed first (`MappingConfigParser` in SS4). Until then profiles and macros travel as `.fdgprofile` / `.fdgmacro` files.
+- ❌ **Keyboard / mouse mapping**: the firmware only flags a key as keyboard (`0xFE`); Space Station's Windows driver does the translation. On macOS this is an app-side engine (GameController in, `CGEvent` out, Accessibility permission) that runs while the app is open.
+- ❌ **Firmware flashing**: check, download, verify and OTA-interface probe are done and the flash sequence is documented in [firmware-update.md](firmware-update.md); flashing stays disabled until it is tested on a spare pad with an explicit go.
+- ❌ App self-update (Sparkle or a GitHub-releases check) once releases are public.
+- ❌ Preferences: log file toggle, close-to-menu-bar vs quit.
+- ❌ Helper hardening: audit-token peer check on macOS 14–15 (`XPCPeerRequirement` covers 26+), idle exit.
+- ❌ Beyond Space Station: racing telemetry driving trigger resistance (Forza "Data Out", F1, Dirt, WRC); shareable community presets (LED themes, GIF packs, game profiles); Shortcuts / URL scheme automation.
 
-See [ss4-gap-analysis.md](ss4-gap-analysis.md) (2026-09-02) for the feature-by-feature comparison with Space Station 4 and the suggested order.
+## Not applicable on macOS
 
-## Pending hardware tests (2026-09-02)
-
-- **Macros end to end**: record from the pad, edit steps, apply the profile and confirm the pad plays the macro
-  (once / hold-to-loop / toggle) in a game — never verified on hardware yet.
-- **Per-app game profiles**: switching slot + ForceAdapt + lighting when a game comes to the front, and the
-  restore on leaving — verified only with test apps, not with a real game session.
+- 🚫 Space Station's game mods (DLL injection) and DS / PS5 mode (Windows kernel drivers). Per-app game profiles are our replacement.
+- 🚫 Bluetooth configuration: Flydigi's BLE service only covers the BS1 cooler, not the Apex 4.
+- 🚫 Screen upload over the 2.4 GHz receiver: the receiver never acks those packets. Cable only.
+- 🚫 Joystick global settings, polling rate, vibration light effect, trigger vibration switch: hidden or unsupported for the Apex 4 in Space Station too.

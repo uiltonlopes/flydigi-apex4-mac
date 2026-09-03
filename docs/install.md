@@ -1,6 +1,6 @@
 # Installing Space Station for Mac
 
-**Requirements:** macOS 15 or newer (Liquid Glass details on macOS 26), a Flydigi Apex 4 connected
+**Requirements:** macOS 15 or newer, a Flydigi Apex 4 connected
 over USB-C or through its charging base (2.4 GHz receiver).
 
 ## 1. Install the app

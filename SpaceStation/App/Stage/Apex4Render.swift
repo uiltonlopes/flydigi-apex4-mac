@@ -89,7 +89,7 @@ struct Apex4Hero: View {
     var body: some View {
         if let img = Apex4Render.hero {
             Image(nsImage: img).resizable().interpolation(.high).aspectRatio(contentMode: .fit)
-                .shadow(color: Stage.glow.opacity(0.45), radius: 40, y: 12)
+                .shadow(color: SS.brand500.opacity(0.45), radius: 40, y: 12)
                 .shadow(color: .black.opacity(0.6), radius: 18, y: 14)
         } else {
             Apex4BodyShape().aspectRatio(Apex4Render.canvas, contentMode: .fit)

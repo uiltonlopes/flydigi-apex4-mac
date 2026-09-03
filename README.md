@@ -5,8 +5,9 @@
 <h1 align="center">Space Station for Mac</h1>
 
 <p align="center">
-  Native, open-source macOS companion for <b>Flydigi controllers</b> — lighting, LCD animations, profiles,
-  macros, triggers and more. What Flydigi Space Station does on Windows, on your Mac.
+  Native, open-source macOS app for the <b>Flydigi Apex 4</b>: lighting, LCD animations, profiles, buttons,
+  sticks, gyro, ForceAdapt triggers, macros and per-game profiles. What Flydigi Space Station does on
+  Windows, on your Mac, with no Windows install and no VM.
 </p>
 
 <p align="center">
@@ -25,123 +26,230 @@
 </p>
 
 > **Status: usable, pre-release.** Unofficial and not affiliated with Flydigi. The USB protocol was
-> reverse-engineered and verified on real hardware; the app covers what Space Station 4 offers for the
-> **Apex 4** except firmware flashing and keyboard/mouse mapping.
-> See [`docs/protocol.md`](docs/protocol.md) and [`docs/roadmap.md`](docs/roadmap.md).
+> reverse-engineered and verified on a real Apex 4 (firmware 6.8.3.0). The app covers what Space Station 4
+> offers for the Apex 4 except firmware flashing and keyboard/mouse mapping, and adds a few things of its
+> own. Details in [`docs/roadmap.md`](docs/roadmap.md).
+
+## Contents
+
+- [Features](#features)
+- [Install](#install)
+- [How it works](#how-it-works)
+- [Supported hardware](#supported-hardware)
+- [Building and contributing](#building-and-contributing)
+- [Command line](#command-line)
+- [Credits and disclaimer](#credits-and-disclaimer)
 
 ## Features
 
-Laid out like Space Station 4 so owners feel at home, built with SwiftUI:
+The layout follows Space Station 4, so an owner coming from Windows finds the same sections with the same
+names. Everything is drawn with native SwiftUI controls; the app also lives in the menu bar.
 
-| | |
-|---|---|
-| **Common** | lighting (mode, colours, brightness, cycle time; applied live) and grip vibration |
-| **Button** | click / turbo / macro / special per key, with "press the button on the pad" capture (paddles included, in both USB modes) |
-| **Joystick** | curves (incl. a custom two-point curve), dead zone, edge, live readout |
-| **Gyro** | map motion to a stick, activation key, sensitivity, dead zone |
-| **Trigger** | ForceAdapt modes (race, sniper, recoil, lock, vibration) with live preview, start/end |
-| **Macros** | on-board macros with a step editor, timeline and recording from the pad |
-| **Screen** | GIF/PNG/JPEG editor (pan, zoom, fit/fill, trim, frame interval, exact 160 × 80 preview) or Flydigi's official animation library |
-| **Adaptive Trigger** | Flydigi's per-game preset list |
-| **Settings** | firmware update check with Flydigi's release note (translated on-device), USB mode, language, helper |
-| **Profiles** | 4 on-board slots with rename, apply and revert; battery, link and mode in the sidebar and in the menu bar |
+### Device
 
-Live input works in both USB modes; in DInput the app reads the raw report, so paddles M1–M4, Fn and Home
-light up too. Languages: English and Português (Brasil).
+- **Device card and welcome screen** with the connected model's picture, connection type (USB-C or the
+  charging base's 2.4 GHz receiver), firmware and battery. Special editions get their own card artwork
+  (EVA-01, Assassin's Creed, Black Myth: Wukong, Genshin Impact, Honkai: Star Rail).
+- **Receiver aware.** With the charging base plugged in and the pad off, the app waits for the pad and
+  reconnects on its own when it comes back, with the battery read correctly over the receiver.
+- **Nickname** for the controller (right-click the card), **USB mode switch** (XInput ⇄ DInput) from the
+  sidebar, refresh, and a firmware-update badge when Flydigi ships a newer version.
+- **Menu bar** item with connection, battery, profile and quick actions.
 
-## Install (pre-release)
+### Profiles
 
-Download `SpaceStation-<version>.dmg` from the [Releases](https://github.com/uiltonlopes/flydigi-space-station-mac/releases)
-page, drag the app to Applications and follow [`docs/install.md`](docs/install.md) (release builds are
-Developer ID signed and notarized; XInput mode needs the bundled helper).
-Changes per version: [`CHANGELOG.md`](CHANGELOG.md).
+- The **4 on-board profile slots**: rename, apply, revert. The slot selected **on the pad itself** (fast swap
+  or the screen menu) is respected, on connect and while switching.
+- Lighting is stored **per slot**, like on the pad.
+- **Restore default configuration** (the factory profile and lighting), **Apply to NS mode** (writes the
+  profile into the Switch-mode slots), and a **local profile library**: save, load into the editor, rename,
+  duplicate, reorder, delete, export and import as `.fdgprofile`.
 
-## Why
+### General tab
 
-Flydigi only ships configuration software for Windows. The controller works fine as a gamepad on
-macOS, but you cannot change lighting, upload GIFs to the screen, or tune triggers and sticks.
-Running the Windows app in a VM does not work either: Apple's own Xbox controller driver claims
-the device before the VM can.
+- **Lighting**: Default, Steady, Breathing, Gradient and Off, with the colour limits of each mode, up to five
+  colours, brightness and cycle time. Changes apply live and are saved to the pad's flash.
+- **Grip vibration**: on/off, intensity, and a test that rumbles the pad the way games do.
+- **Controller**: sleep time (1 min to 3 h, or never), fast swap config (SELECT + A/B/X/Y switches the
+  slot on the pad), and the Turbo hardware shortcut.
 
-## How it works (short version)
+### Buttons
 
-- In **DInput** mode the pad exposes a vendor HID interface that macOS leaves alone → the app talks
-  to it directly, no privileges needed (LEDs, config, profiles, raw input).
-- In **XInput** mode Apple's driver owns the device; a small privileged helper (installed once via
-  `SMAppService`) borrows the USB interface only while a command runs. The LCD upload needs this mode.
-- Screen images are LVGL v8 / RGB565 big-endian, 160 × 80, up to 35 frames.
+- Per-key mapping: **Click**, **Turbo**, **Macro** or **Special**, for every button including the paddles
+  M1–M4.
+- **"Press it on the pad" capture** in both USB modes (in XInput the app borrows the pad for a few seconds
+  so paddles and Fn are seen too).
+- Every key lights up on the controller drawing as you press it.
 
-Details: [`docs/architecture.md`](docs/architecture.md) · [`docs/protocol.md`](docs/protocol.md) ·
-[`docs/firmware-update.md`](docs/firmware-update.md) · [`docs/design-ss4-reference.md`](docs/design-ss4-reference.md).
+### Sticks
+
+- **Sensitivity curve drawn like Space Station**: Default, Instant, Delay and Custom presets, four
+  draggable nodes, dead-zone and edge bands, and a live dot for the current deflection.
+- Centre dead zone and edge, per stick.
+- **Report-rate meter** and a **circularity test** with coverage and average error (Space Station's advanced
+  test page), plus a **guided calibration** of sticks and triggers.
+
+### Gyro
+
+- Map motion to a stick, choose the activation key and a second key, the activation type, sensitivity,
+  dead zone and use mode.
+
+### Triggers (ForceAdapt)
+
+- The Apex 4's modes with Space Station's names and parameters: **General**, **Racing**, **Recoil**,
+  **Sniper**, **Trigger lock** (three levels) and **Vibration** (synced with the grip motors).
+- **Live preview while you drag** any slider, no apply button needed, and a **"Controller preset"** button
+  that restores the pad's own defaults for each mode (read from the pad, not guessed).
+- Start and end points, output strength, and a vibration test.
+
+### Macros
+
+- On-board macros with a **step editor** (key, press/release, delay), reordering, **recording from the pad**,
+  and once / hold-to-loop / toggle playback.
+- **Local macro library**: save from a profile, add to any profile on a free button, rename, duplicate,
+  export and import as `.fdgmacro`.
+
+### Screen (LCD)
+
+- **Editor** for GIF, PNG and JPEG: drag, pinch and scroll to frame the image in the 2:1 viewport, Fit /
+  Fill, GIF trimming with a filmstrip, frame interval (really sent to the pad), and an exact 160 × 80
+  preview. Long GIFs are thinned evenly to the pad's 35-frame limit.
+- Sources: Flydigi's **official animation library**, the **factory animations** of every Apex 4 edition,
+  and **GIPHY search** (a shared key is bundled; add your own in Settings).
+- **"On the controller"** card with the last animation sent from this Mac, and **Restore default animation**.
+- Upload needs the cable and XInput mode; the receiver does not forward it.
+
+### Adaptive Trigger (per-game profiles)
+
+- Pick an app, a profile slot, ForceAdapt presets and lighting: the app switches the pad when that game is
+  in front and puts everything back when it leaves. Flydigi's per-game preset list is the starting point.
+  This is the macOS take on Space Station's game mods, which need Windows drivers.
+
+### Settings
+
+- **Firmware**: automatic update check on connect, Flydigi's release note (translated on-device), a
+  read-only dry run that downloads and validates the image. Flashing itself is deliberately disabled.
+- USB mode, language (English, Português do Brasil), GIPHY key, open at login, privileged helper install
+  and removal, about and support.
+
+## Install
+
+Download `SpaceStation-<version>.dmg` from the
+[Releases](https://github.com/uiltonlopes/flydigi-space-station-mac/releases) page and drag the app to
+Applications. Release builds are Developer ID signed and notarized, so they open like any other app.
+
+In **XInput** mode (the pad's default) the app needs its privileged helper: Settings → **Install helper**,
+approve it once in *Login Items & Extensions*. In **DInput** mode nothing is needed. Full steps, the mode
+comparison and uninstall notes are in [`docs/install.md`](docs/install.md); changes per version in
+[`CHANGELOG.md`](CHANGELOG.md).
+
+## How it works
+
+Flydigi only ships configuration software for Windows. The Apex 4 works as a gamepad on macOS, but
+lighting, LCD, triggers, sticks and profiles cannot be changed, and a Windows VM cannot help because Apple's
+own Xbox driver claims the device first.
+
+- In **DInput** mode the pad exposes a vendor HID interface macOS leaves alone. The app talks to it
+  directly with `IOHIDManager`: no privileges, no helper.
+- In **XInput** mode Apple's driver owns the device. A small privileged helper, registered once with
+  `SMAppService`, borrows the USB interface through IOUSBLib only while a command runs and hands it back.
+  The LCD upload needs this mode.
+- Live input comes from the GameController framework in both modes; in DInput the raw report is decoded
+  as well, so paddles, Fn and Home are visible.
+- Screen images are LVGL v8 frames, RGB565 big-endian, 160 × 80, up to 35 frames.
+- The 790-byte profile blob and the 500-byte LED blob are decoded byte for byte and round-trip exactly.
+
+Everything is written from scratch in Swift 6 from knowledge of the wire protocol. Reference material:
+[`docs/protocol.md`](docs/protocol.md) (commands, blobs, quirks, all verified on hardware or marked as
+not), [`docs/architecture.md`](docs/architecture.md), [`docs/spacestation4-analysis.md`](docs/spacestation4-analysis.md)
+(what Space Station 4 does and how), [`docs/firmware-update.md`](docs/firmware-update.md).
 
 ## Supported hardware
 
-| Controller | Device id | Firmware tested | Status |
-|---|---|---|---|
-| Flydigi Apex 4 (`k2`) | 84 | 6.8.3.0 (2026-09) | supported — LED, screen, profiles, macros, ForceAdapt, settings |
-| Apex 4 EVA / STN / AC / GS / SRS / HSH | 86, 87, 92, 93, 102, 103, 104 | — | same family, untested |
-| Apex 3, Vader 3 / 3 Pro, older | see catalogue | — | classic protocol, unsupported (help wanted) |
-| Apex 5 / 6, Vader 4 Pro, Vader 5 | 128+ | — | new protocol (VID 0x37D7), unsupported |
+| Controller | Device id | Status |
+|---|---|---|
+| Flydigi Apex 4 (`k2`) | 84 | supported, tested on firmware 6.8.3.0 |
+| Apex 4 EVA-01 / STN / Assassin's Creed / GS / Black Myth / Genshin / Star Rail | 86, 87, 92, 93, 102, 103, 104 | same protocol and artwork, untested |
+| Apex 3, Vader 3 / 3 Pro, older | see `DeviceCatalog.swift` | classic protocol, unsupported (help wanted) |
+| Apex 5 / 6, Vader 4 Pro, Vader 5 | 128+ | new protocol (VID 0x37D7), unsupported |
 
 USB-C cable or the charging base's 2.4 GHz receiver (screen upload is cable-only). Bluetooth cannot be
-configured. Want your controller added? Read [`docs/adding-a-controller.md`](docs/adding-a-controller.md).
+configured. To add another Flydigi model read [`docs/adding-a-controller.md`](docs/adding-a-controller.md).
 
-## Repository
+## Building and contributing
 
 ```
-SpaceStation/     the macOS app (SwiftUI) and the privileged helper — `SpaceStation/project.yml` is the xcodegen spec
-FlydigiKit/       Swift package: protocol, transports, config/LED/screen/firmware models, `apex4` CLI, tests
-docs/             protocol, architecture, design references, firmware research, roadmap, install and release guides
-scripts/          release packaging (Developer ID signing + notarization optional)
-tools/            ss4-harness: runs Space Station's own UI in a browser for design comparison (our mock only)
+SpaceStation/     the app (SwiftUI) and the privileged helper; project.yml is the xcodegen spec
+FlydigiKit/       Swift package: protocol, transports, blobs, models, apex4 CLI, tests
+scripts/          release.sh: build, sign, notarize, staple, DMG
+docs/             protocol, architecture, roadmap, firmware research, SS4 analysis, install and release guides
 ```
 
-## Building
+Build and run the app:
 
 ```bash
 brew install xcodegen
-cd SpaceStation && xcodegen generate
-xcodebuild -project SpaceStation.xcodeproj -scheme SpaceStation -configuration Debug -derivedDataPath build build
-open "build/Build/Products/Debug/Space Station.app"
 ```
 
-To register the privileged helper the app and helper must be signed with a team: add your Apple ID in
-Xcode (a free account is enough) and set `DEVELOPMENT_TEAM` in `SpaceStation/project.yml`.
+```bash
+cd SpaceStation && xcodegen generate && xcodebuild -project SpaceStation.xcodeproj -scheme SpaceStation -configuration Debug -derivedDataPath build -destination 'platform=macOS' build && open "build/Build/Products/Debug/Space Station.app"
+```
 
-CLI and tests:
+The helper can only be registered when app and helper are signed by the same team: add your Apple ID in
+Xcode (a free account is enough) and set `DEVELOPMENT_TEAM` in `SpaceStation/project.yml`. Releases are
+described in [`docs/release.md`](docs/release.md).
+
+Package and tests:
+
+```bash
+cd FlydigiKit && swift build && swift test
+```
+
+Issues and pull requests are welcome, especially from owners who can test other firmware versions, other
+Apex 4 editions, or who want to add another Flydigi model. Please **do not** commit Flydigi binaries or
+decompiled sources; document what the bytes mean, not their code.
+
+## Command line
+
+`apex4` sits on the same package as the app and works without it. In DInput mode no privileges are needed;
+XInput commands need root (or the helper through the app).
 
 ```bash
 cd FlydigiKit && swift build
-.build/debug/apex4 info                     # DInput mode: no privileges needed
-.build/debug/apex4 led steady ff0000        # saved to flash
-.build/debug/apex4 firmware check           # asks Flydigi for updates (read-only)
-sudo .build/debug/apex4 screen my.gif       # XInput mode: needs root (screen upload)
-swift test                                  # needs Xcode (Swift Testing is not in the Command Line Tools)
 ```
 
-## Contributing
+```bash
+.build/debug/apex4 info                     # model, firmware, battery, mode
+```
 
-Issues and pull requests are welcome — especially from owners who can test other firmware versions, the
-2.4 GHz receiver and other k2-family variants (EVA, STN…), or who want to add another Flydigi model.
-Please **do not** commit any Flydigi binaries or decompiled sources; this project is written from scratch
-under the MIT license, using only knowledge of the wire protocol.
+```bash
+.build/debug/apex4 led steady ff0000        # lighting, saved to flash
+```
+
+```bash
+.build/debug/apex4 config dump ./backup     # the four profile slots as files (restore puts them back)
+```
+
+```bash
+.build/debug/apex4 firmware check           # asks Flydigi for updates, read-only
+```
+
+```bash
+sudo .build/debug/apex4 screen my.gif       # LCD upload (XInput, cable)
+```
+
+Also: `mode` (switch USB mode), `helper` (talk to the installed helper), `api` (Flydigi's GIF library,
+game presets, firmware feed) and `dev` (protocol probes used while reverse-engineering).
 
 ## Support the project
 
-Space Station for Mac is free and open source, built in my spare time by reverse-engineering the
-controller. If it saved you a Windows install, you can
-**[buy me a coffee](https://buymeacoffee.com/uiltonlopes)** ☕ — or star the repo and tell other Flydigi
-owners on a Mac.
+Space Station for Mac is free and open source, built in spare time by reverse-engineering the controller.
+If it saved you a Windows install, **[buy me a coffee](https://buymeacoffee.com/uiltonlopes)** ☕, star the
+repo, or tell other Flydigi owners on a Mac.
 
-## Author
+## Credits and disclaimer
 
-**Uilton Lopes** — [github.com/uiltonlopes](https://github.com/uiltonlopes) ·
-[linkedin.com/in/uiltonlopes](https://www.linkedin.com/in/uiltonlopes) ·
-[buymeacoffee.com/uiltonlopes](https://buymeacoffee.com/uiltonlopes)
-
-## Credits & disclaimer
-
-Controller artwork and app icon © Flydigi, used for interoperability (see the
-[NOTICE](SpaceStation/App/Resources/Flydigi/NOTICE.md) next to them). Everything else is MIT.
-Not affiliated with Flydigi. Writing to the controller's flash/LCD is at your own risk; tested on one
-unit (firmware 6.8.3.0).
+Controller artwork, app icon, card backgrounds and factory animations are © Flydigi and are used for
+interoperability only; see the [NOTICE](SpaceStation/App/Resources/Flydigi/NOTICE.md) next to them.
+Everything else is MIT. Not affiliated with Flydigi. Writing to the controller's flash and LCD is at your
+own risk; tested on one unit.

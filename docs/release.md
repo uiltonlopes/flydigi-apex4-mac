@@ -2,10 +2,9 @@
 
 ## One-time setup (Developer ID + notarization)
 
-> Status 2026-09-02: the Developer Program is active and the **Developer ID Application** certificate exists
-> (`Developer ID Application: UILTON LOPES DE MOURA (A2NY8257QF)`). The paid team kept the same Team ID as
-> the old Personal Team, so `DEVELOPMENT_TEAM` did not change. Remaining: store the notary credentials
-> (step 2) — after that `scripts/release.sh` notarizes and staples.
+> Status 2026-09-02: Developer Program active, Developer ID Application certificate created, notary profile
+> `AC_NOTARY` stored. `scripts/release.sh` signs, notarizes and staples the app and the DMG; Gatekeeper reports
+> "Notarized Developer ID" on the result.
 
 1. **Certificate.** Xcode → Settings → Accounts → select the team → *Manage Certificates…* → **+** →
    **Developer ID Application**. (Or create it at developer.apple.com → Certificates.) Check with
@@ -26,8 +25,7 @@ git tag -a v0.2.0 -m "Space Station for Mac 0.2.0" && git push origin v0.2.0
 gh release create v0.2.0 dist/SpaceStation-0.2.0.dmg dist/SpaceStation-0.2.0.zip dist/SpaceStation-0.2.0.sha256 --title "0.2.0" --notes-file <(sed -n '/^## 0.2.0/,/^## /p' CHANGELOG.md | sed '$d')
 ```
 
-Notarized builds open without the right-click dance; `docs/install.md` can drop that step once the first
-notarized release is out.
+Notarized builds open without the right-click dance.
 
 ## What Developer ID does not change
 

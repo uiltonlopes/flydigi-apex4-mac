@@ -8,7 +8,7 @@ on Windows — and more — written from scratch, open source (MIT), using what 
 | Layer | Choice | Why |
 |---|---|---|
 | Language | **Swift 6.3**, strict concurrency | Native, modern, what the toolchain on macOS 26 ships. |
-| UI | **SwiftUI** (macOS 15 minimum, Liquid Glass on 26) — menu-bar extra + main window | Native look, `MenuBarExtra`, `Observation`, Settings scenes. |
+| UI | **SwiftUI** (macOS 15 minimum) — menu-bar extra + main window, Space Station 4's dark layout drawn with native controls (`Theme.swift`) | Native look, `MenuBarExtra`, `Observation`. |
 | Live input | **GameController** framework | Works in both modes (Apple's Xbox dext in XInput; HID gamepad in DInput) — button test / mapping UI. |
 | Protocol core | Swift package **`FlydigiKit`** (no UI, no I/O side effects): packet builders/parsers, config & LED blobs, LVGL encoder, upload state machine | Testable with **Swift Testing**; reusable by CLI, app and helper. |
 | Transports | `IOHIDManager` (DInput, unprivileged) · **IOUSBLib** user-client API in `IOKit.usb` (XInput, privileged; libusb-style `USBDeviceReEnumerate` capture) | Both are Apple frameworks; no third-party USB stack. IOUSBHost capture was tried first and panicked the kernel (see risks). |
@@ -79,11 +79,12 @@ on Windows — and more — written from scratch, open source (MIT), using what 
 - Rebuilding the helper with the **same** identity is fine: the daemon notices its executable changed
   and exits when idle; launchd relaunches it on the next XPC connection.
 
-## Repository layout (target)
+## Repository layout
 
 ```
-FlydigiKit/        Swift package: protocol, blobs, LVGL, state machines, tests
-SpaceStation/      Xcode project: app + helper targets
-apex4-cli/         command-line tool
-docs/              protocol.md · architecture.md · roadmap.md
+FlydigiKit/        Swift package: FlydigiKit (protocol, blobs, LVGL, models) · FlydigiTransport (HID, IOUSBLib,
+                   sessions, Flydigi web API) · FlydigiHelperProtocol (XPC messages) · apex4 (CLI) · tests
+SpaceStation/      xcodegen spec (project.yml), the SwiftUI app (App/) and the privileged helper (Helper/)
+scripts/           release.sh — build, sign, notarize, staple, DMG
+docs/              protocol · architecture · roadmap · firmware research · SS4 analysis · adding a controller · install · release
 ```

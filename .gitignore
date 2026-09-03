@@ -6,7 +6,6 @@ DerivedData/
 xcuserdata/
 *.xcworkspace/xcshareddata/swiftpm/Package.resolved
 # nunca versionar: binários/fontes da Flydigi (copyright)
-tools/spacestation/
 *.exe
 *.dll
 # gerado por xcodegen a partir de SpaceStation/project.yml

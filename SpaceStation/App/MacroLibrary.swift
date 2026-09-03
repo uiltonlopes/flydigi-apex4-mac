@@ -1,7 +1,7 @@
 // Local macro library — Space Station's "local macro configs": macros kept on this Mac, independent of the
 // profile slots. Save one from a profile, add it to any profile bound to any free button, rename, duplicate,
 // export/import as `.fdgmacro` (JSON). SS4 share codes for macros (decimal-dash bytes of its protobuf
-// MacroItem) are not interoperable yet — same reason as profiles, see docs/ss4-gap-analysis.md.
+// MacroItem) are not interoperable yet — same reason as profiles, see docs/roadmap.md.
 
 import SwiftUI
 import UniformTypeIdentifiers

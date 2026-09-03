@@ -1,5 +1,5 @@
 // Visual language borrowed from Space Station 4 (palette, radii, control shapes) rendered with native
-// SwiftUI controls. Tokens come from SS4's CSS variables (docs/design-ss4-reference.md).
+// SwiftUI controls. Tokens mirror SS4's CSS variables (neutral-900…100, brand blue #285AFA).
 
 import SwiftUI
 
