@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Release pipeline: Developer ID signing, notarization and stapling of both the app (via zip) and the signed DMG; Gatekeeper reports "Notarized Developer ID".
 - Profiles: "Apply to NS mode…" copies the profile (and lighting) into the controller's Switch-mode slot (config ids 4–7), like Space Station.
 - Fix: the macro editor crashed when a step or the macro itself was removed while its rows were still on screen (stale index in a binding).
 - Fix: on connect the app read the lighting before asking which slot the pad was on, which moved the pad's "current slot" cursor and then re-applied the wrong profile; a config read right after an LED read of the same slot also returned the previous profile (wrong name under profile 1). Both orderings fixed.
