@@ -228,7 +228,7 @@ struct Helper: ParsableCommand {
         static let configuration = CommandConfiguration(commandName: "led")
         func run() throws {
             guard #available(macOS 14.0, *) else { throw ValidationError("macOS 14+") }
-            if case let .blob(b) = try Helper.send(.readLED), let led = LEDConfig(bytes: b) { print("mode \(led.mode) speed \(led.speed) brightness \(led.brightness)") }
+            if case let .blob(b) = try Helper.send(.readLED(slot: 0)), let led = LEDConfig(bytes: b) { print("mode \(led.mode) speed \(led.speed) brightness \(led.brightness)") }
         }
     }
 }
