@@ -36,6 +36,9 @@ struct MacrosPage: View {
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
             .background(SS.n800)
             .onChange(of: profiles.draft?.macros.count) { _, n in if let s = selected, s >= (n ?? 0) { selected = nil } }
+            // After Apply (or Revert) the editor closes, so it is obvious the change went through; it reopens
+            // when a macro is clicked or a new one is created.
+            .onChange(of: profiles.isDirty) { was, now in if was && !now { selected = nil } }
             .sheet(isPresented: $showLibrary) { MacroLibrarySheet(onAdded: { selected = $0 }).environment(profiles).environment(library) }
         }
     }
