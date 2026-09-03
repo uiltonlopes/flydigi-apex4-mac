@@ -14,3 +14,5 @@ SpaceStation/*.xcodeproj
 SpaceStation/build/
 dist/
 SpaceStation/build-release/
+# configuração local do preview do Claude (caminhos da máquina)
+.claude/
