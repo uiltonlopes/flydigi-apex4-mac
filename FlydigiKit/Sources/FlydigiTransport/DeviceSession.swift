@@ -217,7 +217,17 @@ public final class DeviceSession: @unchecked Sendable {
         }
     }
 
-    public func currentConfigId() throws -> UInt8 { try xinputQuery(XInput.Cmd.currentConfigId, [])[16] }
+    /// The slot the pad reports as current. Trustworthy right after connecting (before any slot was read —
+    /// reads move this cursor, docs/protocol.md §4). XInput `A5 20`; DInput `05 EB A0` (SS4 `ReadCurrentMappingConfigId`).
+    public func currentConfigId() throws -> UInt8 {
+        switch channel {
+        case .xinput: return try xinputQuery(XInput.Cmd.currentConfigId, [])[16]
+        case .dinput:
+            link.discardPending()
+            try link.write(DInput.command(DInput.Cmd.readConfig, 0xA0))
+            return try link.waitForReport(timeout: 1.0) { (r: [UInt8]) -> UInt8? in (r.count > 3 && r[1] == DInput.Cmd.readConfig && r[2] == 0xA0) ? r[3] : nil }
+        }
+    }
     /// Activates an on-board config slot (0…3).
     public func applyConfig(slot: UInt8) throws {
         switch channel {

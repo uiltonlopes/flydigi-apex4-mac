@@ -52,7 +52,7 @@ Both cause a USB re-enumeration.
 | Read config random id | `A5 50 02 <cfgId>` → `r[15]=0x50,r[16]=2`, id `r[17..18]` BE, cfg `r[19]` | `05 50 02 <cfgId> crc` → payload `[80,2,hi,lo,cfg]` at `r[3..]` | |
 | **Save to flash** | `A5 50 03 <hi> <lo>` (id = random+1) → `r[17]==1` on success | `05 50 03 <hi> <lo> crc` → `r[5]==1` | **required** for a written config/LED to survive power-cycle |
 | Screen info / sleep time | — | `05 F2 03` / `05 F2 02 <sleep>` (242) | `r[3]=242,r[4]=3/4` *(unverified)* |
-| Current config slot | `A5 20` → `r[15]=20`, slot `r[16]` (verified: 0) | `05 EB A0` *(unverified)* | |
+| Current config slot | `A5 20` → `r[15]=20`, slot `r[16]` (verified: 0) | `05 EB A0` → `r[1]=EB r[2]=A0 r[3]=slot` *(reply layout assumed from SS4's SDK; app falls back to the remembered slot on timeout)* | trusted only before any slot read (cursor) |
 | Switch active config | `A5 50 05 <slot>` → ack `r[15]=50 r[16]=05` (verified: 0→1→0) | `05 50 05 <slot>` | |
 | Motor test | `A5 12 <L> <R>` (verified; send `A5 12 00 00` to stop) | `05 0F <L> <R>` | |
 | Module versions | `A5 30 01` → `r[17..26]`: trigger `0.r17.r18hi.r18lo`, screen `0.r19.r20hi.r20lo`, switch `r21hi.r21lo.r22hi.r22lo`, adc `0.r23.r24hi.r24lo`, nearlink `r25…r26` (observed: trigger 0.3.0.9, screen 0.1.1.3, switch 0.4.0.1, adc 0.128.8.0) | `05 F5 01` → same at `r[4..13]` | verified |

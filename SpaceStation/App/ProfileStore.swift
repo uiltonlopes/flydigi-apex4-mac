@@ -42,12 +42,15 @@ final class ProfileStore {
         guard controller.connection != .none else { slots = []; draft = nil; return }
         busy = true; defer { busy = false }
         let conn = controller.connection
-        let wanted = UInt8(clamping: UserDefaults.standard.integer(forKey: "activeSlot"))
+        let remembered = UInt8(clamping: UserDefaults.standard.integer(forKey: "activeSlot"))
         let result: Result<(UInt8, [(UInt8, [UInt8])]), Error> = await Task.detached {
             Result {
                 switch conn {
                 case .dinput:
                     let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }
+                    // Ask the pad which slot it is on *before* touching any slot (the on-pad quick switch or
+                    // screen menu may have changed it); reading slots moves that cursor.
+                    let wanted = (try? s.currentConfigId()).flatMap { $0 < 4 ? $0 : nil } ?? remembered
                     var out: [(UInt8, [UInt8])] = []
                     for i in 0..<4 { s.configId = UInt8(i); out.append((UInt8(i), try s.readBlob(.config))) }
                     try? s.applyConfig(slot: wanted)               // reads move the pad's cursor; put the chosen profile back
@@ -55,6 +58,7 @@ final class ProfileStore {
                 case .xinput:
                     guard #available(macOS 14.0, *) else { throw HelperError.notInstalled }
                     let h = HelperClient.shared
+                    let wanted = (try? h.currentSlot()).flatMap { $0 < 4 ? $0 : nil } ?? remembered
                     var out: [(UInt8, [UInt8])] = []
                     for i in 0..<4 { out.append((UInt8(i), try h.readConfig(slot: UInt8(i)))) }
                     try h.applySlot(wanted)                        // reads move the pad's cursor; put the chosen profile back
@@ -70,7 +74,29 @@ final class ProfileStore {
             activeSlot = current
             draft = slots.first { $0.index == activeSlot }?.config
             lastError = nil
+            await controller.loadLED(slot: current)
         case .failure(let e): report(e)
+        }
+    }
+
+    // MARK: Follow the pad's own slot switch (SELECT + A/B/X/Y, screen menu)
+
+    private var padSlotWatch: Task<Void, Never>?
+    /// DInput only: the HID channel is free, so asking `05 EB A0` every few seconds is harmless. In XInput
+    /// a query would borrow the device from games; there the app notices on connect and on Refresh.
+    func setPadSlotWatch(_ on: Bool) {
+        padSlotWatch?.cancel(); padSlotWatch = nil
+        guard on else { return }
+        padSlotWatch = Task { @MainActor [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(4))
+                guard let self, !self.busy, !self.isDirty, self.controller.connection == .dinput, !self.slots.isEmpty else { continue }
+                let cur: UInt8? = await Task.detached { let s = try? DeviceSession.open(preferring: .dinput); defer { s?.close() }; return try? s?.currentConfigId() }.value
+                guard let cur, cur < 4, cur != self.activeSlot, self.temporarySlot == nil else { continue }
+                self.activeSlot = cur
+                self.draft = self.slots.first { $0.index == cur }?.config
+                await self.controller.loadLED(slot: cur)
+            }
         }
     }
 

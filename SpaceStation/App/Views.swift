@@ -61,6 +61,7 @@ struct MainWindow: View {
         }
         .task(id: model.connection) {
             live.setRawMonitoring(model.connection == .dinput)
+            profiles.setPadSlotWatch(model.connection == .dinput)
             await profiles.loadAll()
         }
         // The receiver can be there before the pad answers: load the profiles once it does.
