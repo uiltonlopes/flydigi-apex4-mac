@@ -17,8 +17,15 @@ enum AppSection: String, CaseIterable, Identifiable {
     }
 }
 
+/// Closing the window keeps the app in the menu bar unless the user asked to quit instead (Settings › App).
+final class AppDelegate: NSObject, NSApplicationDelegate {
+    func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { UserDefaults.standard.bool(forKey: "quitOnClose") }
+}
+
 @main
 struct SpaceStationApp: App {
+    @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
+    @State private var updates = AppUpdateChecker()
     @State private var model = ControllerModel()
     @State private var live = LiveInput()
     @State private var games: GameProfileStore
@@ -37,7 +44,9 @@ struct SpaceStationApp: App {
                 .environment(library)
                 .environment(macroLibrary)
                 .environment(keyboardMouse)
+                .environment(updates)
                 .frame(minWidth: 1100, minHeight: 720)
+                .task { await updates.checkIfDue() }
         }
         .windowStyle(.hiddenTitleBar)
         .defaultSize(width: 1280, height: 820)
@@ -59,7 +68,7 @@ struct SpaceStationApp: App {
         }
 
         MenuBarExtra {
-            MenuBarView().environment(model).environment(model.profiles).environment(live).environment(games)
+            MenuBarView().environment(model).environment(model.profiles).environment(live).environment(games).environment(updates)
         } label: {
             Image(systemName: model.connection == .none ? "gamecontroller" : "gamecontroller.fill")
         }

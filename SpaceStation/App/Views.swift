@@ -1,4 +1,5 @@
 import SwiftUI
+import OSLog
 import FlydigiKit
 import FlydigiHelperProtocol
 import FlydigiTransport
@@ -74,14 +75,31 @@ struct MainWindow: View {
 
     /// `spacestation://` URLs: `home?tab=common|buttons|joystick|gyro|trigger|macros`, `screen`, `adaptive`, `settings`,
     /// `device`, `profile?slot=1…4`. Used by the screenshot script and usable from Shortcuts / the shell.
+    private static let urlLog = Logger(subsystem: "com.uiltonlopes.spacestation", category: "url")
     private func open(_ url: URL) {
         let q = Dictionary(uniqueKeysWithValues: (URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []).map { ($0.name, $0.value ?? "") })
+        Self.urlLog.notice("open \(url.absoluteString, privacy: .public) host=\(url.host ?? "-", privacy: .public) q=\(q.description, privacy: .public) draft=\(profiles.draft != nil, privacy: .public)")
         switch url.host {
         case "home":
             route = .home
             if let t = q["tab"] { tab = HomeTab(rawValue: t) ?? (t == "buttons" ? .button : tab) }
             if let k = q["key"] { profiles.selectedKey = ControllerKey.allCases.first { "\($0)".lowercased() == k.lowercased() } }
-        case "screen": route = .screen
+            if q["kind"] == "special", let k = profiles.selectedKey { profiles.setMapping(k, .keyboardMouse); Self.urlLog.notice("special set on \(String(describing: k), privacy: .public) now \(String(describing: profiles.draft?.keys[k]), privacy: .public)") }
+            if let m = q["macro"].flatMap(Int.init) { profiles.macroToOpen = m }
+            if q["gyro"] == "mouse" { profiles.draft?.motion.mapType = .mouse }
+            // demo=<key>: a throwaway macro in the draft (never applied) so the editor has something to show.
+            if let d = q["demo"], let k = ControllerKey.allCases.first(where: { "\($0)".lowercased() == d.lowercased() }), let i = profiles.addMacro(for: k) {
+                profiles.updateMacro(at: i) { m in
+                    m.actions = [.init(durationMs: 0, key: ControllerKey.a.rawValue, event: .press), .init(durationMs: 60, key: ControllerKey.a.rawValue, event: .release),
+                                 .init(durationMs: 120, key: ControllerKey.b.rawValue, event: .press), .init(durationMs: 180, key: ControllerKey.b.rawValue, event: .release),
+                                 .init(durationMs: 300, key: ControllerKey.rt.rawValue, event: .press), .init(durationMs: 420, key: ControllerKey.rt.rawValue, event: .release)]
+                    m.count = m.actions.count
+                }
+                profiles.macroToOpen = i
+            }
+        case "screen":
+            route = .screen
+            NavHints.shared.screenSource = q["source"]; NavHints.shared.giphyQuery = q["q"]
         case "adaptive": route = .adaptiveTrigger
         case "settings": route = .settings
         case "device": route = .deviceCenter
@@ -89,7 +107,9 @@ struct MainWindow: View {
             if let w = q["w"].flatMap(Double.init), let h = q["h"].flatMap(Double.init), let win = NSApp.windows.first(where: { $0.isVisible && $0.title != "" || $0.isKeyWindow }) ?? NSApp.windows.first {
                 win.setContentSize(NSSize(width: w, height: h)); win.center()
             }
-        case "profile": if let s = q["slot"].flatMap(Int.init), (1...4).contains(s), !profiles.isDirty { profiles.select(slot: UInt8(s - 1)); route = .home }
+        case "profile":
+            if q["revert"] != nil { profiles.revert() }
+            if let s = q["slot"].flatMap(Int.init), (1...4).contains(s), !profiles.isDirty { profiles.select(slot: UInt8(s - 1)); route = .home }
         default: break
         }
     }
@@ -105,6 +125,7 @@ struct MainWindow: View {
 // MARK: - Sidebar
 
 struct Sidebar: View {
+    @Environment(AppUpdateChecker.self) private var updates
     @Environment(ControllerModel.self) private var model
     @Environment(ProfileStore.self) private var profiles
     @Environment(LiveInput.self) private var live
@@ -175,6 +196,20 @@ struct Sidebar: View {
                 Circle().fill(model.awaitingPad ? SS.yellow : (connected ? SS.green : SS.n400)).frame(width: 7, height: 7)
                 Text(model.awaitingPad ? "Waiting for controller" : (connected ? deviceName : "Not connected")).font(.system(size: 13, weight: .medium)).foregroundStyle(.white).lineLimit(1)
                 Spacer()
+            }
+            if let r = updates.latest {
+                Button { route = .settings } label: {
+                    HStack(spacing: 6) {
+                        Image(systemName: "sparkles").font(.system(size: 12))
+                        Text("App update \(r.version)").font(.system(size: 11, weight: .semibold)).lineLimit(1)
+                        Spacer(minLength: 0)
+                    }
+                    .foregroundStyle(.white)
+                    .padding(.horizontal, 10).frame(maxWidth: .infinity).frame(height: 26)
+                    .background(SS.n500, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
             }
             if let u = model.firmwareUpdate {
                 // Short label so it never truncates in the sidebar; the full story is in Settings.

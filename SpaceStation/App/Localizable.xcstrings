@@ -661,6 +661,16 @@
         }
       }
     },
+    "Check for app updates": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Verificar atualizações do app"
+          }
+        }
+      }
+    },
     "Check for updates": {
       "localizations": {
         "pt-BR": {
@@ -807,6 +817,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Fechar"
+          }
+        }
+      }
+    },
+    "Closing the window": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Ao fechar a janela"
           }
         }
       }
@@ -987,6 +1007,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Copiar este perfil para o modo Nintendo Switch do controle?"
+          }
+        }
+      }
+    },
+    "Could not check: %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível verificar: %@"
           }
         }
       }
@@ -1321,6 +1351,16 @@
         }
       }
     },
+    "Download": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baixar"
+          }
+        }
+      }
+    },
     "Download and verify (dry run)": {
       "localizations": {
         "pt-BR": {
@@ -1487,6 +1527,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Excelente — o traço é um círculo."
+          }
+        }
+      }
+    },
+    "Export log…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Exportar log…"
           }
         }
       }
@@ -2581,6 +2631,16 @@
         }
       }
     },
+    "Log": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Log"
+          }
+        }
+      }
+    },
     "Looking for controllers…": {
       "localizations": {
         "pt-BR": {
@@ -3201,6 +3261,16 @@
         }
       }
     },
+    "Off: the window closes and the app keeps running in the menu bar, so per-game profiles, keyboard/mouse mappings and the status icon stay active. On: closing the window quits the app.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Desligado: a janela fecha e o app continua na barra de menus, mantendo perfis por jogo, mapeamentos de teclado e mouse e o ícone de status. Ligado: fechar a janela encerra o app."
+          }
+        }
+      }
+    },
     "Official selection": {
       "localizations": {
         "pt-BR": {
@@ -3247,6 +3317,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Abrir"
+          }
+        }
+      }
+    },
+    "Open Console": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Abrir o Console"
           }
         }
       }
@@ -3601,6 +3681,16 @@
         }
       }
     },
+    "Quit Space Station when the window closes": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Encerrar o Space Station ao fechar a janela"
+          }
+        }
+      }
+    },
     "Race": {
       "localizations": {
         "pt-BR": {
@@ -3737,6 +3827,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Soltar um botão"
+          }
+        }
+      }
+    },
+    "Release notes": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Notas da versão"
           }
         }
       }
@@ -4771,6 +4871,16 @@
         }
       }
     },
+    "The app logs to the unified system log (Console.app, subsystem com.uiltonlopes.spacestation). Export the last hours to a text file to attach to a bug report.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O app registra no log unificado do sistema (Console, subsistema com.uiltonlopes.spacestation). Exporte as últimas horas para um arquivo de texto para anexar a um relato de bug."
+          }
+        }
+      }
+    },
     "The controller cannot be read back; this is what was last sent from here.": {
       "localizations": {
         "pt-BR": {
@@ -5527,6 +5637,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Verificando…"
+          }
+        }
+      }
+    },
+    "Version %@ is available": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Versão %@ disponível"
           }
         }
       }

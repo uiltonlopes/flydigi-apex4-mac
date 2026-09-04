@@ -37,6 +37,7 @@ struct MacrosPage: View {
             .background(SS.n800)
             .onChange(of: profiles.draft?.macros.count) { _, n in if let s = selected, s >= (n ?? 0) { selected = nil } }
             .onAppear { if let i = profiles.macroToOpen { selected = i; profiles.macroToOpen = nil } }
+            .onChange(of: profiles.macroToOpen) { _, i in if let i { selected = i; profiles.macroToOpen = nil } }
             // After Apply (or Revert) the editor closes, so it is obvious the change went through; it reopens
             // when a macro is clicked or a new one is created.
             .onChange(of: profiles.isDirty) { was, now in if was && !now { selected = nil } }

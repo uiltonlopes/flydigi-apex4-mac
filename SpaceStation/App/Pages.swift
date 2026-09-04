@@ -1,6 +1,7 @@
 // Sidebar routes: Screen (upload + official library), Adaptive Trigger (game presets), Settings.
 
 import SwiftUI
+import OSLog
 import ServiceManagement
 import UniformTypeIdentifiers
 import FlydigiKit
@@ -122,7 +123,8 @@ struct ScreenPage: View {
             guard !Task.isCancelled else { return }
             await searchGiphy()
         }
-        .onAppear { current = ScreenStore.current(deviceId: model.info?.deviceId) }
+        .onChange(of: NavHints.shared.screenSource, initial: true) { _, s in applyHints() }
+            .onAppear { current = ScreenStore.current(deviceId: model.info?.deviceId) }
         .onChange(of: model.info?.deviceId) { _, _ in current = ScreenStore.current(deviceId: model.info?.deviceId) }
     }
 
@@ -262,6 +264,12 @@ struct ScreenPage: View {
         }
     }
 
+    private func applyHints() {
+        let h = NavHints.shared
+        Logger(subsystem: "com.uiltonlopes.spacestation", category: "url").notice("screen applyHints source=\(h.screenSource ?? "-", privacy: .public) q=\(h.giphyQuery ?? "-", privacy: .public)")
+        if let s = h.screenSource { source = s == "giphy" ? .giphy : (s == "factory" ? .factory : .flydigi); h.screenSource = nil }
+        if let q = h.giphyQuery { giphyQuery = q; h.giphyQuery = nil; Task { await searchGiphy() } }
+    }
     private func searchGiphy() async {
         giphyLoading = true
         defer { giphyLoading = false }
@@ -393,7 +401,7 @@ struct SettingsPage: View {
             HStack(alignment: .top, spacing: 0) {
                 VStack(alignment: .leading, spacing: 4) {
                     navGroup("Controller Settings", ["Firmware Update", "USB mode"])
-                    navGroup("App Settings", ["Language", "GIPHY", "Keyboard & mouse", "Open at login", "Privileged helper"])
+                    navGroup("App Settings", ["Language", "GIPHY", "Keyboard & mouse", "Open at login", "Closing the window", "Log", "Privileged helper"])
                     navGroup("About", [])
                     Spacer()
                     VStack(alignment: .leading, spacing: 4) {
@@ -454,6 +462,20 @@ struct SettingsPage: View {
                             Text("Needed for anything that has to happen while you are not looking at the app — per-game trigger presets, the menu bar status. You can close the window; the app keeps running in the menu bar.")
                                 .font(.system(size: 12)).foregroundStyle(SS.n300)
                         }
+                        section("Closing the window") {
+                            SwitchRow(title: "Quit Space Station when the window closes", isOn: Binding(get: { UserDefaults.standard.bool(forKey: "quitOnClose") }, set: { UserDefaults.standard.set($0, forKey: "quitOnClose") }))
+                                .frame(maxWidth: 420)
+                            Text("Off: the window closes and the app keeps running in the menu bar, so per-game profiles, keyboard/mouse mappings and the status icon stay active. On: closing the window quits the app.")
+                                .font(.system(size: 12)).foregroundStyle(SS.n300)
+                        }
+                        section("Log") {
+                            Text("The app logs to the unified system log (Console.app, subsystem com.uiltonlopes.spacestation). Export the last hours to a text file to attach to a bug report.")
+                                .font(.system(size: 12)).foregroundStyle(SS.n300)
+                            HStack(spacing: 8) {
+                                GhostButton(title: "Export log…", icon: "square.and.arrow.up") { exportLog() }
+                                GhostButton(title: "Open Console", icon: "terminal") { NSWorkspace.shared.open(URL(fileURLWithPath: "/System/Applications/Utilities/Console.app")) }
+                            }
+                        }
                         section("Privileged helper") {
                             Text(model.helperInstalled ? "Installed and registered with launchd." : "Not installed.").font(.system(size: 13)).foregroundStyle(.white)
                             Text("Runs as root only while talking to the controller in XInput mode, because Apple's Xbox driver owns the USB interface. Required for screen uploads, trigger previews and key capture in XInput.")
@@ -467,6 +489,19 @@ struct SettingsPage: View {
                         section("Space Station for Mac") {
                             Text("Version \(appVersion) — open-source (MIT), unofficial. Ported to macOS by Uilton Lopes.")
                                 .font(.system(size: 13)).foregroundStyle(.white)
+                            HStack(spacing: 10) {
+                                if let r = updates.latest {
+                                    Text("Version \(r.version) is available").font(.system(size: 12, weight: .semibold)).foregroundStyle(.white)
+                                        .padding(.horizontal, 8).frame(height: 22).background(SS.brand500, in: Capsule())
+                                    PrimaryButton(title: "Download", icon: "arrow.down.circle") { updates.download() }
+                                    Link("Release notes", destination: r.page).font(.system(size: 12)).tint(SS.brand500)
+                                } else if updates.checked, updates.lastError == nil {
+                                    Text("Up to date").font(.system(size: 12)).foregroundStyle(SS.green)
+                                } else if let e = updates.lastError {
+                                    Text("Could not check: \(e)").font(.system(size: 12)).foregroundStyle(SS.yellow).lineLimit(1)
+                                }
+                                GhostButton(title: updates.checking ? "Checking…" : "Check for app updates", icon: "arrow.triangle.2.circlepath", enabled: !updates.checking) { Task { await updates.check() } }
+                            }
                             HStack(spacing: 10) {
                                 Link(destination: URL(string: "https://github.com/uiltonlopes/flydigi-space-station-mac")!) { Label("Source on GitHub", systemImage: "chevron.left.forwardslash.chevron.right") }
                                 Link(destination: URL(string: "https://github.com/uiltonlopes")!) { Label("@uiltonlopes", systemImage: "person.crop.circle") }
@@ -504,6 +539,27 @@ struct SettingsPage: View {
     }
 
     private var appVersion: String { Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "" }
+    @Environment(AppUpdateChecker.self) private var updates
+
+    /// Pulls this process's entries from the unified log (last 12 h) into a text file the user picks.
+    private func exportLog() {
+        let panel = NSSavePanel()
+        panel.nameFieldStringValue = "SpaceStation-\(appVersion)-log.txt"
+        panel.allowedContentTypes = [.plainText]
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        do {
+            let store = try OSLogStore(scope: .currentProcessIdentifier)
+            let since = store.position(date: Date().addingTimeInterval(-12 * 3600))
+            let df = ISO8601DateFormatter(); df.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            var lines = ["Space Station for Mac \(appVersion) · macOS \(ProcessInfo.processInfo.operatingSystemVersionString) · \(df.string(from: Date()))",
+                         "Controller: \(model.info.map { "\($0.deviceId) fw \($0.firmware) \($0.wired ? "wired" : "wireless")" } ?? "none") · connection \(model.connection) · helper \(model.helperInstalled ? "installed" : "not installed")", ""]
+            for e in try store.getEntries(at: since) {
+                guard let l = e as? OSLogEntryLog, l.subsystem == "com.uiltonlopes.spacestation" else { continue }
+                lines.append("\(df.string(from: l.date)) [\(l.category)] \(l.level.rawValue) \(l.composedMessage)")
+            }
+            try lines.joined(separator: "\n").write(to: url, atomically: true, encoding: .utf8)
+        } catch { model.lastError = "\(error)" }
+    }
 
     @ViewBuilder private var firmware: some View {
         if let i = model.info {

@@ -47,8 +47,9 @@
 | ![Welcome](docs/screenshots/device.png) Welcome screen with the connected controller | ![Buttons](docs/screenshots/buttons.png) Buttons: click, turbo, macro or keyboard/mouse per key |
 | ![Sticks](docs/screenshots/joystick.png) Sticks: Space Station's curve, dead zone, edge, live readout | ![Gyro](docs/screenshots/gyro.png) Gyro: map motion to a stick or the mouse |
 | ![Triggers](docs/screenshots/trigger.png) Triggers: ForceAdapt modes with live preview | ![Macros](docs/screenshots/macros.png) Macros: on-board sequences with a step editor |
-| ![Screen](docs/screenshots/screen.png) Screen: what is on the LCD, Flydigi's library, factory animations, GIPHY | ![Adaptive Trigger](docs/screenshots/adaptive.png) Adaptive Trigger: per-game profiles switched by the frontmost app |
-| ![Settings](docs/screenshots/settings.png) Settings: firmware update, USB mode, language, keyboard & mouse, helper | |
+| ![Screen](docs/screenshots/screen.png) Screen: what is on the LCD and Flydigi's official animations | ![GIPHY](docs/screenshots/screen-giphy.png) Screen: GIPHY search, sent to the LCD in one click |
+| ![Factory animations](docs/screenshots/screen-factory.png) Screen: the factory animation of every Apex 4 edition | ![Adaptive Trigger](docs/screenshots/adaptive.png) Adaptive Trigger: per-game profiles switched by the frontmost app |
+| ![Settings](docs/screenshots/settings.png) Settings: firmware update, USB mode, language, keyboard & mouse, helper | ![Installer](docs/screenshots/dmg.png) The DMG: drag to Applications, signed and notarized |
 
 ## Features
 

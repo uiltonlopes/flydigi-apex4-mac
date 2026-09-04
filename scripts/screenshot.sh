@@ -4,7 +4,8 @@
 set -e
 NAME="${1:?usage: screenshot.sh <name> [url]}"; URL="$2"
 OUT="$(dirname "$0")/../docs/screenshots"; mkdir -p "$OUT"
-[ -n "$URL" ] && { open "$URL"; sleep 1.5; }
+APP="${APP:-$(cd "$(dirname "$0")/.." && pwd)/SpaceStation/build/Build/Products/Debug/Space Station.app}"
+[ -n "$URL" ] && { open -a "$APP" "$URL"; sleep "${WAIT:-3}"; }
 WID=$(swift "$(dirname "$0")/windowid.swift")
 [ -n "$WID" ] || { echo "no Space Station window"; exit 1 }
 screencapture -o -x -l "$WID" "$OUT/$NAME.png"
