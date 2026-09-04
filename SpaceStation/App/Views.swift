@@ -66,8 +66,31 @@ struct MainWindow: View {
         }
         // The receiver can be there before the pad answers: load the profiles once it does.
         .onChange(of: model.info == nil) { _, isNil in if !isNil { Task { await profiles.loadAll() } } }
+        .onOpenURL { url in open(url) }
         .onChange(of: kmKey, initial: true) { _, k in
             keyboardMouse.push(mac: k.mac, slot: k.slot, motion: k.motion, connected: k.connected)
+        }
+    }
+
+    /// `spacestation://` URLs: `home?tab=common|buttons|joystick|gyro|trigger|macros`, `screen`, `adaptive`, `settings`,
+    /// `device`, `profile?slot=1…4`. Used by the screenshot script and usable from Shortcuts / the shell.
+    private func open(_ url: URL) {
+        let q = Dictionary(uniqueKeysWithValues: (URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []).map { ($0.name, $0.value ?? "") })
+        switch url.host {
+        case "home":
+            route = .home
+            if let t = q["tab"] { tab = HomeTab(rawValue: t) ?? (t == "buttons" ? .button : tab) }
+            if let k = q["key"] { profiles.selectedKey = ControllerKey.allCases.first { "\($0)".lowercased() == k.lowercased() } }
+        case "screen": route = .screen
+        case "adaptive": route = .adaptiveTrigger
+        case "settings": route = .settings
+        case "device": route = .deviceCenter
+        case "window":   // window?w=1280&h=840 — used by the screenshot script
+            if let w = q["w"].flatMap(Double.init), let h = q["h"].flatMap(Double.init), let win = NSApp.windows.first(where: { $0.isVisible && $0.title != "" || $0.isKeyWindow }) ?? NSApp.windows.first {
+                win.setContentSize(NSSize(width: w, height: h)); win.center()
+            }
+        case "profile": if let s = q["slot"].flatMap(Int.init), (1...4).contains(s), !profiles.isDirty { profiles.select(slot: UInt8(s - 1)); route = .home }
+        default: break
         }
     }
 

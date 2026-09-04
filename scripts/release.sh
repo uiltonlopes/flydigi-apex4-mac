@@ -47,10 +47,19 @@ if [ -n "${NOTARY_PROFILE:-}" ]; then
   rm -f "$DIST/SpaceStation-$VERSION.zip"; ditto -c -k --keepParent "$APP" "$DIST/SpaceStation-$VERSION.zip"   # zip of the stapled app
 fi
 
-# 2. DMG from the stapled app, signed as well (Gatekeeper's "open" assessment wants a signature on the image).
-STAGE="$(mktemp -d)"; cp -R "$APP" "$STAGE/"; ln -s /Applications "$STAGE/Applications"
-cp "$ROOT/docs/install.md" "$STAGE/READ ME FIRST.md"
-hdiutil create -quiet -volname "Space Station for Mac $VERSION" -srcfolder "$STAGE" -ov -format UDZO "$DIST/SpaceStation-$VERSION.dmg"
+# 2. DMG from the stapled app, with the usual Mac installer window (background, app on the left, Applications
+#    on the right), signed as well (Gatekeeper's "open" assessment wants a signature on the image).
+#    `brew install create-dmg`; falls back to a plain image when it is missing.
+STAGE="$(mktemp -d)"; cp -R "$APP" "$STAGE/"
+if command -v create-dmg >/dev/null; then
+  create-dmg --volname "Space Station for Mac" --volicon "$ROOT/SpaceStation/App/Resources/Flydigi/AppIcon.icns" \
+    --background "$ROOT/scripts/dmg/background.png" --window-pos 200 120 --window-size 660 400 --icon-size 128 \
+    --icon "Space Station.app" 170 220 --app-drop-link 490 220 --hide-extension "Space Station.app" --no-internet-enable \
+    "$DIST/SpaceStation-$VERSION.dmg" "$STAGE" >/dev/null
+else
+  ln -s /Applications "$STAGE/Applications"
+  hdiutil create -quiet -volname "Space Station for Mac $VERSION" -srcfolder "$STAGE" -ov -format UDZO "$DIST/SpaceStation-$VERSION.dmg"
+fi
 rm -rf "$STAGE"
 if [ -n "${SIGN_IDENTITY:-}" ]; then codesign --force --timestamp -s "$SIGN_IDENTITY" "$DIST/SpaceStation-$VERSION.dmg"; fi
 if [ -n "${NOTARY_PROFILE:-}" ]; then

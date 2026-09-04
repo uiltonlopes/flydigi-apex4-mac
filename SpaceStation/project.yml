@@ -53,6 +53,9 @@ targets:
         CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         LSMinimumSystemVersion: "15.0"
         LSApplicationCategoryType: public.app-category.utilities
+        CFBundleURLTypes:                  # spacestation://home?tab=buttons · screen · adaptive · settings · device · profile?slot=2
+          - CFBundleURLName: com.uiltonlopes.spacestation
+            CFBundleURLSchemes: [spacestation]
         NSHumanReadableCopyright: "MIT · Ported to macOS by Uilton Lopes\ngithub.com/uiltonlopes · linkedin.com/in/uiltonlopes\nbuymeacoffee.com/uiltonlopes · Not affiliated with Flydigi"
         UTExportedTypeDeclarations:
           - UTTypeIdentifier: com.uiltonlopes.spacestation.profile

@@ -1,7 +1,3 @@
-<p align="center">
-  <img src="SpaceStation/App/Resources/Flydigi/apex4-hero.png" width="360" alt="Flydigi Apex 4">
-</p>
-
 <h1 align="center">Space Station for Mac</h1>
 
 <p align="center">
@@ -29,8 +25,13 @@
 > reverse-engineered and verified on a real Apex 4 (firmware 6.8.3.x). The app covers what Space Station 4
 > offers for the Apex 4, and adds a few things of its own. Details in [`docs/roadmap.md`](docs/roadmap.md).
 
+<p align="center">
+  <img src="docs/screenshots/common.png" width="960" alt="Space Station for Mac — Common tab with lighting, vibration and controller settings">
+</p>
+
 ## Contents
 
+- [Screenshots](#screenshots)
 - [Features](#features)
 - [Install](#install)
 - [How it works](#how-it-works)
@@ -38,6 +39,16 @@
 - [Building and contributing](#building-and-contributing)
 - [Command line](#command-line)
 - [Credits and disclaimer](#credits-and-disclaimer)
+
+## Screenshots
+
+| | |
+|---|---|
+| ![Welcome](docs/screenshots/device.png) Welcome screen with the connected controller | ![Buttons](docs/screenshots/buttons.png) Buttons: click, turbo, macro or keyboard/mouse per key |
+| ![Sticks](docs/screenshots/joystick.png) Sticks: Space Station's curve, dead zone, edge, live readout | ![Gyro](docs/screenshots/gyro.png) Gyro: map motion to a stick or the mouse |
+| ![Triggers](docs/screenshots/trigger.png) Triggers: ForceAdapt modes with live preview | ![Macros](docs/screenshots/macros.png) Macros: on-board sequences with a step editor |
+| ![Screen](docs/screenshots/screen.png) Screen: what is on the LCD, Flydigi's library, factory animations, GIPHY | ![Adaptive Trigger](docs/screenshots/adaptive.png) Adaptive Trigger: per-game profiles switched by the frontmost app |
+| ![Settings](docs/screenshots/settings.png) Settings: firmware update, USB mode, language, keyboard & mouse, helper | |
 
 ## Features
 
@@ -54,6 +65,8 @@ names. Everything is drawn with native SwiftUI controls; the app also lives in t
 - **Nickname** for the controller (right-click the card), **USB mode switch** (XInput ⇄ DInput) from the
   sidebar, refresh, and a firmware-update badge when Flydigi ships a newer version.
 - **Menu bar** item with connection, battery, profile and quick actions.
+- **URL scheme** for automation and Shortcuts: `spacestation://home?tab=buttons`, `spacestation://screen`,
+  `spacestation://settings`, `spacestation://profile?slot=2`.
 
 ### Profiles
 
