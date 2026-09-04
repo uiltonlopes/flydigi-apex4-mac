@@ -170,7 +170,8 @@ final class ProfileStore {
     /// Creates an empty macro bound to `key` (or returns the existing one). `nil` when the slot is full.
     @discardableResult
     func addMacro(for key: ControllerKey) -> Int? {
-        if let i = macroIndex(for: key) { return i }
+        // A macro can outlive its binding (the key was switched to Click/Turbo and back): relink instead of adding.
+        if let i = macroIndex(for: key) { draft?.keys[key] = .macro; return i }
         guard let d = draft, d.macros.count < maxMacros else { return nil }
         draft?.macros.append(.init(key: key.rawValue, count: 0, enable: .once, actions: []))
         draft?.keys[key] = .macro

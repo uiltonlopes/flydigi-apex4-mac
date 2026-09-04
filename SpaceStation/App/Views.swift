@@ -859,7 +859,10 @@ struct KeyEditor: View {
         switch k {
         case .click: profiles.setMapping(key, target == key ? .identity : .key(target))
         case .turbo: profiles.setMapping(key, .turbo(target, enable: .press, frequency: 15))
-        case .macro: if profiles.addMacro(for: key) == nil { profiles.setMapping(key, .macro) }
+        case .macro:
+            if profiles.addMacro(for: key) == nil {
+                profiles.lastError = String(localized: "This profile already has the maximum number of macros.")
+            }
         case .special: profiles.setMapping(key, .keyboardMouse)
         }
     }
