@@ -13,15 +13,14 @@ Legend: ✅ verified on hardware · 🧪 implemented, needs a hardware test · �
 - ✅ Sticks: SS4's sensitivity curve (Default / Instant / Delay / Custom with draggable nodes, live dot), dead zone, edge, report-rate meter, circularity test, guided calibration.
 - ✅ Gyro: mapping, activation key and second key, sensitivity, dead zone, use mode.
 - ✅ Triggers: ForceAdapt General / Racing / Recoil / Sniper / Trigger lock / Vibration with SS4's parameters, the pad's own presets as defaults, live preview while dragging, vibration test.
-- ✅ Macros: on-board macros with step editor, recording from the pad, local library with `.fdgmacro` export/import.
+- ✅ Macros: on-board macros with step editor, recording from the pad, local library with `.fdgmacro` export/import. Verified on hardware 2026-09-04: recorded on M1, played back by the pad, edited and played again.
 - ✅ Screen: image/GIF editor (pan, zoom, fit/fill, trim, frame interval sent to the pad), Flydigi's animation library, factory animations, GIPHY search, "on the controller" record, restore default animation.
+- ✅ Per-app game profiles: slot + ForceAdapt + lighting switched when the chosen app comes to the front and restored when it leaves (verified with Safari as the target app, 2026-09-04).
 - ✅ Settings: firmware update check with Flydigi's note, USB mode switch, language (en, pt-BR), GIPHY key, open at login, helper install/remove, device nickname.
 - ✅ Release pipeline: Developer ID signing, notarization and stapling of app and DMG (`scripts/release.sh`).
 
 ## Needs a hardware test
 
-- 🧪 **Macros end to end**: record from the pad, edit, apply, and confirm the pad plays the macro (once / hold-to-loop / toggle) in a game.
-- 🧪 **Per-app game profiles** with a real game: slot + ForceAdapt + lighting switch when the game comes to the front, restore when it leaves (verified only with ordinary apps).
 - 🧪 **NS mode**: the profile is written to slots 4–7; confirm on a Switch that the pad uses it.
 - 🧪 Other Apex 4 editions (device ids 86, 87, 92, 93, 102, 103, 104): same protocol, artwork present, never connected here.
 
