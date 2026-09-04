@@ -19,6 +19,10 @@
 
 ## Every release
 
+`brew install create-dmg` once — the script uses it for the installer window (background in `scripts/dmg/`).
+Before tagging: `CHANGELOG.md` gets a `## <version>` heading with the date, the README badges pick the tag up by
+themselves. Screenshots for the README: run the Debug app and `scripts/screenshot.sh <name> <spacestation:// url>`.
+
 ```bash
 SIGN_IDENTITY="Developer ID Application: <name> (<TEAMID>)" NOTARY_PROFILE=AC_NOTARY scripts/release.sh 0.2.0
 git tag -a v0.2.0 -m "Space Station for Mac 0.2.0" && git push origin v0.2.0

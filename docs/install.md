@@ -5,7 +5,7 @@ over USB-C or through its charging base (2.4 GHz receiver).
 
 ## 1. Install the app
 
-1. Open the `.dmg` and drag **Space Station.app** to Applications.
+1. Open the `.dmg` and drag **Space Station.app** onto the Applications folder shown next to it.
 2. First launch: builds from the Releases page are signed with a Developer ID and notarized by Apple, so
    the app opens like any other. (Only if you built it yourself with a personal certificate will macOS ask
    you to right-click → Open once, or to run `xattr -dr com.apple.quarantine "/Applications/Space Station.app"`.)
