@@ -211,11 +211,13 @@ final class KeyboardMouseEngine: @unchecked Sendable {
             else if motion.hold { motionOn = keyDown }
             else { if motionKeyWasDown && !keyDown { motionOn.toggle() }; motionKeyWasDown = keyDown }
             if motionOn, let last = lastGyro {
-                // Space Station: delta = rate × sensitivity / 10 per report, with a glitch filter on big jumps.
-                if abs(s.gyroX - last.0) < 200 && abs(s.gyroY - last.1) < 200 {
-                    let gain = 0.004
-                    accX += Double(s.gyroX) * Double(map.gyro.sensitivityX) * gain
-                    accY += Double(s.gyroY) * Double(map.gyro.sensitivityY) * gain
+                // Measured 2026-09-04 (apex4 dev gyro-one, ~500 reports/s): X = yaw, negative turning left, about ±120
+                // for a slow turn; Y = pitch, negative when the front rises, roughly 8× more sensitive (saturates at
+                // ±2047). Glitch filter like Space Station's: skip jumps of 200+ between consecutive reports (torn
+                // reads show up as −256 on X). Gains give ~800 px/s for that slow turn at sensitivity 50.
+                if abs(s.gyroX - last.0) < 200 && abs(s.gyroY - last.1) < 1000 {
+                    accX += Double(s.gyroX) * Double(map.gyro.sensitivityX) * 0.0004
+                    accY += Double(s.gyroY) * Double(map.gyro.sensitivityY) * 0.00005
                 }
             }
             lastGyro = (s.gyroX, s.gyroY)

@@ -265,8 +265,13 @@ in byte 0. Verified on an Apex 4 on 2026-09-01 (`apex4 dev hid-diff`):
 
 A key whose table entry is `0xFE` (keyboard/mouse) **is still reported here** but is **removed from the XInput/Xbox
 report** (verified 2026-09-04, `apex4 dev km-probe`): the firmware suppresses it for games, so keyboard mappings
-can only be driven from the DInput vendor report. Bytes 4–6 are read as two signed 12-bit motion rates (X = b4 |
-(b6 & 0xF0) << 4, Y = b5 | (b6 & 0x0F) << 8, like Space Station's classic parser) — decode still to be confirmed.
+can only be driven from the DInput vendor report. **Motion (verified 2026-09-04, `apex4 dev gyro-one`):** the pad streams the sensor **only while the active profile's
+motion map type is not Off** (byte 137); the report rate stays ~500 Hz. Bytes 4–6 pack two signed 12-bit rates like
+Space Station's classic parser: `X = b4 | (b6 & 0xF0) << 4` = **yaw** (negative turning left, ≈ ±120 for a slow
+turn), `Y = b5 | (b6 & 0x0F) << 8` = **pitch** (negative when the front rises; far more sensitive, saturates at
+±2047). Bytes 29–30 (s16 LE) carry the **roll** rate (positive lifting the left grip); 11–12 / 13–14 / 15–16 are the
+accelerometer X / Y / Z (Z ≈ 800 flat). Byte 18 wraps like a counter; 20, 26–27 are small. The Xbox report carries
+the same three bytes at 14–16.
 
 This is how the app lights up paddles, Fn and Home, which Apple's Xbox driver never reports in XInput
 mode (`FlydigiKit/Sources/FlydigiKit/InputReport.swift`). Reply frames on the same interface use

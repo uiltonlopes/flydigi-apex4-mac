@@ -7,7 +7,7 @@ import FlydigiTransport
 
 struct Dev: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Developer experiments (protocol re-tests).", shouldDisplay: false,
-                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, DualOpen.self, DInputSlots.self, DInputCursor.self, DInputApply.self, HWStatus.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self, InfoWatch.self, VibTest.self, RumbleTest.self, RumbleVariants.self, SlotProbe.self, KMProbe.self, GyroWatch.self])
+                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, DualOpen.self, DInputSlots.self, DInputCursor.self, DInputApply.self, HWStatus.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self, InfoWatch.self, VibTest.self, RumbleTest.self, RumbleVariants.self, SlotProbe.self, KMProbe.self, GyroWatch.self, GyroPhases.self, GyroOne.self])
 
     /// XInput (captured) version of hid-diff: optionally sends Space Station's "enable raw data"
     /// (`A5 50`) first, then prints changing bytes for N seconds. Needs root (USB capture).
@@ -596,17 +596,144 @@ extension Dev {
 struct GyroWatch: ParsableCommand {
     static let configuration = CommandConfiguration(commandName: "gyro-watch")
     @Option(name: .long) var seconds: Double = 15
+    @Flag(name: .long, help: "Temporarily set the slot's motion map type to Mouse (3) — the pad may only stream motion when the profile asks for it.") var enable = false
     func run() throws {
+        var original: [UInt8]?
+        let session = try DeviceSession.open(preferring: .dinput)
+        if enable {
+            session.configId = 0
+            let bytes = try session.readBlob(.config)
+            guard var cfg = GamepadConfig(bytes: bytes) else { throw ValidationError("config did not parse") }
+            original = bytes
+            cfg.motion.mapType = .mouse; cfg.motion.enableKey1 = 255; cfg.motion.enableKey2 = 255
+            _ = try session.writeBlob(cfg.bytes, kind: .config); try session.saveToFlash()
+            print("slot 0: motion map type → Mouse (always on) for the test")
+        }
+        session.close()
+        defer {
+            if let original, let r = try? DeviceSession.open(preferring: .dinput) {
+                r.configId = 0
+                if (try? r.writeBlob(original, kind: .config)) != nil, (try? r.saveToFlash()) != nil { print("slot 0 restored") } else { print("RESTORE FAILED") }
+                r.close()
+            }
+        }
+        Thread.sleep(forTimeInterval: 0.5)
         let link = try HIDLink(); defer { link.close() }
-        let t0 = Date(); var n = 0
+        let t0 = Date(); var n = 0; var first: [UInt8]?; var lastPrint = Date.distantPast; var rate = 0; var rateT = Date()
+        let known: Set<Int> = [0, 1, 7, 8, 9, 10, 17, 19, 21, 22, 23, 24]
         print("rotate the controller: yaw (turn left/right), then pitch (tilt forward/back) — \(Int(seconds)) s")
         while Date().timeIntervalSince(t0) < seconds {
             guard let r: [UInt8] = try? link.waitForReport(timeout: 0.5, { (r: [UInt8]) -> [UInt8]? in r.count >= 32 && r[0] == 4 && r[1] == 0xFE ? r : nil }) else { continue }
-            n += 1
-            guard n % 50 == 0, let st = ControllerState(dinputReport: r) else { continue }
-            let extra = [4, 5, 6, 11, 12, 13, 14, 15, 18, 20, 26, 29].map { String(format: "%d:%02x", $0, r[$0]) }.joined(separator: " ")
-            print(String(format: "%5.1fs  gyroX %5d  gyroY %5d   ", Date().timeIntervalSince(t0), st.gyroX, st.gyroY) + extra)
+            n += 1; rate += 1
+            if first == nil { first = r; print("first: " + r.map { String(format: "%02x", $0) }.joined(separator: " ")) }
+            if Date().timeIntervalSince(rateT) >= 1 { print("  \(rate) reports/s"); rate = 0; rateT = Date() }
+            guard Date().timeIntervalSince(lastPrint) >= 0.15, let st = ControllerState(dinputReport: r), let f = first else { continue }
+            lastPrint = Date()
+            let changed = (0..<32).filter { !known.contains($0) && r[$0] != f[$0] }.map { String(format: "%d:%02x", $0, r[$0]) }.joined(separator: " ")
+            if !changed.isEmpty { print(String(format: "%5.1fs  gyroX %5d  gyroY %5d   changed vs first: ", Date().timeIntervalSince(t0), st.gyroX, st.gyroY) + changed) }
         }
+        print("reports: \(n)")
+    }
+}
+
+/// Phase test for the motion bytes: 0–5 s still and flat, 5–10 s yaw (turn left, back, right), 10–15 s pitch
+/// (tilt the top away, back, towards you), 15–20 s roll (tilt left, back, right). Prints mean / min / max per
+/// candidate channel and phase so the axes and signs can be read off.
+struct GyroPhases: ParsableCommand {
+    static let configuration = CommandConfiguration(commandName: "gyro-phases")
+    func run() throws {
+        var original: [UInt8]?
+        let session = try DeviceSession.open(preferring: .dinput)
+        session.configId = 0
+        let bytes = try session.readBlob(.config)
+        guard var cfg = GamepadConfig(bytes: bytes) else { throw ValidationError("config did not parse") }
+        original = bytes
+        cfg.motion.mapType = .mouse; cfg.motion.enableKey1 = 255; cfg.motion.enableKey2 = 255
+        _ = try session.writeBlob(cfg.bytes, kind: .config); try session.saveToFlash()
+        session.close()
+        defer {
+            if let original, let r = try? DeviceSession.open(preferring: .dinput) {
+                r.configId = 0
+                if (try? r.writeBlob(original, kind: .config)) != nil, (try? r.saveToFlash()) != nil { print("slot 0 restored") } else { print("RESTORE FAILED") }
+                r.close()
+            }
+        }
+        Thread.sleep(forTimeInterval: 0.5)
+        let link = try HIDLink(); defer { link.close() }
+        func s16(_ r: [UInt8], _ i: Int) -> Int { let v = Int(r[i]) | Int(r[i + 1]) << 8; return v >= 0x8000 ? v - 0x10000 : v }
+        func s8(_ v: UInt8) -> Int { Int(Int8(bitPattern: v)) }
+        let channels: [(String, ([UInt8]) -> Int)] = [
+            ("12bit X(4,6h)", { r in var x = Int(r[4]) | (Int(r[6] & 0xF0) << 4); if x & 0x800 != 0 { x -= 4096 }; return x }),
+            ("12bit Y(5,6l)", { r in var y = Int(r[5]) | (Int(r[6] & 0x0F) << 8); if y & 0x800 != 0 { y -= 4096 }; return y }),
+            ("s16(3,4)", { s16($0, 3) }), ("s16(5,6)", { s16($0, 5) }), ("s8(4)", { s8($0[4]) }), ("s8(5)", { s8($0[5]) }), ("s8(6)", { s8($0[6]) }),
+            ("s16(11,12)", { s16($0, 11) }), ("s16(13,14)", { s16($0, 13) }), ("s16(15,16)", { s16($0, 15) }),
+            ("s8(18)", { s8($0[18]) }), ("s8(20)", { s8($0[20]) }),
+            ("s16(26,27)", { s16($0, 26) }), ("s16(29,30)", { s16($0, 29) }),
+        ]
+        let phases = ["still", "pitch: top away", "roll: left up", "yaw: turn left"]
+        var sums = [[Double]](repeating: [Double](repeating: 0, count: channels.count), count: 4)
+        var mins = [[Int]](repeating: [Int](repeating: .max, count: channels.count), count: 4)
+        var maxs = [[Int]](repeating: [Int](repeating: .min, count: channels.count), count: 4)
+        var counts = [Int](repeating: 0, count: 4)
+        let t0 = Date()
+        print("GO: 0–5 s still · 5–10 s tilt the top AWAY from you, slowly, one way · 10–15 s lift the LEFT grip, slowly · 15–20 s turn the pad to the LEFT, slowly")
+        while Date().timeIntervalSince(t0) < 20 {
+            guard let r: [UInt8] = try? link.waitForReport(timeout: 0.5, { (r: [UInt8]) -> [UInt8]? in r.count >= 32 && r[0] == 4 && r[1] == 0xFE ? r : nil }) else { continue }
+            let ph = min(3, Int(Date().timeIntervalSince(t0) / 5))
+            counts[ph] += 1
+            if ph > 0, counts[ph] % 100 == 1 {
+                print(String(format: "  %5.1fs  %@  12X %5d 12Y %5d  s16(3,4) %6d s16(5,6) %6d  s8(18) %4d  (26,27) %5d (29,30) %5d", Date().timeIntervalSince(t0), phases[ph],
+                             channels[0].1(r), channels[1].1(r), s16(r, 3), s16(r, 5), s8(r[18]), s16(r, 26), s16(r, 29)))
+            }
+            for (i, c) in channels.enumerated() { let v = c.1(r); sums[ph][i] += Double(v); mins[ph][i] = min(mins[ph][i], v); maxs[ph][i] = max(maxs[ph][i], v) }
+        }
+        print(String(format: "%-16@", "channel") + phases.map { String(format: "%-26@", $0) }.joined())
+        for (i, c) in channels.enumerated() {
+            var line = String(format: "%-16@", c.0)
+            for ph in 0..<4 where counts[ph] > 0 { line += String(format: "%-26@", String(format: "%6.0f [%5d,%5d]", sums[ph][i] / Double(counts[ph]), mins[ph][i], maxs[ph][i])) }
+            print(line)
+        }
+        print("samples per phase: \(counts)")
+    }
+}
+
+/// One movement per run: enables the gyro in slot 0, waits 1 s, measures for N seconds, prints mean/min/max of
+/// the two 12-bit axes, restores the slot.
+struct GyroOne: ParsableCommand {
+    static let configuration = CommandConfiguration(commandName: "gyro-one")
+    @Option(name: .long) var seconds: Double = 8
+    func run() throws {
+        let session = try DeviceSession.open(preferring: .dinput)
+        session.configId = 0
+        let original = try session.readBlob(.config)
+        guard var cfg = GamepadConfig(bytes: original) else { throw ValidationError("config did not parse") }
+        cfg.motion.mapType = .mouse; cfg.motion.enableKey1 = 255; cfg.motion.enableKey2 = 255
+        _ = try session.writeBlob(cfg.bytes, kind: .config); try session.saveToFlash()
+        session.close()
+        defer {
+            if let r = try? DeviceSession.open(preferring: .dinput) { r.configId = 0; _ = try? r.writeBlob(original, kind: .config); try? r.saveToFlash(); r.close() }
+        }
+        Thread.sleep(forTimeInterval: 1)
+        let link = try HIDLink(); defer { link.close() }
+        func s16(_ r: [UInt8], _ i: Int) -> Int { let v = Int(r[i]) | Int(r[i + 1]) << 8; return v >= 0x8000 ? v - 0x10000 : v }
+        func s8(_ v: UInt8) -> Int { Int(Int8(bitPattern: v)) }
+        let channels: [(String, ([UInt8]) -> Int)] = [
+            ("s8(4)", { s8($0[4]) }), ("s16(5,6)", { s16($0, 5) }), ("s8(18)", { s8($0[18]) }), ("s8(20)", { s8($0[20]) }),
+            ("s16(11,12)", { s16($0, 11) }), ("s16(13,14)", { s16($0, 13) }), ("s16(15,16)", { s16($0, 15) }),
+            ("s16(26,27)", { s16($0, 26) }), ("s16(29,30)", { s16($0, 29) }),
+        ]
+        var sums = [Double](repeating: 0, count: channels.count), mins = [Int](repeating: .max, count: channels.count), maxs = [Int](repeating: .min, count: channels.count)
+        var n = 0; var series: [String] = []
+        let t0 = Date()
+        while Date().timeIntervalSince(t0) < seconds {
+            guard let r: [UInt8] = try? link.waitForReport(timeout: 0.5, { (r: [UInt8]) -> [UInt8]? in r.count >= 32 && r[0] == 4 && r[1] == 0xFE ? r : nil }) else { continue }
+            n += 1
+            for (i, c) in channels.enumerated() { let v = c.1(r); sums[i] += Double(v); mins[i] = min(mins[i], v); maxs[i] = max(maxs[i], v) }
+            if n % 250 == 0 { series.append(String(format: "%.1fs  ", Date().timeIntervalSince(t0)) + channels.map { String(format: "%@ %5d", $0.0, $0.1(r)) }.joined(separator: "  ")) }
+        }
+        print("samples \(n)")
+        for (i, c) in channels.enumerated() { print(String(format: "%-11@ mean %6.0f  min %6d  max %6d", c.0, sums[i] / Double(max(1, n)), mins[i], maxs[i])) }
+        print(series.joined(separator: "\n"))
     }
 }
 
