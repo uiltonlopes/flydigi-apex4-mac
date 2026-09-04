@@ -19,6 +19,8 @@ final class ProfileStore {
     /// Slot currently on the pad (a game rule may have moved it temporarily).
     var shownSlot: UInt8 { temporarySlot ?? activeSlot }
     var draft: GamepadConfig?                 // edited copy of the active slot
+    /// Set by the Buttons tab's "Edit macro" arrow; the Macros page opens this macro when it appears, then clears it.
+    var macroToOpen: Int?
     var isDirty: Bool { guard let d = draft, let s = slots.first(where: { $0.index == activeSlot }) else { return false }; return d.bytes != s.config.bytes }
     var lastError: String?
     var busy = false

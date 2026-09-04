@@ -787,7 +787,7 @@ struct KeyEditor: View {
         let m = i.flatMap { profiles.draft?.macros[safe: $0] }
         return VStack(alignment: .leading, spacing: 12) {
             Button {
-                profiles.addMacro(for: key)
+                profiles.macroToOpen = profiles.addMacro(for: key)
                 withAnimation(.easeOut(duration: 0.18)) { tab = .macros }
             } label: {
                 HStack {
