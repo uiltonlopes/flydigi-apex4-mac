@@ -218,9 +218,12 @@ final class KeyboardMouseEngine: @unchecked Sendable {
                 // for a slow turn; Y = pitch, negative when the front rises, roughly 8× more sensitive (saturates at
                 // ±2047). Glitch filter like Space Station's: skip jumps of 200+ between consecutive reports (torn
                 // reads show up as −256 on X). Gains give ~800 px/s for that slow turn at sensitivity 50.
+                // Signs checked with the pointer on 2026-09-04: both axes come out inverted for pointing, so negate.
+                // A small dead band (sensor noise at rest is ±16 on Y, a few counts on X) keeps the pointer still in hand.
                 if abs(s.gyroX - last.0) < 200 && abs(s.gyroY - last.1) < 1000 {
-                    accX += Double(s.gyroX) * Double(map.gyro.sensitivityX) * 0.0004
-                    accY += Double(s.gyroY) * Double(map.gyro.sensitivityY) * 0.00005
+                    let gx = abs(s.gyroX) < 4 ? 0 : s.gyroX, gy = abs(s.gyroY) < 24 ? 0 : s.gyroY
+                    accX -= Double(gx) * Double(map.gyro.sensitivityX) * 0.0004
+                    accY -= Double(gy) * Double(map.gyro.sensitivityY) * 0.00005
                 }
             }
             lastGyro = (s.gyroX, s.gyroY)
