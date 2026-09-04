@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Firmware: `apex4 firmware flash` streams the main-chip OTA the way Space Station's flasher does (START / DATA / END over the DInput OTA interface), gated on `--yes`, cable, DInput, battery ≥ 40 % and a validated image. Not exposed in the app until it has been run on hardware.
 - Release pipeline: Developer ID signing, notarization and stapling of both the app (via zip) and the signed DMG; Gatekeeper reports "Notarized Developer ID".
 - Profiles: "Apply to NS mode…" copies the profile (and lighting) into the controller's Switch-mode slot (config ids 4–7), like Space Station.
 - Fix: the macro editor crashed when a step or the macro itself was removed while its rows were still on screen (stale index in a binding).

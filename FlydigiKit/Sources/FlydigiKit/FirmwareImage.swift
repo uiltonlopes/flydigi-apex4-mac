@@ -101,3 +101,36 @@ public enum FirmwareVersion {
         return false
     }
 }
+
+/// The Telink OTA wire format Space Station's flasher speaks over HID (docs/firmware-update.md §3). Pure bytes.
+public enum OTAPacket {
+    public static let reportId: UInt8 = 5
+    public static let reportLength = 64
+
+    /// 64-byte report `05 02 <len> 00 payload…`, zero-padded.
+    public static func report(payload: [UInt8]) -> [UInt8] {
+        var r = [UInt8](repeating: 0, count: reportLength)
+        r[0] = reportId; r[1] = 0x02; r[2] = UInt8(payload.count); r[3] = 0
+        for (i, b) in payload.enumerated() where 4 + i < reportLength { r[4 + i] = b }
+        return r
+    }
+    /// START: opcode 0xFF01 LE.
+    public static let startPayload: [UInt8] = [0x01, 0xFF]
+    /// END: opcode 0xFF02, last index, and its two's complement.
+    public static func endPayload(lastIndex n: Int) -> [UInt8] {
+        let m = (0x10000 - n) & 0xFFFF
+        return [0x02, 0xFF, UInt8(n & 0xFF), UInt8(n >> 8 & 0xFF), UInt8(m & 0xFF), UInt8(m >> 8 & 0xFF)]
+    }
+    /// One DATA packet: `index LE16 · 16 image bytes · CRC-16/MODBUS LE over the 18 bytes`.
+    public static func packet(index: Int, block: [UInt8]) -> [UInt8] {
+        var p: [UInt8] = [UInt8(index & 0xFF), UInt8(index >> 8 & 0xFF)] + block
+        let c = FirmwareImage.crc16Modbus(p)
+        p += [UInt8(c & 0xFF), UInt8(c >> 8)]
+        return p
+    }
+    /// Result report `05 02 03 00 06 FF <code>` → code (0 = success).
+    public static func resultCode(_ r: [UInt8]) -> UInt8? {
+        guard r.count >= 7, r[0] == 5, r[1] == 2, r[2] == 3, r[4] == 6, r[5] == 0xFF else { return nil }
+        return r[6]
+    }
+}

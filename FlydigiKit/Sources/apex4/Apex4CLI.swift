@@ -276,8 +276,8 @@ struct API: ParsableCommand {
 // MARK: - Firmware (read-only)
 
 struct Firmware: ParsableCommand {
-    static let configuration = CommandConfiguration(abstract: "Firmware: check Flydigi for updates, download and verify the image, probe the OTA interface. Never flashes.",
-                                                    subcommands: [Check.self, Verify.self, OTAVersion.self], defaultSubcommand: Check.self)
+    static let configuration = CommandConfiguration(abstract: "Firmware: check Flydigi for updates, download and verify the image, probe the OTA interface, flash (only with --yes).",
+                                                    subcommands: [Check.self, Verify.self, OTAVersion.self, Flash.self], defaultSubcommand: Check.self)
     struct Check: ParsableCommand {
         @Option(help: "Installed main-chip version, e.g. 6.8.3.0 (default: read from the pad).") var installed: String?
         @OptionGroup var ch: ChannelOption
@@ -299,6 +299,62 @@ struct Firmware: ParsableCommand {
             print(String(format: "file %d bytes · payload %d · version field 0x%08x · boot mark %@", data.count, img.payloadSize, img.versionField, img.hasBootMark ? "KNLT" : "none"))
             print(String(format: "crc32 stored %08x computed %08x %@", img.storedCRC, img.computedCRC, img.crcMatches ? "OK" : "MISMATCH"))
             try img.validate(); print("valid · \(img.packetCount) OTA packets")
+        }
+    }
+    struct Flash: ParsableCommand {
+        static let configuration = CommandConfiguration(abstract: """
+        Flash the main-chip firmware over the OTA interface, the way Space Station's FirmwareConsole does.
+        Requirements: pad in DInput mode over the USB cable (run `apex4 mode` from XInput first), battery ≥ 40 %,
+        a valid image. Nothing is written without --yes. Afterwards the pad reboots; run `apex4 mode --channel dinput`
+        to go back to XInput.
+        """)
+        @Argument(help: "URL or local path of the .bin (default: the newest main-chip image Flydigi offers for this pad).") var source: String?
+        @Flag(name: .long, help: "Really write the firmware.") var yes = false
+        @Flag(name: .long, help: "Print the first acknowledgements and every unusual report.") var verbose = false
+        @Option(name: .long, help: "Minimum battery percentage.") var minBattery: Int = 40
+        @Option(name: .long, help: "OTA packets per report (1–3, Space Station uses 3).") var packetsPerReport: Int = 3
+
+        func run() throws {
+            // 1. The pad, over the cable, in DInput.
+            let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }
+            guard s.channel == .dinput else { throw ValidationError("the pad is in XInput; run `sudo apex4 mode` first, wait for it to re-enumerate, then retry") }
+            let info = try s.deviceInfo()
+            guard info.isWired else { throw ValidationError("the pad is on the wireless receiver; connect the USB cable") }
+            guard OTALink.isPresent() else { throw ValidationError("OTA interface (usage page FFEF) not present") }
+            print("pad \(info.modelName) · device id \(info.deviceId) · firmware \(info.firmware) · battery \(info.batteryRaw) % · wired")
+            guard Int(info.batteryRaw) >= minBattery else { throw ValidationError("battery \(info.batteryRaw) % is below \(minBattery) %; charge first") }
+
+            // 2. The image.
+            let url: URL
+            if let source {
+                url = (URL(string: source).flatMap { $0.scheme?.hasPrefix("http") == true ? $0 : nil }) ?? URL(fileURLWithPath: source)
+            } else {
+                let chips = try FlydigiAPI.firmwareUpdates(deviceId: Int(info.deviceId), mainChip: info.firmware)
+                guard let main = chips["main_chip"] else { print("Flydigi offers no newer main-chip firmware for \(info.firmware)"); return }
+                print("Flydigi offers \(main.version): \(main.url.lastPathComponent)")
+                url = main.url
+            }
+            let data = url.isFileURL ? try Data(contentsOf: url) : try FlydigiAPI.download(url)
+            let img = try FirmwareImage(data: data)
+            try img.validate()
+            print(String(format: "image %d bytes · payload %d · crc32 %08x OK · %d packets · version field 0x%08x", data.count, img.payloadSize, img.storedCRC, img.packetCount, img.versionField))
+
+            guard yes else { print("dry run only — add --yes to flash"); return }
+
+            // 3. Stream it. Keep the config session closed while the OTA runs (one HID client per interface is enough).
+            s.close()
+            let ota = try OTALink(); defer { ota.close() }
+            let started = Date()
+            var lastShown = -1
+            let outcome = try ota.flash(img, packetsPerReport: packetsPerReport, trace: verbose ? { print("  \($0)") } : nil) { sent, total in
+                let pct = sent * 100 / total
+                if pct / 5 != lastShown / 5 || sent == total { print("Progress: \(pct)%  (\(sent)/\(total) packets)"); lastShown = pct }
+            }
+            let secs = Int(Date().timeIntervalSince(started))
+            switch outcome {
+            case .confirmed: print("Upgrade completed: the controller confirmed the image (\(secs) s). It is rebooting now.")
+            case .sentNoResult: print("Image sent and acknowledged (\(secs) s); no result report before the timeout — the pad normally reboots straight away. Check `apex4 info` in a few seconds.")
+            }
         }
     }
     struct OTAVersion: ParsableCommand {

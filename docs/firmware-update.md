@@ -82,14 +82,19 @@ is the only way back to XInput; the hardware combo also toggles modes.
   query and reports the stray packet as an error. Nothing else changed; the pad kept working. The dry run no
   longer sends it. So the only packets the OTA server accepts are START / DATA / END, exactly as SS4 sends.
 
-## 7. Plan for this project
+## 7. Status in this project (2026-09-04)
 
 Everything for the main chip is reachable **without root** once the pad is in DInput: `IOHIDManager` on
 `04b4:2412` usage page `0xFFEF`, 64-byte output reports, one input report per write, then `05 ED` on the
-config interface. Staged approach, each step gated on hardware confirmation:
+config interface.
 
-1. **Dry run**: download, validate the file (size field, CRC32 recomputed over `0..size−4`, `KNLT` mark),
-   enumerate the `0xFFEF` interface, query version with `0xFF00` (read-only) — nothing written.
-2. **Flash** only on explicit user confirmation, wired, battery ≥ 40 %: START → DATA (per-report timeout,
-   abort on any non-ack) → END → wait for `FF06 00` or re-enumeration (≤ 30 s) → `05 ED`.
-3. Never flash over the receiver; never flash a file whose header does not validate.
+- **Dry run** (done, verified on hardware): download, validate the file (size field, CRC32 recomputed over
+  `0..size−4`, `KNLT` mark), enumerate the `0xFFEF` interface. Nothing written.
+- **Flasher** (implemented, **not yet run against the pad**): `OTAPacket` (FlydigiKit) builds START / DATA /
+  END exactly as §3; `OTALink.flash` (FlydigiTransport) streams them one report in flight, waits for the ack
+  of each (any report id 5, like SS4), aborts on a result report with a non-zero code or on a 3 s silence,
+  and after END waits up to 10 s for `FF06 00`. CLI: `apex4 firmware flash [<url|path>] --yes`, which also
+  refuses XInput, the wireless receiver, battery < 40 % and any image that does not validate.
+- First hardware run: wired, DInput, 6.8.3.0 → 6.8.3.7, with `--verbose` to record the acks; then `apex4
+  mode --channel dinput` to return to XInput. Only after that goes the button into the app.
+- Never flash over the receiver; never flash a file whose header does not validate.

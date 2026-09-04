@@ -1,6 +1,7 @@
 // The controller's OTA HID interface (DInput mode, 04b4:2412, usage page 0xFFEF, report id 5, 64-byte
-// reports) — see docs/firmware-update.md. This file only implements the read-only parts (find the
-// interface, ask the version). Flashing is deliberately not implemented yet.
+// reports) — see docs/firmware-update.md. `flash` streams a Telink OTA exactly the way Space Station's
+// FirmwareConsole does (START, DATA in 1–3 packets per report, END), one report in flight, ack-paced.
+// Nothing here switches modes or downloads; callers gate it on an explicit user confirmation.
 
 import Foundation
 import IOKit.hid
@@ -56,13 +57,8 @@ public final class OTALink: @unchecked Sendable {
         return (i, o)
     }
 
-    /// Builds a 64-byte OTA report (`05 02 <len> 00 payload…`) exactly like Space Station's flasher.
-    public static func report(payload: [UInt8]) -> [UInt8] {
-        var r = [UInt8](repeating: 0, count: reportLength)
-        r[0] = reportId; r[1] = 0x02; r[2] = UInt8(payload.count); r[3] = 0
-        for (i, b) in payload.enumerated() where 4 + i < reportLength { r[4 + i] = b }
-        return r
-    }
+    /// 64-byte OTA report (`05 02 <len> 00 payload…`), see `OTAPacket`.
+    public static func report(payload: [UInt8]) -> [UInt8] { OTAPacket.report(payload: payload) }
 
     private func write(_ report: [UInt8]) throws {
         let r = report.withUnsafeBufferPointer { IOHIDDeviceSetReport(device, kIOHIDReportTypeOutput, CFIndex(report[0]), $0.baseAddress!, $0.count) }
@@ -91,6 +87,80 @@ public final class OTALink: @unchecked Sendable {
             return (r, u32(4), u32(8))
         }
         return (r, nil, nil)
+    }
+
+    // MARK: Flashing (docs/firmware-update.md §3)
+
+    public enum OTAError: Error, CustomStringConvertible, Sendable {
+        case noAck(stage: String)
+        case deviceError(code: UInt8, stage: String)
+        public var description: String {
+            switch self {
+            case .noAck(let st): "controller stopped answering during \(st)"
+            case .deviceError(let c, let st): "controller reported OTA error \(c) (\(OTAError.name(c))) during \(st)"
+            }
+        }
+        /// Telink OTA result codes (inferred, see docs).
+        public static func name(_ c: UInt8) -> String {
+            switch c {
+            case 0: "success"; case 1: "packet loss"; case 2: "data CRC"; case 3: "flash write"; case 4: "incomplete"
+            case 5: "flow"; case 6: "firmware check"; case 7: "version"; case 8: "PDU length"; case 9: "firmware mark"; case 10: "firmware size"
+            default: "unknown"
+            }
+        }
+    }
+
+    public enum FlashOutcome: Sendable, Equatable {
+        /// The pad answered END with the OTA result report and code 0.
+        case confirmed
+        /// END was sent and acknowledged but no result report arrived before the timeout (Space Station never
+        /// waits for it either: the pad reboots into the new image right away).
+        case sentNoResult
+    }
+
+    /// Waits for the pad's acknowledgement of the last report (any report with id 5, as Space Station does);
+    /// an OTA result report with a non-zero code aborts.
+    private func awaitAck(stage: String, timeout: TimeInterval, trace: ((String) -> Void)?) throws -> [UInt8] {
+        guard let r = read(timeout: timeout) else { throw OTAError.noAck(stage: stage) }
+        trace?("\(stage) ← " + r.prefix(16).map { String(format: "%02x", $0) }.joined(separator: " "))
+        if let code = OTAPacket.resultCode(r), code != 0 { throw OTAError.deviceError(code: code, stage: stage) }
+        return r
+    }
+
+    /// Streams `image` to the controller. `progress(sent, total)` is called per report. Blocking; run it off
+    /// the main thread. The caller must already have validated the image and confirmed with the user.
+    public func flash(_ image: FirmwareImage, packetsPerReport: Int = 3, ackTimeout: TimeInterval = 3,
+                      resultTimeout: TimeInterval = 10, trace: ((String) -> Void)? = nil,
+                      progress: (Int, Int) -> Void) throws -> FlashOutcome {
+        let per = max(1, min(3, packetsPerReport))
+        let total = image.packetCount
+        lock.lock(); inbox.removeAll(); lock.unlock()
+
+        try write(OTALink.report(payload: OTAPacket.startPayload))
+        _ = try awaitAck(stage: "START", timeout: ackTimeout, trace: trace)
+
+        var index = 0
+        while index < total {
+            var payload: [UInt8] = []
+            let n = min(per, total - index)
+            for k in 0..<n { payload += OTAPacket.packet(index: index + k, block: image.block(index + k)) }
+            try write(OTALink.report(payload: payload))
+            _ = try awaitAck(stage: "DATA \(index)", timeout: ackTimeout, trace: index < 3 ? trace : nil)
+            index += n
+            progress(index, total)
+        }
+
+        try write(OTALink.report(payload: OTAPacket.endPayload(lastIndex: total - 1)))
+        // The reply to END is either a plain ack followed by the result report, or the result report itself.
+        let deadline = Date().addingTimeInterval(resultTimeout)
+        while let r = read(timeout: max(0.05, deadline.timeIntervalSinceNow)) {
+            trace?("END ← " + r.prefix(16).map { String(format: "%02x", $0) }.joined(separator: " "))
+            if let code = OTAPacket.resultCode(r) {
+                if code == 0 { return .confirmed }
+                throw OTAError.deviceError(code: code, stage: "END")
+            }
+        }
+        return .sentNoResult
     }
 
     public func close() {
