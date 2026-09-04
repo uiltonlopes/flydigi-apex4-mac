@@ -315,10 +315,10 @@ final class ControllerModel {
     }
 
     /// TEMPORARY, to validate the in-app flow without a newer release: flash the image Flydigi offers for this pad
-    /// even when it is the installed version (asks the API as if 0.0.0.0 were installed).
+    /// even when it is the installed version (asks the API as if 1.0.0.0 were installed; 0.0.0.0 gets an empty answer).
     func reinstallCurrentFirmware() async {
         guard let id = info?.deviceId, !firmwareFlashing else { return }
-        let r: Result<[String: FlydigiAPI.FirmwareChip], Error> = await Task.detached { Result { try FlydigiAPI.firmwareUpdates(deviceId: Int(id), mainChip: "0.0.0.0") } }.value
+        let r: Result<[String: FlydigiAPI.FirmwareChip], Error> = await Task.detached { Result { try FlydigiAPI.firmwareUpdates(deviceId: Int(id), mainChip: "1.0.0.0") } }.value
         guard case .success(let chips) = r, let main = chips["main_chip"] else { lastError = String(localized: "Flydigi offers no image for this controller."); return }
         firmwareUpdate = main
         await flashFirmware()
