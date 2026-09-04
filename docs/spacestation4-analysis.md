@@ -350,3 +350,19 @@ Decompiled from `SpaceStationService.exe` (4.2.0.9 and 4.2.2.3): `Flydigi.Contro
 `Configs/`, `driver/`, `firmware/`, `Logs/`. Work directory (not committed):
 `scratchpad/ss4/` — `ext41/ ext42/ ext43/` (installer payloads), `bundle4x/`, `src4x/`,
 `asar4x/`, `api/*.json`.
+
+## 8. Share codes (verified 2026-09-04)
+
+- **Payload** = `BitConverter.ToString(ControllerMappingConfigBean.ToByteArray())`: the protobuf bytes of the profile
+  bean, upper-case hex separated by dashes. The bean is produced from the 790-byte blob by `MappingConfigParserV30`
+  (ported in `FlydigiKit/Sources/FlydigiKit/SS4Profile.swift`, integer arithmetic included — the proto 3.0 stick
+  points lose a few units on the way, in Space Station too) and carries the LED bean when the service has one.
+- **Upload**: `POST https://api.flydigi.com/pc/config_share/upload` JSON `{configName, controllerType: "k2",
+  configContent: JSON.stringify(hex)}` (header `appversion`), no login. Reply `data.uniqueId` = `"分享码：<32 hex>"`;
+  the code users exchange is the 32-hex part.
+- **Download**: `GET …/config_share/download?uniqueId=<code>&configType=1&controllerType=k2` (camelCase only;
+  snake_case → HTTP 400 "参数不完整"). Reply `data.{config_name, controller_type, config_content}`; the renderer
+  rejects `config_type != 0` when present.
+- Field numbers of every message are in `SS4Profile.swift`; enums are sequential in declaration order
+  (`KeyMapType` Key/Continuous/Macro/MultiFunction/Keyboard, `JoystickMapType` Joystick/Keyboard/Mouse/DPad,
+  `MotionMapType` Off/LeftJoystick/RightJoystick/Mouse, `MacroEnableType` None/Once/Press/Click, …).

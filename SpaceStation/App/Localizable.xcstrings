@@ -1,6 +1,16 @@
 {
   "sourceLanguage": "en",
   "strings": {
+    "%lld remapped keys · %lld macros · triggers %@ / %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "%lld teclas remapeadas · %lld macros · gatilhos %@ / %@"
+          }
+        }
+      }
+    },
     "%lld s": {
       "localizations": {
         "pt-BR": {
@@ -1001,6 +1011,26 @@
         }
       }
     },
+    "Copied": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiado"
+          }
+        }
+      }
+    },
+    "Copy": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Copiar"
+          }
+        }
+      }
+    },
     "Copy this profile to the controller's Nintendo Switch mode?": {
       "localizations": {
         "pt-BR": {
@@ -1601,6 +1631,16 @@
         }
       }
     },
+    "Fetching…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Buscando…"
+          }
+        }
+      }
+    },
     "Fill": {
       "localizations": {
         "pt-BR": {
@@ -1941,6 +1981,16 @@
         }
       }
     },
+    "Get a share code": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gerar código"
+          }
+        }
+      }
+    },
     "Good. Small deviations are normal.": {
       "localizations": {
         "pt-BR": {
@@ -2131,6 +2181,46 @@
         }
       }
     },
+    "Import": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importar"
+          }
+        }
+      }
+    },
+    "Import from code": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importar de um código"
+          }
+        }
+      }
+    },
+    "Import from code…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Importar de um código…"
+          }
+        }
+      }
+    },
+    "Imported “%@” into the library.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "“%@” importado para a biblioteca."
+          }
+        }
+      }
+    },
     "Import…": {
       "localizations": {
         "pt-BR": {
@@ -2247,6 +2337,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Manter o atual"
+          }
+        }
+      }
+    },
+    "Keep in library only": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manter só na biblioteca"
           }
         }
       }
@@ -3401,6 +3501,16 @@
         }
       }
     },
+    "Paste a Space Station share code. The profile is saved to your library; you can also load it into the editor and apply it to a slot.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cole um código de compartilhamento do Space Station. O perfil é salvo na sua biblioteca; você também pode carregá-lo no editor e aplicar a um slot."
+          }
+        }
+      }
+    },
     "Pick one on the left or press + to bind a new macro to a button. Steps play on the pad itself, so they work in any game and on any platform.": {
       "localizations": {
         "pt-BR": {
@@ -4411,6 +4521,36 @@
         }
       }
     },
+    "Share as code": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compartilhar como código"
+          }
+        }
+      }
+    },
+    "Share as code…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Compartilhar como código…"
+          }
+        }
+      }
+    },
+    "Share code": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Código de compartilhamento"
+          }
+        }
+      }
+    },
     "Shield value": {
       "localizations": {
         "pt-BR": {
@@ -4967,6 +5107,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "A interface de atualização do controle não apareceu."
+          }
+        }
+      }
+    },
+    "The profile could not be converted.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não foi possível converter o perfil."
+          }
+        }
+      }
+    },
+    "The reply is not a controller profile.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A resposta não é um perfil de controle."
           }
         }
       }
@@ -5577,6 +5737,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Enviar"
+          }
+        }
+      }
+    },
+    "Uploading…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enviando…"
+          }
+        }
+      }
+    },
+    "Uploads this profile — buttons, sticks, triggers, gyro, vibration, macros and lighting — to Flydigi's share service and returns a code any Space Station user (Windows or Mac) can import. The profile is public to anyone who has the code.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Envia este perfil — botões, analógicos, gatilhos, giroscópio, vibração, macros e luz — ao serviço de compartilhamento da Flydigi e devolve um código que qualquer usuário do Space Station (Windows ou Mac) pode importar. O perfil fica público para quem tiver o código."
           }
         }
       }

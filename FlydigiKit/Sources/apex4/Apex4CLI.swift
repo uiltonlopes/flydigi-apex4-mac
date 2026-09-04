@@ -142,7 +142,7 @@ struct ScreenCmd: ParsableCommand {
 
 struct Config: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Dump or restore the raw configuration blobs.",
-                                                    subcommands: [Show.self, Dump.self, Restore.self], defaultSubcommand: Show.self)
+                                                    subcommands: [Show.self, Dump.self, Restore.self, ShareCode.self, ImportCode.self], defaultSubcommand: Show.self)
     struct Show: ParsableCommand {
         static let configuration = CommandConfiguration(abstract: "Decode the active configuration (keys, sticks, triggers, motion, vibration, macros).")
         @OptionGroup var ch: ChannelOption
@@ -154,6 +154,42 @@ struct Config: ParsableCommand {
             guard let cfg = GamepadConfig(bytes: bytes) else { throw ValidationError("not a 790-byte config blob") }
             print(cfg.summary)
             print("round-trip identical: \(cfg.bytes == bytes)")
+        }
+    }
+    struct ShareCode: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "share-code", abstract: "Space Station share string for the active config (or a config.bin); --upload gets a code from Flydigi.")
+        @OptionGroup var ch: ChannelOption
+        @Option(help: "Use a saved config.bin instead of reading the controller") var file: String?
+        @Option(help: "Name to publish with (default: the profile title)") var name: String?
+        @Flag(name: .long, help: "Upload to Flydigi and print the share code") var upload = false
+        func run() throws {
+            let raw: [UInt8]
+            if let file { raw = [UInt8](try Data(contentsOf: URL(fileURLWithPath: file))) } else { let s = try ch.open(); defer { s.close() }; raw = try s.readBlob(.config) }
+            let bean = SS4Profile(blob: raw)
+            let s = bean.shareString
+            print("\(bean.title.isEmpty ? "(untitled)" : bean.title) · \(bean.protobuf().count) protobuf bytes")
+            if upload {
+                let code = try FlydigiAPI.shareUpload(name: name ?? bean.title, shareString: s)
+                print("share code: \(code)")
+            } else { print(s) }
+        }
+    }
+    struct ImportCode: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "import-code", abstract: "Download a Space Station share code and write it as a 790-byte config.bin (nothing is sent to the controller).")
+        @Argument(help: "share code, or a raw 0A-1B-… string") var code: String
+        @Option(help: "output file (default: <title>.fdgprofile)") var out: String?
+        func run() throws {
+            let bean: SS4Profile; var title = ""
+            if let b = SS4Profile(shareString: code) { bean = b } else {
+                let r = try FlydigiAPI.shareDownload(code: code); title = r.name
+                guard let b = SS4Profile(shareString: r.shareString) else { throw ValidationError("the reply is not a profile bean") }
+                bean = b
+            }
+            let blob = bean.blob()
+            guard let cfg = GamepadConfig(bytes: blob) else { throw ValidationError("converted blob does not parse") }
+            let name = out ?? ((bean.title.isEmpty ? (title.isEmpty ? "profile" : title) : bean.title) + ".fdgprofile")
+            try Data(blob).write(to: URL(fileURLWithPath: name))
+            print("\(cfg.title) · keys remapped: \(cfg.keys.filter { $0.value != .identity }.count) · macros: \(cfg.macros.count) → \(name)")
         }
     }
     struct Dump: ParsableCommand {

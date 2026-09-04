@@ -84,6 +84,50 @@ public enum FlydigiAPI {
         return try perform(req).data
     }
 
+    // MARK: Share codes (Space Station's "share profile" — `config_share/upload` / `download`, no login)
+
+    public struct ShareError: Error, CustomStringConvertible, Sendable { public let message: String; public init(message: String) { self.message = message }; public var description: String { message } }
+    private struct RawEnvelope: Decodable { let status: Int?; let code: Int?; let message: String?; let msg: String?; let data: AnyJSON? }
+    private enum AnyJSON: Decodable {
+        case object([String: AnyJSON]), array([AnyJSON]), string(String), number(Double), bool(Bool), null
+        init(from d: Decoder) throws {
+            let c = try d.singleValueContainer()
+            if c.decodeNil() { self = .null } else if let v = try? c.decode(Bool.self) { self = .bool(v) } else if let v = try? c.decode(Double.self) { self = .number(v) }
+            else if let v = try? c.decode(String.self) { self = .string(v) } else if let v = try? c.decode([AnyJSON].self) { self = .array(v) } else { self = .object(try c.decode([String: AnyJSON].self)) }
+        }
+        subscript(_ k: String) -> AnyJSON? { if case .object(let o) = self { return o[k] }; return nil }
+        var string: String? { switch self { case .string(let s): s; case .number(let n): n == n.rounded() ? String(Int(n)) : String(n); default: nil } }
+    }
+
+    /// Uploads a profile (its bean as "0A-1B-…") and returns the share code Space Station users type in.
+    public static func shareUpload(name: String, shareString: String, deviceCode: String = deviceCode) throws -> String {
+        // The renderer sends camelCase and JSON.stringify()s the hex string; the server takes snake_case too.
+        let body: [String: Any] = ["configName": name, "controllerType": deviceCode, "configContent": "\"" + shareString + "\""]
+        var req = URLRequest(url: base.appendingPathComponent("config_share/upload"))
+        req.httpMethod = "POST"; req.httpBody = try JSONSerialization.data(withJSONObject: body)
+        req.setValue("application/json", forHTTPHeaderField: "Content-Type"); req.setValue(appVersion, forHTTPHeaderField: "appversion")
+        let env = try JSONDecoder().decode(RawEnvelope.self, from: try perform(req).data)
+        if let id = env.data?["uniqueId"]?.string ?? env.data?["unique_id"]?.string {
+            // The server prefixes the id with "分享码：" ("share code:"); keep only the code itself.
+            return String(id.split(whereSeparator: { $0 == "：" || $0 == ":" }).last ?? Substring(id)).trimmingCharacters(in: .whitespaces)
+        }
+        throw ShareError(message: env.message ?? env.msg ?? "unexpected reply")
+    }
+
+    /// Resolves a share code into (title, "0A-1B-…").
+    public static func shareDownload(code: String, deviceCode: String = deviceCode) throws -> (name: String, shareString: String) {
+        // camelCase, as the renderer sends it (snake_case gets "参数不完整" / HTTP 400).
+        let q = ["uniqueId": code.trimmingCharacters(in: .whitespacesAndNewlines), "configType": "1", "controllerType": deviceCode]
+        var comps = URLComponents(url: base.appendingPathComponent("config_share/download"), resolvingAgainstBaseURL: false)!
+        comps.queryItems = q.map { URLQueryItem(name: $0.key, value: $0.value) }
+        var req = URLRequest(url: comps.url!); req.setValue(appVersion, forHTTPHeaderField: "appversion")
+        let env = try JSONDecoder().decode(RawEnvelope.self, from: try perform(req).data)
+        guard let data = env.data, case .object = data else { throw ShareError(message: env.message ?? env.msg ?? "code not found") }
+        if let t = data["config_type"]?.string ?? data["configType"]?.string, t != "0" { throw ShareError(message: "this code is not a controller profile") }
+        guard let content = data["config_content"]?.string ?? data["configContent"]?.string else { throw ShareError(message: "reply without content") }
+        return (data["config_name"]?.string ?? data["configName"]?.string ?? "", content)
+    }
+
     // MARK: Plumbing
 
     private static func get<T: Decodable>(_ path: String, query: [String: String], as type: T.Type) throws -> T {

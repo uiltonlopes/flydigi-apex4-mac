@@ -16,6 +16,7 @@ Legend: ✅ verified on hardware · 🧪 implemented, needs a hardware test · �
 - ✅ Macros: on-board macros with step editor, recording from the pad, local library with `.fdgmacro` export/import. Verified on hardware 2026-09-04: recorded on M1, played back by the pad, edited and played again.
 - ✅ Screen: image/GIF editor (pan, zoom, fit/fill, trim, frame interval sent to the pad), Flydigi's animation library, factory animations, GIPHY search, "on the controller" record, restore default animation.
 - ✅ Per-app game profiles: slot + ForceAdapt + lighting switched when the chosen app comes to the front and restored when it leaves (verified with Safari as the target app, 2026-09-04).
+- ✅ Share codes compatible with Space Station (2026-09-04): profile menu › Share as code… / Import from code…, `apex4 config share-code --upload` / `import-code`. Bean ↔ blob port of `MappingConfigParserV30` plus a small protobuf codec; verified against Flydigi's service with a real upload and download. Macro share codes (decimal-dash `MacroItem`) are still file-only.
 - ✅ Keyboard / mouse mapping (2026-09-04): Special buttons → key / left or right click / wheel, sticks → keyboard (4 or 8 directions) or mouse, gyro → mouse. App-side engine posting CGEvents (Accessibility permission), mappings stored per controller and slot on the Mac; buttons need DInput because the firmware hides keyboard-flagged keys from the Xbox report. Verified on hardware: key, clicks, stick → mouse, and gyro → mouse (yaw → X, pitch → Y, signs checked with the pointer; the pad only streams motion while the profile's gyro is on). Gyro aiming works but feels rough — raw rate to pointer, like Space Station's classic path; smoothing/acceleration would be the next step if anyone wants it.
 - ✅ Firmware update from the app: Settings › Firmware Update runs the whole sequence (download + validate, switch to DInput through the helper, OTA with progress, wait for the restart, back to XInput). Verified 2026-09-04: CLI 6.8.3.0 → 6.8.3.7, then the app re-flashed 6.8.3.7 end to end ([firmware-update.md](firmware-update.md) §6c).
 - ✅ Settings: firmware update check with Flydigi's note, USB mode switch, language (en, pt-BR), GIPHY key, open at login, helper install/remove, device nickname.
@@ -28,10 +29,10 @@ Legend: ✅ verified on hardware · 🧪 implemented, needs a hardware test · �
 
 ## Open
 
-- ❌ **Share codes** compatible with Space Station: its codes carry the protobuf `ControllerMappingConfigBean` / `MacroItem`, not the device blob, so a bean ↔ blob converter is needed first (`MappingConfigParser` in SS4). Until then profiles and macros travel as `.fdgprofile` / `.fdgmacro` files.
-- ❌ App self-update (Sparkle or a GitHub-releases check) once releases are public.
-- ❌ Preferences: log file toggle, close-to-menu-bar vs quit.
-- ❌ Helper hardening: audit-token peer check on macOS 14–15 (`XPCPeerRequirement` covers 26+), idle exit.
+- ✅ App update check (2026-09-04): GitHub releases, once a day and on demand in Settings › About, badge in the sidebar; the DMG opens in the browser.
+- ✅ Preferences (2026-09-04): quit on window close vs stay in the menu bar; Export log… (unified log of this process) and Open Console.
+- ✅ Helper idle exit after 10 minutes (launchd restarts it on the next message). ❌ Peer code-signing requirement on macOS 14–15: the Swift `XPCListener` requirement API is macOS 26 only and the C one has no bridge; stays open.
+- ✅ `spacestation://` URL scheme (pages, tab, key, profile slot, window size) for Shortcuts and scripts.
 - ❌ Beyond Space Station: racing telemetry driving trigger resistance (Forza "Data Out", F1, Dirt, WRC); shareable community presets (LED themes, GIF packs, game profiles); Shortcuts / URL scheme automation.
 
 ## Not applicable on macOS

@@ -77,6 +77,8 @@ names. Everything is drawn with native SwiftUI controls; the app also lives in t
 - **Restore default configuration** (the factory profile and lighting), **Apply to NS mode** (writes the
   profile into the Switch-mode slots), and a **local profile library**: save, load into the editor, rename,
   duplicate, reorder, delete, export and import as `.fdgprofile`.
+- **Share codes** that work with Space Station on Windows: share the profile you are editing as a code, or
+  import a code someone posted, straight into the library and the editor.
 
 ### General tab
 
@@ -146,7 +148,8 @@ names. Everything is drawn with native SwiftUI controls; the app also lives in t
   on-device), and the update itself over USB, the same OTA sequence Space Station uses. The app refuses to
   run it over the receiver or below 40 % battery; profiles, lighting and the screen animation are kept.
 - USB mode, language (English, Português do Brasil), GIPHY key, keyboard and mouse permission, open at login,
-  privileged helper install and removal, about and support.
+  what closing the window does, log export, privileged helper install and removal, app update check, about
+  and support.
 
 ## Install
 

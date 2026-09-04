@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+- Share codes compatible with Space Station: profile menu › Share as code… uploads the profile (with lighting) and shows the code; Import from code… fetches one into the library and the editor. CLI: `apex4 config share-code [--upload]`, `apex4 config import-code`.
+- App update check against GitHub releases (Settings › About and a sidebar badge), Settings › Closing the window (quit vs menu bar), Settings › Log (export the unified log, open Console), `spacestation://` URL scheme, helper exits when idle for 10 minutes.
+- DMG with the usual drag-to-Applications window (background, app on the left, Applications on the right), built with create-dmg.
 - Keyboard and mouse mapping, done on the Mac: Buttons › Special (key, left/right click, wheel up/down), Sticks › Mapping (keyboard 4/8 directions or mouse with sensitivity), Gyro › Mouse (axes and signs measured on the pad). The app posts the events (Accessibility permission, Settings › Keyboard & mouse); mappings are kept per controller and profile slot. Buttons need DInput mode — the controller hides keyboard-flagged buttons in XInput.
 - Buttons: choosing Macro on a button that already had one relinks it; "Edit macro" opens that macro in the Macros tab.
 - Verified on hardware: macros recorded on the pad (M1), edited in the app and played back by the controller; per-app game profiles switching with a real app in front.

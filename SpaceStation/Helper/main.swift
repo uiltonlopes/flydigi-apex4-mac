@@ -26,6 +26,18 @@ final class HelperService: @unchecked Sendable {
 
     private var idleTimer: DispatchWorkItem?
     private static let idleHold: TimeInterval = 3   // keep the capture briefly so bursts of requests don't re-enumerate the pad each time
+    private var exitTimer: DispatchWorkItem?
+    private static let exitAfter: TimeInterval = 600   // no request for 10 min and nothing open → exit; launchd restarts us on the next message
+
+    private func armExitTimer() {
+        exitTimer?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            guard let self, self.session == nil, self.uploadFrames == 0 else { self?.armExitTimer(); return }
+            exit(0)
+        }
+        exitTimer = work
+        queue.asyncAfter(deadline: .now() + Self.exitAfter, execute: work)
+    }
 
     private func releaseIfIdle() {
         guard uploadFrames == 0 else { return }
@@ -39,7 +51,7 @@ final class HelperService: @unchecked Sendable {
     }
 
     func handle(_ request: HelperRequest) -> HelperReply {
-        queue.sync { self.idleTimer?.cancel(); return self.handleLocked(request) }
+        queue.sync { self.idleTimer?.cancel(); self.armExitTimer(); return self.handleLocked(request) }
     }
 
     /// Development convenience: if the app was rebuilt (our executable changed on disk), exit once idle;
@@ -173,8 +185,9 @@ do {
         }
     }
     // Only code signed by our team (the app, or the `apex4` CLI signed with the same identity) may talk
-    // to the daemon. The Swift peer-requirement API is macOS 26+; on 14/15 the listener is unrestricted
-    // (local processes only) — TODO: audit-token based check for older systems.
+    // to the daemon. The Swift peer-requirement API is macOS 26+ (the C one, xpc_listener_set_peer_code_signing_
+    // requirement, is 14.4+ but has no bridge to XPCListener); on 14/15 the listener is unrestricted — local
+    // processes only, and every request still needs the pad on USB.
     let listener: XPCListener
     if #available(macOS 26.0, *) {
         listener = try XPCListener(service: HelperConstants.machService,
