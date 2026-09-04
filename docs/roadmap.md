@@ -19,7 +19,10 @@ Legend: ✅ verified on hardware · 🧪 implemented, needs a hardware test · �
 - ✅ Share codes compatible with Space Station (2026-09-04): profile menu › Share as code… / Import from code…, `apex4 config share-code --upload` / `import-code`. Bean ↔ blob port of `MappingConfigParserV30` plus a small protobuf codec; verified against Flydigi's service with a real upload and download. Macro share codes (decimal-dash `MacroItem`) are still file-only.
 - ✅ Keyboard / mouse mapping (2026-09-04): Special buttons → key / left or right click / wheel, sticks → keyboard (4 or 8 directions) or mouse, gyro → mouse. App-side engine posting CGEvents (Accessibility permission), mappings stored per controller and slot on the Mac; buttons need DInput because the firmware hides keyboard-flagged keys from the Xbox report. Verified on hardware: key, clicks, stick → mouse, and gyro → mouse (yaw → X, pitch → Y, signs checked with the pointer; the pad only streams motion while the profile's gyro is on). Gyro aiming works but feels rough — raw rate to pointer, like Space Station's classic path; smoothing/acceleration would be the next step if anyone wants it.
 - ✅ Firmware update from the app: Settings › Firmware Update runs the whole sequence (download + validate, switch to DInput through the helper, OTA with progress, wait for the restart, back to XInput). Verified 2026-09-04: CLI 6.8.3.0 → 6.8.3.7, then the app re-flashed 6.8.3.7 end to end ([firmware-update.md](firmware-update.md) §6c).
-- ✅ Settings: firmware update check with Flydigi's note, USB mode switch, language (en, pt-BR), GIPHY key, open at login, helper install/remove, device nickname.
+- ✅ Settings: firmware update check with Flydigi's note, USB mode switch, language (English, Português do Brasil), GIPHY key, open at login, helper install/remove, quit-on-close, log export. Device nickname (right-click the card).
+- ✅ App update check (2026-09-04): GitHub releases, once a day and on demand in Settings › About, badge in the sidebar; the DMG opens in the browser.
+- ✅ Helper idle exit after 10 minutes (launchd restarts it on the next message).
+- ✅ `spacestation://` URL scheme (pages, tab, key, profile slot) for Shortcuts and scripts.
 - ✅ Release pipeline: Developer ID signing, notarization and stapling of app and DMG (`scripts/release.sh`).
 
 ## Needs a hardware test
@@ -29,11 +32,8 @@ Legend: ✅ verified on hardware · 🧪 implemented, needs a hardware test · �
 
 ## Open
 
-- ✅ App update check (2026-09-04): GitHub releases, once a day and on demand in Settings › About, badge in the sidebar; the DMG opens in the browser.
-- ✅ Preferences (2026-09-04): quit on window close vs stay in the menu bar; Export log… (unified log of this process) and Open Console.
-- ✅ Helper idle exit after 10 minutes (launchd restarts it on the next message). ❌ Peer code-signing requirement on macOS 14–15: the Swift `XPCListener` requirement API is macOS 26 only and the C one has no bridge; stays open.
-- ✅ `spacestation://` URL scheme (pages, tab, key, profile slot, window size) for Shortcuts and scripts.
-- ❌ Beyond Space Station: racing telemetry driving trigger resistance (Forza "Data Out", F1, Dirt, WRC); shareable community presets (LED themes, GIF packs, game profiles); Shortcuts / URL scheme automation.
+- ❌ Helper: peer code-signing requirement on macOS 14–15. The Swift `XPCListener` requirement API is macOS 26 only and the C one (`xpc_listener_set_peer_code_signing_requirement`, 14.4+) has no bridge to the Swift listener; on those systems any local process can ask the helper to talk to the controller. Request sizes and ranges are validated, nothing beyond controller commands is exposed.
+- ❌ Beyond Space Station: racing telemetry driving trigger resistance (Forza "Data Out", F1, Dirt, WRC); shareable community presets (LED themes, GIF packs, game profiles).
 
 ## Not applicable on macOS
 

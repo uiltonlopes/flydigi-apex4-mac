@@ -128,6 +128,12 @@ public enum FlydigiAPI {
         return (data["config_name"]?.string ?? data["configName"]?.string ?? "", content)
     }
 
+    /// Firmware images are only accepted from Flydigi's own hosts (their API points at `*.cdn.flydigi.com`).
+    public static func isTrustedFirmwareHost(_ url: URL) -> Bool {
+        guard url.scheme == "https", let h = url.host?.lowercased() else { return false }
+        return h == "flydigi.com" || h.hasSuffix(".flydigi.com")
+    }
+
     // MARK: Plumbing
 
     private static func get<T: Decodable>(_ path: String, query: [String: String], as type: T.Type) throws -> T {
@@ -147,13 +153,14 @@ public enum FlydigiAPI {
     private static func perform(_ request: URLRequest) throws -> (data: Data, response: HTTPURLResponse) {
         let sem = DispatchSemaphore(value: 0)
         nonisolated(unsafe) var result: Result<(Data, HTTPURLResponse), Error> = .failure(URLError(.unknown))
-        URLSession.shared.dataTask(with: request) { data, resp, err in
+        let task = URLSession.shared.dataTask(with: request) { data, resp, err in
             if let err { result = .failure(err) }
             else if let data, let http = resp as? HTTPURLResponse, (200..<300).contains(http.statusCode) { result = .success((data, http)) }
             else { result = .failure(URLError(.badServerResponse)) }
             sem.signal()
-        }.resume()
-        _ = sem.wait(timeout: .now() + 60)
+        }
+        task.resume()
+        if sem.wait(timeout: .now() + 60) == .timedOut { task.cancel(); throw URLError(.timedOut) }
         return try result.get()
     }
 }

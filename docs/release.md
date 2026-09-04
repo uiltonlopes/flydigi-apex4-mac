@@ -20,7 +20,8 @@
 ## Every release
 
 `brew install create-dmg` once — the script uses it for the installer window (background in `scripts/dmg/`).
-Before tagging: `CHANGELOG.md` gets a `## <version>` heading with the date, the README badges pick the tag up by
+Before tagging: `CHANGELOG.md` gets a `## <version>` heading with the date and `MARKETING_VERSION` in
+`SpaceStation/project.yml` is bumped (the helper's Info.plist follows it); the README badges pick the tag up by
 themselves. Screenshots for the README: run the Debug app and `scripts/screenshot.sh <name> <spacestation:// url>`.
 
 ```bash

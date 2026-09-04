@@ -16,9 +16,9 @@
 - Fix: lighting is per profile slot on the pad (`A5 26/2A <cfgId>`) but the app always read and wrote slot 1's — colours looked shared between profiles. Now lighting follows the selected profile, reloads on slot switch, and "Restore default configuration" also resets it.
 - Macros: local library (save from a profile, add to any profile on a free button, rename, duplicate, export/import `.fdgmacro`).
 - Sticks: report-rate meter (DInput) and a circularity test with coverage and average error, like Space Station's advanced test page.
-- Profiles: local library ("Saved profiles…" in the profile menu) — save the current profile, load into the editor, rename, duplicate, reorder, delete, export/import as `.fdgprofile` (the raw 790-byte blob). SS4 share codes are not interoperable yet (they carry the protobuf bean, see docs/roadmap.md).
+- Profiles: local library ("Saved profiles…" in the profile menu) — save the current profile, load into the editor, rename, duplicate, reorder, delete, export/import as `.fdgprofile` (the raw 790-byte blob). (Share codes compatible with Space Station came later in this cycle, see above.)
 - Screen: "Factory animations" tab with the animation each Apex 4 edition ships with (yours is marked).
-- Parity batch from the gap analysis: GIF frame interval is now really sent to the pad (start packet period); Settings › Controller gained Controller Sleep Time (1 min…3 h / never), Fast Swap Config (SELECT + A/B/X/Y) and the Turbo hardware shortcut switch; profile menu "Restore default configuration…"; Screen "Restore default animation"; device nickname (right-click the card); second gyro activation key.
+- Parity batch from the gap analysis: GIF frame interval is now really sent to the pad (start packet period); Common tab › Controller card gained Controller Sleep Time (1 min…3 h / never), Fast Swap Config (SELECT + A/B/X/Y) and the Turbo hardware shortcut switch; profile menu "Restore default configuration…"; Screen "Restore default animation"; device nickname (right-click the card); second gyro activation key.
 - Sticks: sensitivity curve drawn like Space Station (280 × 280 grid, 0–100 axes, dead-zone and edge bands, 4-point curve with draggable nodes), always visible, with SS4's Default / Instant / Delay / Custom presets and a live dot for the current deflection.
 - Triggers: Vibration (grip-sync) mode now really engages in the live preview (written through the profile, as Space Station does); the vibration test and the grip vibration test use the Xbox rumble packet games send, which the triggers follow.
 - Triggers: per-mode defaults are now the Apex 4's own presets, read back from the pad after picking each mode in its screen menu (Race = light damping over the whole travel, Recoil, Sniper, Trigger lock levels 1–3, Vibration). "Controller preset" button restores them.
@@ -35,12 +35,12 @@
 - Screen editor: drag / pinch / scroll to frame the image in a 2:1 viewport, Fit / Fill, GIF trimming with
   filmstrip, frame interval, exact 160 × 80 preview; long GIFs are thinned evenly to 35 frames.
 - Key capture in XInput borrows the pad for a few seconds so paddles and Fn work everywhere.
-- Game profiles per app (Adaptive Trigger page): pick an app, a profile slot and trigger presets; applied when the app is in front, restored when it leaves. "Open at login" toggle.
+- Game profiles per app (Adaptive Trigger page): pick an app, a profile slot, trigger presets and lighting; applied when the app is in front, restored when it leaves. "Open at login" toggle.
 - Stick / trigger calibration wizard (Joystick tab): timed, guided, with the controller's own "Calibrating" window.
 - Credits, social links and Buy Me a Coffee in Settings → About, the welcome screen, the menu bar and the About panel.
 - Firmware: automatic update check on connect, update badges (welcome screen, sidebar, Settings), Flydigi's
   note, how-to-update guidance, and a read-only dry run that downloads and validates the image (Telink CRC32)
-  and finds the OTA interface. Flashing itself stays disabled.
+  and finds the OTA interface (the flasher itself followed later in this cycle, see above).
 - Settings reorganised (Controller → App → About), in-app language switch, pt-BR translation.
 - App renamed internally (Space Station.app, `com.uiltonlopes.spacestation`, SpaceStationHelper).
 

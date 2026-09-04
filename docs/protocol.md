@@ -1,12 +1,12 @@
 # Flydigi Apex 4 — USB protocol (reverse-engineered)
 
-Everything here was verified against a real Apex 4 (`deviceId 84`, firmware 6.8.3.0) on macOS 26,
+Everything here was verified against a real Apex 4 (`deviceId 84`, firmware 6.8.3.0, later 6.8.3.7) on macOS 26,
 using Python prototypes (since replaced by the `FlydigiKit` package and the `apex4` CLI). Where a fact comes only from reading
 Flydigi's Windows software and was **not** exercised on hardware, it is marked *(unverified)*.
 
 The Apex 4 is Flydigi's internal model **`k2`** (Apex 3 = `k1`). Device IDs in the k2 family:
 `84` (Apex 4), `86` (EVA), `87` (STN), `92` (Assassin's Creed), `93`, `102`, `103`, `104`.
-It has **4 LED groups** and a **160×80** LCD driven by an ESP32 running LVGL v8.
+It has **4 LED groups** and a **160×80** LCD driven by a separate screen MCU (Space Station calls it `Freq`, not an ESP32) running LVGL v8.
 
 ## 1. USB modes
 
@@ -20,8 +20,8 @@ The controller has a hardware/software mode switch. Two modes expose a vendor ch
 Interface 3 in DInput (usage page `0xFFEF`, report id 5, 63 B in/out/feature) is unused by Flydigi's software.
 
 Software mode switch:
-- DInput → XInput: write `05 ED` (report 5, cmd 237) *(unverified on hardware)*
-- XInput → DInput: `A5 17 … crc` (cmd 23) *(unverified on hardware)*
+- DInput → XInput: write `05 ED` (report 5, cmd 237) — verified 2026-09-04 (app, CLI `mode`, helper, firmware flow)
+- XInput → DInput: `A5 17 … crc` (cmd 23) — verified 2026-09-04; it is also Space Station's "enter update mode"
 
 Both cause a USB re-enumeration.
 
@@ -51,7 +51,7 @@ Both cause a USB re-enumeration.
 | Write LED config | start `A5 2A <cfgId> <N>` (42) → ack 42; data `A5 29 <10 B> A0 <idx> 00 crc` (41) → ack 41 with idx at `r[16]` | start `05 E7 <cfgId> <N>` (231); data `05 33 <10 B> A0 <idx>` (51); ack `r[15]=231`, idx `r[3]` | see §5 |
 | Read config random id | `A5 50 02 <cfgId>` → `r[15]=0x50,r[16]=2`, id `r[17..18]` BE, cfg `r[19]` | `05 50 02 <cfgId> crc` → payload `[80,2,hi,lo,cfg]` at `r[3..]` | |
 | **Save to flash** | `A5 50 03 <hi> <lo>` (id = random+1) → `r[17]==1` on success | `05 50 03 <hi> <lo> crc` → `r[5]==1` | **required** for a written config/LED to survive power-cycle |
-| Screen info / sleep time | — | `05 F2 03` / `05 F2 02 <sleep>` (242) | `r[3]=242,r[4]=3/4` *(unverified)* |
+| Screen info / sleep time | — | `05 F2 03` / `05 F2 02 <sleep>` (242) | `r[3]=242,r[4]=3/4`; set verified 2026-09-02 (General › Controller › Sleep time) |
 | Current config slot | `A5 20` → `r[15]=20`, slot `r[16]` (verified: 0) | `05 EB A0` → `r[1]=EB r[2]=A0 r[3]=slot` *(reply layout assumed from SS4's SDK; app falls back to the remembered slot on timeout)* | trusted only before any slot read (cursor) |
 | Switch active config | `A5 50 05 <slot>` → ack `r[15]=50 r[16]=05` (verified: 0→1→0) | `05 50 05 <slot>` | |
 | Motor test | `A5 12 <L> <R>` (verified; send `A5 12 00 00` to stop) | `05 0F <L> <R>` | |
@@ -82,7 +82,7 @@ takes effect immediately.
 
 ## 4. Config blob (790 B) — decoded
 
-Implemented in `FlydigiKit/GamepadConfig.swift` (layout from Space Station 4's `MappingConfigParserV30`,
+Implemented in `FlydigiKit/Sources/FlydigiKit/GamepadConfig.swift` (layout from Space Station 4's `MappingConfigParserV30`,
 verified on the Apex 4's factory profile: title "常规游戏配置", C/Z mapped to the stick clicks).
 
 ```
@@ -172,7 +172,7 @@ offset  size  field
 5       1     speed        0–100
 6       1     brightness   0–100
 7       1     rgb_num      number of LED groups in use (Apex 4: 4)
-8       1     mode         0 off · 1 streamlined · 2 breathing · 3 gradient · 4 feedback · 5 steady
+8       1     mode         1 flow · 2 breathing · 3 gradient · 4 feedback · 5 steady (On) · 6 off (Close) · 7 default — see §12
 9       11    reserved (FF)
 20      480   16 groups × 10 units × (R,G,B); each channel is 0–100 (%), not 0–255
 ```
@@ -184,7 +184,7 @@ factory titles 常规/枪战/格斗/赛车游戏配置 with 6 remapped keys — 
 "Apply to NS mode" on slot *n* (old protocol = the Apex 4) is just `write config` + `write LED` to id *n+4*
 with keyboard/mouse mappings reverted to identity, and no save command.
 
-**The LED blob is per profile slot**: `A5 26 <cfgId>` / `A5 2A … <cfgId>` (DInput `05 E5 <cfgId>` / `05 E6 <cfgId> …`). Reading or writing with cfgId 0 while slot 2 is active makes the colours look shared between profiles (bug fixed 2026-09-02). The pad's own "Config Switch" menu is the same four slots.
+**The LED blob is per profile slot**: `A5 26 <cfgId>` / `A5 2A … <cfgId>` (DInput `05 E5 <cfgId>` / `05 E7 <cfgId> <N>` …; `E6` does not accept our parcels, see §3). Reading or writing with cfgId 0 while slot 2 is active makes the colours look shared between profiles (bug fixed 2026-09-02). The pad's own "Config Switch" menu is the same four slots.
 
 ## 6. Screen (LCD) — image format and upload
 

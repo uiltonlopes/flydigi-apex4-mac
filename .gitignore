@@ -9,8 +9,9 @@ xcuserdata/
 *.exe
 *.dll
 # gerado por xcodegen a partir de SpaceStation/project.yml
-SpaceStation/*.xcodeproj
-SpaceStation/build/
+*.xcodeproj
+build/
+.swiftpm/
 dist/
 SpaceStation/build-release/
 # configuração local do preview do Claude (caminhos da máquina)

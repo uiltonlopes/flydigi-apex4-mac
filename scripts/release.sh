@@ -2,8 +2,8 @@
 # Builds a Release "Space Station.app" (signed with the configured team) and packs it into a DMG + ZIP under dist/.
 # Usage: scripts/release.sh 0.1.0
 #
-# Requirements: Xcode (DEVELOPER_DIR below), xcodegen, a signing identity for DEVELOPMENT_TEAM in
-# SpaceStation/project.yml.
+# Requirements: Xcode (DEVELOPER_DIR below), xcodegen, create-dmg (brew; falls back to a plain image without it),
+# a signing identity for DEVELOPMENT_TEAM in SpaceStation/project.yml.
 #
 # Distribution signing (recommended, needs the paid developer account):
 #   SIGN_IDENTITY="Developer ID Application: Name (TEAMID)" NOTARY_PROFILE=AC_NOTARY scripts/release.sh 0.2.0
@@ -21,6 +21,7 @@ APP="$BUILD/Build/Products/Release/Space Station.app"
 
 cd "$ROOT/SpaceStation"
 xcodegen generate >/dev/null
+rm -rf "$APP"                                   # never sign and ship a stale build
 xcodebuild -project SpaceStation.xcodeproj -scheme SpaceStation -configuration Release -derivedDataPath "$BUILD" \
   -destination 'platform=macOS' -allowProvisioningUpdates \
   MARKETING_VERSION="$VERSION" CURRENT_PROJECT_VERSION="$(git -C "$ROOT" rev-list --count HEAD)" \
@@ -36,7 +37,11 @@ echo "signature:"; codesign -dv --verbose=1 "$APP" 2>&1 | grep -E 'Identifier|Au
 codesign --verify --deep --strict "$APP" && echo "codesign verify OK"
 
 mkdir -p "$DIST"; rm -f "$DIST"/SpaceStation-"$VERSION".{dmg,zip}
-notarize() { xcrun notarytool submit "$1" --keychain-profile "$NOTARY_PROFILE" --wait 2>&1 | grep -E "status:|id:" | tail -2; }
+notarize() {
+  local out; out=$(xcrun notarytool submit "$1" --keychain-profile "$NOTARY_PROFILE" --wait 2>&1)
+  echo "$out" | grep -E "status:|id:" | tail -2
+  echo "$out" | grep -q "status: Accepted" || { echo "notarization did not succeed for $1" >&2; exit 1; }
+}
 
 # 1. Notarize the app itself (as a zip) and staple the ticket onto the bundle, so the app launches clean
 #    even when copied out of the DMG or downloaded as the zip.

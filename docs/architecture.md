@@ -7,7 +7,7 @@ on Windows — and more — written from scratch, open source (MIT), using what 
 
 | Layer | Choice | Why |
 |---|---|---|
-| Language | **Swift 6.3**, strict concurrency | Native, modern, what the toolchain on macOS 26 ships. |
+| Language | **Swift 6** language mode, strict concurrency (Xcode 26 toolchain) | Native, modern, what the toolchain on macOS 26 ships. |
 | UI | **SwiftUI** (macOS 15 minimum) — menu-bar extra + main window, Space Station 4's dark layout drawn with native controls (`Theme.swift`) | Native look, `MenuBarExtra`, `Observation`. |
 | Live input | **GameController** framework | Works in both modes (Apple's Xbox dext in XInput; HID gamepad in DInput) — button test / mapping UI. |
 | Protocol core | Swift package **`FlydigiKit`** (no UI, no I/O side effects): packet builders/parsers, config & LED blobs, LVGL encoder, upload state machine | Testable with **Swift Testing**; reusable by CLI, app and helper. |
@@ -20,11 +20,12 @@ on Windows — and more — written from scratch, open source (MIT), using what 
 ## Processes
 
 ```
-┌──────────────────────────┐  XPC (Codable)   ┌───────────────────────────────┐
-│ Space Station.app (SwiftUI)      │◄────────────────►│ com.flydigi-mac.helper (root) │
-│  • menu bar + window     │                  │  • IOUSBLib capture 045e:028e  │
-│  • DInput HID directly   │                  │  • screen upload, XInput cfg   │
-│  • GameController live   │                  │  • mode switch                 │
+┌────────────────────────────┐  XPC (Codable)   ┌──────────────────────────────────────┐
+│ Space Station.app (SwiftUI)│◄────────────────►│ com.uiltonlopes.spacestation.helper  │
+│  • menu bar + window       │                  │ (root, SMAppService daemon)          │
+│  • DInput HID directly     │                  │  • IOUSBLib capture 045e:028e        │
+│  • GameController live     │                  │  • screen upload, XInput cfg/LED     │
+│  • keyboard/mouse engine   │                  │  • mode switch, firmware "enter OTA" │
 └──────────────────────────┘                  └───────────────────────────────┘
             │                                               │
             └──────────── FlydigiKit (shared package) ──────┘
@@ -35,35 +36,23 @@ on Windows — and more — written from scratch, open source (MIT), using what 
 - Anything that needs **XInput** (screen upload; LED/config while the pad is in XInput) goes through
   the **helper**.
 - The app can switch modes by software (`05 ED` / `A5 17`) so the user never touches the hardware
-  switch; the UI hides the mode entirely.
+  switch; the Mode row on the device card and Settings › USB mode do it.
 
-## Known risks (validate first — Milestone 0)
+## Decisions validated on hardware
 
-1. **USB capture from a launchd daemon.** Apple Developer Forums report that on macOS 15.3+
-   `IOUSBHostInterface(… .deviceCapture)` can fail from a LaunchDaemon while it works from a root
-   Terminal ([thread 774497](https://developer.apple.com/forums/thread/774497), FB16524420), and that
-   `SMAppService` daemons hit TCC differences vs. `SMJobBless`
-   ([thread 795686](https://developer.apple.com/forums/thread/795686)). Our libusb PoC (which uses
-   IOUSBHost capture under the hood) **worked as root from a terminal on macOS 26.6**. The first
-   engineering task is a minimal daemon that captures the pad and reads device info.
-   **Update 2026-09-01:** the first IOUSBHost-based capture from the CLI (`sudo apex4 info`) read the
-   device info successfully and the Mac **kernel-panicked seconds later** (`Kernel data abort`,
-   `far 0x30`, panic report cites IOUSBHostInterface / XboxGamepad dext). Sequence used: device
-   capture → `configure(1, matchInterfaces: false)` → interface open → interrupt IO → destroy.
-   The Python prototype (libusb → legacy IOUSBLib `USBDeviceReEnumerate` with the capture mask,
-   then `USBInterfaceOpen`) ran the same protocol dozens of times without a panic. Next attempt will
-   mirror libusb's mechanism (IOUSBLib via IOKit, still an Apple framework) and must be run only with
-   the user's consent, with unsaved work closed.
-   **Update 2026-09-01 (later):** the IOUSBLib rewrite (libusb-style capture) works end to end from
-   the CLI as root — device info, LED apply + save, single-frame screen upload in 4.5 s — and Apple's
-   driver re-attaches cleanly on release. **Validated 2026-09-01 (evening): the same IOUSBLib code runs inside the `SMAppService` launchd daemon** (root) and serves the app over XPC — device info and LED read through the daemon, no re-enumeration loops, no panic.
-   Fallbacks, in order: (a) helper installed as a classic LaunchDaemon by a signed `.pkg`;
-   (b) DriverKit USB dext — clean but needs Apple to grant
-   `com.apple.developer.driverkit.transport.usb` for VID `0x045E` (Microsoft's), which is unlikely,
-   and would also require re-exposing the gamepad as HID.
-2. **Mode switching** commands are read from Flydigi's code but not yet exercised.
-3. **Firmware updates**: Flydigi ships `esptool` for the LCD (ESP32) and vendor loaders for the
-   MCU. Out of scope until the rest is solid; must never brick a pad.
+1. **USB capture in XInput.** Apple's Xbox driver owns the pad. The first attempt, IOUSBHost
+   `deviceCapture` from the CLI, read the device info and then **kernel-panicked macOS 26.6** (2026-09-01,
+   `Kernel data abort` citing IOUSBHostInterface / the XboxGamepad dext). The libusb mechanism — legacy
+   IOUSBLib `USBDeviceReEnumerate` with the capture mask, then `USBInterfaceOpen` — runs the same protocol
+   without incident, and **works inside the `SMAppService` launchd daemon** (root) over XPC. Apple Developer
+   Forums threads [774497](https://developer.apple.com/forums/thread/774497) and
+   [795686](https://developer.apple.com/forums/thread/795686) describe capture failing from LaunchDaemons on
+   15.3+; not reproduced here. Fallbacks if it ever breaks: a classic LaunchDaemon installed by a signed `.pkg`,
+   or a DriverKit dext (needs Apple to grant `com.apple.developer.driverkit.transport.usb` for Microsoft's
+   VID `0x045E`, unlikely).
+2. **Mode switching** (`05 ED` / `A5 17`) verified both ways; the firmware flow relies on it.
+3. **Firmware** (main chip, Telink OTA over the DInput `0xFFEF` interface) implemented and run on hardware —
+   see `firmware-update.md`. Screen and trigger-board chips are documented there, not implemented.
 
 ## Development gotchas
 

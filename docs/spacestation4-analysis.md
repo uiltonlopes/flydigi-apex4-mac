@@ -6,7 +6,7 @@ deviceId 84)**, how its protocol differs from the 3.4.4.3 code base we reverse-e
 
 Legend used throughout: **[verified]** = read directly in decompiled/unminified code or observed in
 a live HTTP response; **[inferred]** = deduced from names, strings or assets, not exercised.
-Nothing here was run on hardware; no Flydigi binary was executed.
+The 2026-09-01 analysis was done without running anything on hardware and without executing any Flydigi binary; later verifications are dated inline (§9).
 
 ## 1. Source
 
@@ -279,6 +279,8 @@ Base `https://api.flydigi.com/pc` (axios, `withCredentials`, header `appversion`
 
 ## 8. Recommendations for our roadmap
 
+> Status 2026-09-04: everything below is done (see `roadmap.md`) except the optional 30 s `D2` timeout and `.dat` import.
+
 1. **Keep the k2 protocol as documented; no migration needed.** SS4 confirms every XInput
    command we use and adds none on a new framing. Add the confirmed commands to `protocol.md`
    (§4.2 table): current-config-id `A5 20`, config random ids `A5 50 02/04`, extra versions
@@ -303,7 +305,7 @@ Base `https://api.flydigi.com/pc` (axios, `withCredentials`, header `appversion`
    later, the `config_share` endpoints would make our profiles interchangeable with SS4 users.
 7. **Firmware**: the update server is a simple JSON POST and answers `6.8.3.7` for k2 today. A
    read-only "update available" notice (link to Flydigi's Windows tool) is low-risk; flashing itself
-   (Telink over the DInput/04b4 endpoint, `FirmwareConsole.exe` protocol unknown) stays "Later".
+   (Telink over the DInput/04b4 endpoint) followed once the protocol was read — see `firmware-update.md`.
 8. **Per-game trigger profiles** (M3): the `adapter_trigger/list` payload already contains per-game
    force/vibration parameters (`vibParams`, `pwmScal`, presets) and process names; a macOS
    frontmost-app matcher could reuse the presets for the same titles (mods/DS-mode excluded).
@@ -311,6 +313,22 @@ Base `https://api.flydigi.com/pc` (axios, `withCredentials`, header `appversion`
    driver for XInput; our unprivileged DInput path (config/LED without root) is a genuine
    advantage worth stating in the README. Note also that on the Apex 4, SS4 hides the advanced
    stick switches (rebound/auto-cal/debounce/Xbox-Home) — they are firmware features of newer pads.
+
+## 9. Share codes (verified 2026-09-04)
+
+- **Payload** = `BitConverter.ToString(ControllerMappingConfigBean.ToByteArray())`: the protobuf bytes of the profile
+  bean, upper-case hex separated by dashes. The bean is produced from the 790-byte blob by `MappingConfigParserV30`
+  (ported in `FlydigiKit/Sources/FlydigiKit/SS4Profile.swift`, integer arithmetic included — the proto 3.0 stick
+  points lose a few units on the way, in Space Station too) and carries the LED bean when the service has one.
+- **Upload**: `POST https://api.flydigi.com/pc/config_share/upload` JSON `{configName, controllerType: "k2",
+  configContent: JSON.stringify(hex)}` (header `appversion`), no login. Reply `data.uniqueId` = `"分享码：<32 hex>"`;
+  the code users exchange is the 32-hex part.
+- **Download**: `GET …/config_share/download?uniqueId=<code>&configType=1&controllerType=k2` (camelCase only;
+  snake_case → HTTP 400 "参数不完整"). Reply `data.{config_name, controller_type, config_content}`; the renderer
+  rejects `config_type != 0` when present.
+- Field numbers of every message are in `SS4Profile.swift`; enums are sequential in declaration order
+  (`KeyMapType` Key/Continuous/Macro/MultiFunction/Keyboard, `JoystickMapType` Joystick/Keyboard/Mouse/DPad,
+  `MotionMapType` Off/LeftJoystick/RightJoystick/Mouse, `MacroEnableType` None/Once/Press/Click, …).
 
 ## Appendix A — `IpcCommandEnum` (controller subset)
 
@@ -350,19 +368,3 @@ Decompiled from `SpaceStationService.exe` (4.2.0.9 and 4.2.2.3): `Flydigi.Contro
 `Configs/`, `driver/`, `firmware/`, `Logs/`. Work directory (not committed):
 `scratchpad/ss4/` — `ext41/ ext42/ ext43/` (installer payloads), `bundle4x/`, `src4x/`,
 `asar4x/`, `api/*.json`.
-
-## 8. Share codes (verified 2026-09-04)
-
-- **Payload** = `BitConverter.ToString(ControllerMappingConfigBean.ToByteArray())`: the protobuf bytes of the profile
-  bean, upper-case hex separated by dashes. The bean is produced from the 790-byte blob by `MappingConfigParserV30`
-  (ported in `FlydigiKit/Sources/FlydigiKit/SS4Profile.swift`, integer arithmetic included — the proto 3.0 stick
-  points lose a few units on the way, in Space Station too) and carries the LED bean when the service has one.
-- **Upload**: `POST https://api.flydigi.com/pc/config_share/upload` JSON `{configName, controllerType: "k2",
-  configContent: JSON.stringify(hex)}` (header `appversion`), no login. Reply `data.uniqueId` = `"分享码：<32 hex>"`;
-  the code users exchange is the 32-hex part.
-- **Download**: `GET …/config_share/download?uniqueId=<code>&configType=1&controllerType=k2` (camelCase only;
-  snake_case → HTTP 400 "参数不完整"). Reply `data.{config_name, controller_type, config_content}`; the renderer
-  rejects `config_type != 0` when present.
-- Field numbers of every message are in `SS4Profile.swift`; enums are sequential in declaration order
-  (`KeyMapType` Key/Continuous/Macro/MultiFunction/Keyboard, `JoystickMapType` Joystick/Keyboard/Mouse/DPad,
-  `MotionMapType` Off/LeftJoystick/RightJoystick/Mouse, `MacroEnableType` None/Once/Press/Click, …).

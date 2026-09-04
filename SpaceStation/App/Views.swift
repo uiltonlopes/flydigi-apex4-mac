@@ -84,8 +84,10 @@ struct MainWindow: View {
             route = .home
             if let t = q["tab"] { tab = HomeTab(rawValue: t) ?? (t == "buttons" ? .button : tab) }
             if let k = q["key"] { profiles.selectedKey = ControllerKey.allCases.first { "\($0)".lowercased() == k.lowercased() } }
-            if q["kind"] == "special", let k = profiles.selectedKey { profiles.setMapping(k, .keyboardMouse); Self.urlLog.notice("special set on \(String(describing: k), privacy: .public) now \(String(describing: profiles.draft?.keys[k]), privacy: .public)") }
             if let m = q["macro"].flatMap(Int.init) { profiles.macroToOpen = m }
+            #if DEBUG
+            // Screenshot helpers: they edit the draft (never the pad) and exist only in Debug builds.
+            if q["kind"] == "special", let k = profiles.selectedKey { profiles.setMapping(k, .keyboardMouse) }
             if q["gyro"] == "mouse" { profiles.draft?.motion.mapType = .mouse }
             // demo=<key>: a throwaway macro in the draft (never applied) so the editor has something to show.
             if let d = q["demo"], let k = ControllerKey.allCases.first(where: { "\($0)".lowercased() == d.lowercased() }), let i = profiles.addMacro(for: k) {
@@ -97,18 +99,24 @@ struct MainWindow: View {
                 }
                 profiles.macroToOpen = i
             }
+            #endif
         case "screen":
             route = .screen
             NavHints.shared.screenSource = q["source"]; NavHints.shared.giphyQuery = q["q"]
         case "adaptive": route = .adaptiveTrigger
         case "settings": route = .settings
         case "device": route = .deviceCenter
+        #if DEBUG
         case "window":   // window?w=1280&h=840 — used by the screenshot script
             if let w = q["w"].flatMap(Double.init), let h = q["h"].flatMap(Double.init), let win = NSApp.windows.first(where: { $0.isVisible && $0.title != "" || $0.isKeyWindow }) ?? NSApp.windows.first {
                 win.setContentSize(NSSize(width: w, height: h)); win.center()
             }
+        #endif
         case "profile":
+            #if DEBUG
             if q["revert"] != nil { profiles.revert() }
+            #endif
+            // Switching the slot changes what the pad does right now, so only when nothing is being edited.
             if let s = q["slot"].flatMap(Int.init), (1...4).contains(s), !profiles.isDirty { profiles.select(slot: UInt8(s - 1)); route = .home }
         default: break
         }

@@ -188,7 +188,7 @@ not), [`docs/architecture.md`](docs/architecture.md), [`docs/spacestation4-analy
 | Controller | Device id | Status |
 |---|---|---|
 | Flydigi Apex 4 (`k2`) | 84 | supported, tested on firmware 6.8.3.0 and 6.8.3.7 (updated from the app's flasher) |
-| Apex 4 EVA-01 / STN / Assassin's Creed / GS / Black Myth / Genshin / Star Rail | 86, 87, 92, 93, 102, 103, 104 | same protocol and artwork, untested |
+| Apex 4 EVA-01 / STN / Assassin's Creed / RUS / Black Myth (HSH) / Genshin (GS) / Star Rail (SRS) | 86, 87, 92, 93, 102, 103, 104 | same protocol and artwork, untested |
 | Apex 3, Vader 3 / 3 Pro, older | see `DeviceCatalog.swift` | classic protocol, unsupported (help wanted) |
 | Apex 5 / 6, Vader 4 Pro, Vader 5 | 128+ | new protocol (VID 0x37D7), unsupported |
 
@@ -246,7 +246,7 @@ cd FlydigiKit && swift build
 ```
 
 ```bash
-.build/debug/apex4 config dump ./backup     # the four profile slots as files (restore puts them back)
+.build/debug/apex4 config dump ./backup     # active profile (config.bin) and lighting (led.bin); restore writes them back
 ```
 
 ```bash

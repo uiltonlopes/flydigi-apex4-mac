@@ -19,8 +19,8 @@ app uses a small privileged helper that borrows the USB interface only while a c
 2. macOS opens *Login Items & Extensions*; allow **SpaceStationHelper** and enter your password once.
 3. Back in the app press the refresh icon. The sidebar should show your controller, firmware and battery.
 
-Without the helper the app still works fully in **DInput** mode (switch with the menu on the device
-card, or hold the controller's mode combination). The LCD upload always needs XInput + the cable.
+Without the helper the app still works fully in **DInput** mode (switch with the Mode row on the device
+card or Settings → USB mode, or hold the controller's mode combination). The LCD upload always needs XInput + the cable.
 
 ## 3. Modes at a glance
 

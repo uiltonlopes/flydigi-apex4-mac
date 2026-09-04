@@ -167,5 +167,6 @@ public final class OTALink: @unchecked Sendable {
         guard !closed else { return }
         closed = true
         IOHIDDeviceCancel(device); IOHIDDeviceClose(device, IOOptionBits(kIOHIDOptionsTypeNone)); IOHIDManagerClose(manager, IOOptionBits(kIOHIDOptionsTypeNone))
+        buffer.deallocate()
     }
 }

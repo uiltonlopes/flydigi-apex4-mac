@@ -66,7 +66,8 @@ enum Giphy {
     static func download(_ gif: Gif) async throws -> URL {
         let (data, resp) = try await URLSession.shared.data(from: gif.download)
         guard let http = resp as? HTTPURLResponse, http.statusCode == 200 else { throw Failure.badResponse }
-        let dst = FileManager.default.temporaryDirectory.appendingPathComponent("giphy-\(gif.id).gif")
+        let safeId = String(gif.id.unicodeScalars.filter { CharacterSet.alphanumerics.contains($0) || $0 == "_" || $0 == "-" }.map(Character.init))
+        let dst = FileManager.default.temporaryDirectory.appendingPathComponent("giphy-\(safeId.isEmpty ? UUID().uuidString : safeId).gif")
         try data.write(to: dst)
         return dst
     }

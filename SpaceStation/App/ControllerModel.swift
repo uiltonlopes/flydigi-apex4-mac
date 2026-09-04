@@ -209,6 +209,7 @@ final class ControllerModel {
         let r: Result<[String], Error> = await Task.detached {
             Result {
                 var log: [String] = []
+                guard FlydigiAPI.isTrustedFirmwareHost(update.url) else { throw HelperError.transport("firmware URL is not on Flydigi's servers: \(update.url.host ?? "?")") }
                 let data = try FlydigiAPI.download(update.url)
                 let dir = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Space Station/firmware", isDirectory: true)
                 try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -267,6 +268,7 @@ final class ControllerModel {
         do {
             firmwareStage = String(localized: "Downloading the firmware…")
             let img: FirmwareImage = try await Task.detached {
+                guard FlydigiAPI.isTrustedFirmwareHost(update.url) else { throw HelperError.transport("firmware URL is not on Flydigi's servers") }
                 let d = try FlydigiAPI.download(update.url); let i = try FirmwareImage(data: d); try i.validate(); return i
             }.value
             log(String(format: "%@: %d bytes, CRC32 %08x OK, %d packets", update.url.lastPathComponent, img.payloadSize, img.storedCRC, img.packetCount))

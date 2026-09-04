@@ -30,7 +30,7 @@ the classic protocol; VID `0x37D7` means the new one (see §4).
 1. Add or update the descriptor: id, `code` (the `device_code` Flydigi's web API uses — look at what the
    Windows app requests, e.g. `k1`), name, family, capabilities (LED groups, screen size/max frames or
    `nil`, config slots, ForceAdapt, gyro, grip motors). Set `support: .untested`.
-2. Capture fixtures with the CLI and drop them in `FlydigiKit/Tests/FlydigiKitTests/Fixtures/<code>/`:
+2. Capture fixtures with the CLI and drop them in `FlydigiKit/Tests/FlydigiKitTests/Fixtures/` (the Apex 4 ones are flat; use a `<code>/` subfolder for a new pad):
    `config dump`, LED blob, and one screen frame if the pad has a screen.
 3. Verify, in this order, each with a note in `protocol.md`:
    - device info, module versions (`apex4 dev xinput-probe`)
@@ -60,10 +60,10 @@ is unprivileged (no Apple driver claims VID `0x37D7`), so it may not even need t
 
 ## 5. UI
 
-The UI never checks device ids. It reads `DeviceDescriptor.capabilities` to show/hide sections
-(no screen → no Screen page), sizes previews from `capabilities.screen`, and uses the marketing name
-from the descriptor. Button hotspot positions for the hero render are per family
-(`SpaceStation/App/Stage/<family>.swift`) — a new family needs its own render (your own artwork, not Flydigi's)
+The UI should read `DeviceDescriptor.capabilities`; today it is Apex 4-only — fixed `Screen` constants,
+artwork looked up by device id — so a new family also means gating the Screen page and preview sizes on the
+descriptor. Button hotspot positions for the hero render are per family (today `SpaceStation/App/Stage/Apex4Render.swift`
+plus `KeyShapes.swift`) — a new family needs its own render (your own artwork, not Flydigi's)
 and hotspot table.
 
 ## 6. Send it

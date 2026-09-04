@@ -69,14 +69,14 @@ func fixture(_ name: String) throws -> [UInt8] {
 
 @Suite struct Parsing {
     @Test func dinputDeviceInfo() {
-        let r = hex("04fff05400f25a9054306804020102ec017f007f007f7f000000000054000000")
+        let r = hex("04fff0540001020304306804020102ec017f007f007f7f000000000054000000")
         let info = DInputReply.deviceInfo(r)
         #expect(info?.deviceId == 84 && info?.firmware == "6.8.3.0" && info?.isWired == true && info?.isApex4Family == true)
     }
     @Test func xinputDeviceInfo() {
-        let r = hex("0014000000000000000000000000a51054f25a90543068040201020000000000")
+        let r = hex("0014000000000000000000000000a51054010203043068040201020000000000")
         let info = XInputReply.deviceInfo(r)
-        #expect(info?.deviceId == 84 && info?.firmware == "6.8.3.0" && info?.mac == [0xf2, 0x5a, 0x90, 0x54])
+        #expect(info?.deviceId == 84 && info?.firmware == "6.8.3.0" && info?.mac == [0x01, 0x02, 0x03, 0x04])
     }
     @Test func screenAck() {
         var r = [UInt8](repeating: 0, count: 64)

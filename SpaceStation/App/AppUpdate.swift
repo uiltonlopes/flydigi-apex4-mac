@@ -57,5 +57,10 @@ final class AppUpdateChecker {
     }
 
     /// Opens the DMG download (Safari saves it to Downloads) or the release page.
-    func download() { if let r = latest { NSWorkspace.shared.open(r.dmg ?? r.page) } }
+    func download() {
+        guard let r = latest else { return }
+        // Only what GitHub itself serves: the release page or its asset download.
+        func ok(_ u: URL?) -> URL? { guard let u, u.scheme == "https", let h = u.host, h == "github.com" || h.hasSuffix(".github.com") || h.hasSuffix(".githubusercontent.com") else { return nil }; return u }
+        if let u = ok(r.dmg) ?? ok(r.page) { NSWorkspace.shared.open(u) }
+    }
 }

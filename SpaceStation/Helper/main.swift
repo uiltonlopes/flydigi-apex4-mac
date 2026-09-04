@@ -86,6 +86,7 @@ final class HelperService: @unchecked Sendable {
                 let b = try withSession { try $0.readBlob(kind == .config ? .config : .led) }
                 releaseIfIdle(); return .blob(b)
             case let .writeBlob(kind, bytes, persist):
+                guard bytes.count == (kind == .config ? 790 : 500) else { return .error("blob must be \(kind == .config ? 790 : 500) bytes") }
                 try withSession { s in
                     try s.writeBlob(bytes, kind: kind == .config ? .config : .led)
                     if persist { try s.saveToFlash() }
@@ -99,6 +100,7 @@ final class HelperService: @unchecked Sendable {
             case let .uploadScreenFrame(index, lvgl):
                 guard uploadFrames > 0 else { return .error("no upload in progress") }
                 guard lvgl.count == Screen.frameLength else { return .error("frame must be \(Screen.frameLength) bytes") }
+                guard (1...uploadFrames).contains(index) else { return .error("frame index must be 1…\(uploadFrames)") }
                 try withSession { try $0.uploadScreenFrame(lvgl, index: index, of: uploadFrames, period: uploadPeriod) }
                 return .frameDone(index: index)
             case .finishScreenUpload:
@@ -115,6 +117,7 @@ final class HelperService: @unchecked Sendable {
                 let b = try withSession { s in s.configId = slot; defer { s.configId = 0 }; return try s.readBlob(.config) }
                 releaseIfIdle(); return .blob(b)
             case let .writeConfig(slot, bytes, persist):
+                guard bytes.count == 790, slot < 8 else { return .error("config must be 790 bytes, slot 0…7") }
                 try withSession { s in
                     s.configId = slot; defer { s.configId = 0 }
                     try s.writeBlob(bytes, kind: .config)

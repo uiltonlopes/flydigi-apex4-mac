@@ -6,7 +6,7 @@ the official tool does:
 
 | File | Origin in Space Station 4.2.2.3 | Use in this app |
 |---|---|---|
-| `apex4-hero.png` | `assets/images/product/Controller/k2/84/main.png` | Product picture on the Status page |
+| `apex4-hero.png` | `assets/images/product/Controller/k2/84/main.png` | Controller picture on the Home page (the button hotspots are drawn over it) |
 | `AppIcon.icns` | `assets/icons/mac/icon.icns` | App icon |
 | `products/k2-<id>.png` | `assets/images/product/Controller/k2/<id>/main.png` | Device card / hero picture per Apex 4 variant (84, 86, 87, 92, 93, 102, 103, 104) |
 | `screens/factory-k2-<id>.gif` | `Configs/Controller/k2/default/default_screen_image_<id>.bin` (LVGL frames, decoded with the project's own RGB565 reader and re-encoded as GIF) | "On the controller" preview before anything was sent from this Mac |

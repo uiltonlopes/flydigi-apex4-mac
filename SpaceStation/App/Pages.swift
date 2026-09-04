@@ -684,13 +684,13 @@ struct ReleaseNote: View {
 
 /// In-app language override (SS4 has the same setting). Stored in `AppleLanguages`; needs a relaunch.
 enum AppLanguage: String, CaseIterable, Hashable {
-    case system, en, ptBR = "pt-BR", zhHans = "zh-Hans"
+    case system, en, ptBR = "pt-BR"                 // zh-Hans would need a translation first
     var title: String {
-        switch self { case .system: "System"; case .en: "English"; case .ptBR: "Português (Brasil)"; case .zhHans: "简体中文" }
+        switch self { case .system: "System"; case .en: "English"; case .ptBR: "Português (Brasil)" }
     }
     static var current: AppLanguage {
         guard let first = UserDefaults.standard.array(forKey: "AppleLanguages")?.first as? String, UserDefaults.standard.bool(forKey: "LanguageOverride") else { return .system }
-        return AppLanguage(rawValue: first) ?? (first.hasPrefix("pt") ? .ptBR : first.hasPrefix("zh") ? .zhHans : first.hasPrefix("en") ? .en : .system)
+        return AppLanguage(rawValue: first) ?? (first.hasPrefix("pt") ? .ptBR : first.hasPrefix("en") ? .en : .system)
     }
     func apply() {
         if self == .system { UserDefaults.standard.removeObject(forKey: "AppleLanguages"); UserDefaults.standard.set(false, forKey: "LanguageOverride") }
