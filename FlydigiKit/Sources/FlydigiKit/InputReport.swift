@@ -12,12 +12,27 @@ public struct ControllerState: Sendable, Hashable {
     public var leftX: Float, leftY: Float          // −1…1, up = +Y
     public var rightX: Float, rightY: Float
     public var leftTrigger: Float, rightTrigger: Float   // 0…1
+    /// Motion rates (DInput only): two signed 12-bit values packed in bytes 4–6 of the status report the way
+    /// Space Station's classic parser unpacks them. Left out of equality — they never sit still.
+    public var gyroX: Int = 0, gyroY: Int = 0
+
+    public init(pressed: Set<ControllerKey>, leftX: Float, leftY: Float, rightX: Float, rightY: Float, leftTrigger: Float, rightTrigger: Float) {
+        self.pressed = pressed; self.leftX = leftX; self.leftY = leftY; self.rightX = rightX; self.rightY = rightY
+        self.leftTrigger = leftTrigger; self.rightTrigger = rightTrigger
+    }
+    public static func == (a: ControllerState, b: ControllerState) -> Bool {
+        a.pressed == b.pressed && a.leftX == b.leftX && a.leftY == b.leftY && a.rightX == b.rightX && a.rightY == b.rightY && a.leftTrigger == b.leftTrigger && a.rightTrigger == b.rightTrigger
+    }
+    public func hash(into h: inout Hasher) { h.combine(pressed); h.combine(leftX); h.combine(leftY); h.combine(rightX); h.combine(rightY); h.combine(leftTrigger); h.combine(rightTrigger) }
 
     /// DInput status report (`04 FE …`); `nil` for anything else (command replies use `04 FF`).
     public init?(dinputReport r: [UInt8]) {
         guard r.count >= 32, r[0] == 4, r[1] == 0xFE else { return nil }
         self.init(keys1: r[9], keys2: r[10], keysExtra: r[7], keysSystem: r[8],
                   lx: r[17], ly: r[19], rx: r[21], ry: r[22], lt: r[23], rt: r[24], centre: 127.5)
+        var gx = Int(r[4]) | (Int(r[6] & 0xF0) << 4), gy = Int(r[5]) | (Int(r[6] & 0x0F) << 8)
+        if gx & 0x800 != 0 { gx -= 4096 }; if gy & 0x800 != 0 { gy -= 4096 }
+        gyroX = gx; gyroY = gy
     }
 
     /// XInput interrupt report (`00 14 …`, 32 bytes) with Flydigi's appended state.

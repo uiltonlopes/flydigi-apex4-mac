@@ -7,7 +7,7 @@ import FlydigiTransport
 
 struct Dev: ParsableCommand {
     static let configuration = CommandConfiguration(abstract: "Developer experiments (protocol re-tests).", shouldDisplay: false,
-                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, DualOpen.self, DInputSlots.self, DInputCursor.self, DInputApply.self, HWStatus.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self, InfoWatch.self, VibTest.self, RumbleTest.self, RumbleVariants.self, SlotProbe.self])
+                                                    subcommands: [DInputRetest.self, HIDSniff.self, HIDDiff.self, XInputRaw.self, DualOpen.self, DInputSlots.self, DInputCursor.self, DInputApply.self, HWStatus.self, RandomId.self, Probe.self, Slots.self, SlotWriteTest.self, ReadAffectsActive.self, ScreenSettings.self, MacroTest.self, ForceTest.self, InfoWatch.self, VibTest.self, RumbleTest.self, RumbleVariants.self, SlotProbe.self, KMProbe.self, GyroWatch.self])
 
     /// XInput (captured) version of hid-diff: optionally sends Space Station's "enable raw data"
     /// (`A5 50`) first, then prints changing bytes for N seconds. Needs root (USB capture).
@@ -544,4 +544,87 @@ extension Dev {
         }
     }
 
+}
+
+    /// Keyboard/mouse groundwork: does a key mapped to 0xFE (keyboard) still show up in the input the app can
+    /// read? DInput: the vendor status report. XInput (root): the GameController framework after the capture is
+    /// released. Writes the mapping into the current slot, watches for N seconds, then restores the slot.
+    struct KMProbe: ParsableCommand {
+        static let configuration = CommandConfiguration(commandName: "km-probe")
+        @Option(name: .long, help: "Key to map to keyboard (a, b, x, y, m1…).") var key: String = "b"
+        @Option(name: .long) var seconds: Double = 15
+        @OptionGroup var ch: ChannelOption
+        func run() throws {
+            guard let k = ControllerKey.allCases.first(where: { "\($0)".lowercased() == key.lowercased() }) else { throw ValidationError("unknown key \(key)") }
+            let s = try ch.open()
+            let slot = (try? s.currentConfigId()) ?? 0; s.configId = slot   // the DInput cursor query does not answer on this firmware
+            let original = try s.readBlob(.config)
+            guard var cfg = GamepadConfig(bytes: original) else { throw ValidationError("config did not parse") }
+            print("channel \(s.channel) · slot \(slot) · \(k) was \(cfg.keys[k].map { "\($0)" } ?? "identity")")
+            cfg.keys[k] = .keyboardMouse
+            _ = try s.writeBlob(cfg.bytes, kind: .config); try s.saveToFlash()
+            print("\(k) → keyboard/mouse (0xFE) written to slot \(slot). Press \(k) and a few other buttons for \(Int(seconds)) s…")
+            let channel = s.channel
+            defer {
+                // `s` may already be closed (XInput branch): restore through a fresh session on the same channel.
+                if let r = try? DeviceSession.open(preferring: channel) {
+                    r.configId = slot
+                    if (try? r.writeBlob(original, kind: .config)) != nil, (try? r.saveToFlash()) != nil { print("slot \(slot) restored") } else { print("RESTORE FAILED — run `apex4 config restore` with your backup") }
+                    r.close()
+                } else { print("RESTORE FAILED (could not reopen) — run `apex4 config restore` with your backup") }
+            }
+            let t0 = Date(); var seen: Set<ControllerKey> = []; var last: Set<ControllerKey> = []
+            switch s.channel {
+            case .dinput:
+                defer { s.close() }
+                while Date().timeIntervalSince(t0) < seconds {
+                    guard let st: ControllerState = try? s.link.waitForReport(timeout: 0.5, { ControllerState(dinputReport: $0) }) else { continue }
+                    if st.pressed != last { print(String(format: "%5.1fs  ", Date().timeIntervalSince(t0)) + (st.pressed.isEmpty ? "—" : st.pressed.map { "\($0)" }.sorted().joined(separator: " "))); last = st.pressed; seen.formUnion(st.pressed) }
+                }
+                print(seen.contains(k) ? "RESULT: \(k) IS visible in the DInput status report while mapped to keyboard" : "RESULT: \(k) was NOT seen in the DInput status report (pressed keys seen: \(seen.map { "\($0)" }.sorted()))")
+            case .xinput:
+                s.close()          // hand the pad back to Apple's driver, then watch it through GameController
+                print("capture released; waiting for GameController…")
+                try? GCProbe.watch(seconds: seconds)
+                print("(compare with the key list above: if \(k) never appeared, XInput hides keyboard-mapped keys from the system)")
+            }
+        }
+    }
+
+/// Prints the motion rates decoded from the DInput status report (bytes 4–6) plus the raw bytes that move,
+/// to confirm which bytes carry the gyro and their sign. Rotate the pad slowly around each axis.
+struct GyroWatch: ParsableCommand {
+    static let configuration = CommandConfiguration(commandName: "gyro-watch")
+    @Option(name: .long) var seconds: Double = 15
+    func run() throws {
+        let link = try HIDLink(); defer { link.close() }
+        let t0 = Date(); var n = 0
+        print("rotate the controller: yaw (turn left/right), then pitch (tilt forward/back) — \(Int(seconds)) s")
+        while Date().timeIntervalSince(t0) < seconds {
+            guard let r: [UInt8] = try? link.waitForReport(timeout: 0.5, { (r: [UInt8]) -> [UInt8]? in r.count >= 32 && r[0] == 4 && r[1] == 0xFE ? r : nil }) else { continue }
+            n += 1
+            guard n % 50 == 0, let st = ControllerState(dinputReport: r) else { continue }
+            let extra = [4, 5, 6, 11, 12, 13, 14, 15, 18, 20, 26, 29].map { String(format: "%d:%02x", $0, r[$0]) }.joined(separator: " ")
+            print(String(format: "%5.1fs  gyroX %5d  gyroY %5d   ", Date().timeIntervalSince(t0), st.gyroX, st.gyroY) + extra)
+        }
+    }
+}
+
+import GameController
+enum GCProbe {
+    static func watch(seconds: Double) throws {
+        let deadline = Date().addingTimeInterval(seconds)
+        var last = ""
+        while Date() < deadline {
+            RunLoop.main.run(until: Date().addingTimeInterval(0.02))
+            guard let gp = GCController.controllers().first?.extendedGamepad else { continue }
+            var p: [String] = []
+            if gp.buttonA.isPressed { p.append("A") }; if gp.buttonB.isPressed { p.append("B") }; if gp.buttonX.isPressed { p.append("X") }; if gp.buttonY.isPressed { p.append("Y") }
+            if gp.leftShoulder.isPressed { p.append("LB") }; if gp.rightShoulder.isPressed { p.append("RB") }
+            if gp.dpad.up.isPressed { p.append("up") }; if gp.dpad.down.isPressed { p.append("down") }; if gp.dpad.left.isPressed { p.append("left") }; if gp.dpad.right.isPressed { p.append("right") }
+            if gp.buttonMenu.isPressed { p.append("start") }; if gp.buttonOptions?.isPressed == true { p.append("select") }
+            let now = p.joined(separator: " ")
+            if now != last { print("  GameController: " + (now.isEmpty ? "—" : now)); last = now }
+        }
+    }
 }

@@ -393,7 +393,7 @@ struct SettingsPage: View {
             HStack(alignment: .top, spacing: 0) {
                 VStack(alignment: .leading, spacing: 4) {
                     navGroup("Controller Settings", ["Firmware Update", "USB mode"])
-                    navGroup("App Settings", ["Language", "GIPHY", "Open at login", "Privileged helper"])
+                    navGroup("App Settings", ["Language", "GIPHY", "Keyboard & mouse", "Open at login", "Privileged helper"])
                     navGroup("About", [])
                     Spacer()
                     VStack(alignment: .leading, spacing: 4) {
@@ -438,6 +438,13 @@ struct SettingsPage: View {
                                 Link(destination: URL(string: "https://developers.giphy.com/dashboard/")!) { Label("Create a key at developers.giphy.com", systemImage: "link") }
                             }
                             .font(.system(size: 12)).tint(SS.brand500)
+                        }
+                        section("Keyboard & mouse") {
+                            Text(KeyboardMouseEngine.isTrusted ? "Accessibility permission granted — mappings to the keyboard and mouse are active while the app runs." : "Accessibility permission not granted — mappings to the keyboard and mouse do nothing yet.")
+                                .font(.system(size: 13)).foregroundStyle(.white)
+                            Text("Buttons set to Special, sticks mapped to keyboard or mouse and the gyro mapped to the mouse are turned into key and mouse events by this app, per controller and profile. Buttons need DInput mode; the controller hides keyboard-mapped buttons in XInput.")
+                                .font(.system(size: 12)).foregroundStyle(SS.n300)
+                            KeyboardMouseStatus()
                         }
                         section("Open at login") {
                             SwitchRow(title: "Start Space Station when I log in", isOn: Binding(get: { SMAppService.mainApp.status == .enabled }, set: { on in

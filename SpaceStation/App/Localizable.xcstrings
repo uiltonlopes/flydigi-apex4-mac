@@ -111,12 +111,32 @@
         }
       }
     },
+    "4 directions": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "4 direções"
+          }
+        }
+      }
+    },
     "5 min": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "5 min"
+          }
+        }
+      }
+    },
+    "8 directions": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "8 direções"
           }
         }
       }
@@ -147,6 +167,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Cerca de %1$lld s para %2$lld quadros."
+          }
+        }
+      }
+    },
+    "Accessibility permission granted — mappings to the keyboard and mouse are active while the app runs.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permissão de Acessibilidade concedida — os mapeamentos para teclado e mouse ficam ativos enquanto o app roda."
+          }
+        }
+      }
+    },
+    "Accessibility permission not granted — mappings to the keyboard and mouse do nothing yet.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permissão de Acessibilidade não concedida — os mapeamentos para teclado e mouse ainda não fazem nada."
           }
         }
       }
@@ -247,6 +287,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Adicionar ao perfil"
+          }
+        }
+      }
+    },
+    "Allow…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Permitir…"
           }
         }
       }
@@ -491,6 +541,26 @@
         }
       }
     },
+    "Buttons mapped to the keyboard are hidden by the controller in XInput mode. Switch to DInput for keyboard and mouse mappings; sticks mapped to the mouse work in both.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Botões mapeados para o teclado são escondidos pelo controle no modo XInput. Mude para DInput para os mapeamentos de teclado e mouse; analógicos mapeados para o mouse funcionam nos dois."
+          }
+        }
+      }
+    },
+    "Buttons set to Special, sticks mapped to keyboard or mouse and the gyro mapped to the mouse are turned into key and mouse events by this app, per controller and profile. Buttons need DInput mode; the controller hides keyboard-mapped buttons in XInput.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Botões em Especial, analógicos mapeados para teclado ou mouse e o giroscópio mapeado para o mouse viram eventos de tecla e mouse gerados por este app, por controle e perfil. Botões precisam do modo DInput; o controle esconde botões mapeados para teclado em XInput."
+          }
+        }
+      }
+    },
     "Buy me a coffee": {
       "localizations": {
         "pt-BR": {
@@ -691,6 +761,16 @@
         }
       }
     },
+    "Click a key and press its replacement on the Mac keyboard. Diagonals press two keys in 8-direction mode.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clique numa tecla e pressione a substituta no teclado do Mac. Diagonais pressionam duas teclas no modo de 8 direções."
+          }
+        }
+      }
+    },
     "Click any button on the controller image above to modify its mapping.": {
       "localizations": {
         "pt-BR": {
@@ -707,6 +787,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Clique para definir a macro"
+          }
+        }
+      }
+    },
+    "Click, then press the key on the Mac keyboard.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clique e depois pressione a tecla no teclado do Mac."
           }
         }
       }
@@ -1137,6 +1227,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nome do dispositivo"
+          }
+        }
+      }
+    },
+    "Directions": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Direções"
           }
         }
       }
@@ -2131,12 +2231,52 @@
         }
       }
     },
+    "Keyboard": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teclado"
+          }
+        }
+      }
+    },
+    "Keyboard & mouse": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teclado e mouse"
+          }
+        }
+      }
+    },
     "Keyboard and mouse mapping needs a companion driver on the Mac. It arrives in a later release.": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Mapear teclado e mouse precisa de um driver auxiliar no Mac. Chega em uma versão futura."
+          }
+        }
+      }
+    },
+    "Keyboard key": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Tecla do teclado"
+          }
+        }
+      }
+    },
+    "Keys": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Teclas"
           }
         }
       }
@@ -2177,6 +2317,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Esquerda"
+          }
+        }
+      }
+    },
+    "Left click": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clique esquerdo"
           }
         }
       }
@@ -2501,6 +2651,16 @@
         }
       }
     },
+    "Mapping": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mapeamento"
+          }
+        }
+      }
+    },
     "Mapping to": {
       "localizations": {
         "pt-BR": {
@@ -2571,6 +2731,36 @@
         }
       }
     },
+    "Mouse": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mouse"
+          }
+        }
+      }
+    },
+    "Mouse wheel down": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Roda do mouse para baixo"
+          }
+        }
+      }
+    },
+    "Mouse wheel up": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Roda do mouse para cima"
+          }
+        }
+      }
+    },
     "Move down": {
       "localizations": {
         "pt-BR": {
@@ -2597,6 +2787,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mover para cima"
+          }
+        }
+      }
+    },
+    "Moves the mouse pointer with the controller's motion while the activation key allows it. Needs DInput mode and the Accessibility permission; apply the profile so the controller knows the gyro is in use.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Move o ponteiro do mouse com o movimento do controle enquanto a tecla de ativação permitir. Precisa do modo DInput e da permissão de Acessibilidade; aplique o perfil para o controle saber que o giroscópio está em uso."
           }
         }
       }
@@ -2901,6 +3101,16 @@
         }
       }
     },
+    "Not set": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não definida"
+          }
+        }
+      }
+    },
     "Note:": {
       "localizations": {
         "pt-BR": {
@@ -3187,6 +3397,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pressionar um botão"
+          }
+        }
+      }
+    },
+    "Press a key…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Pressione uma tecla…"
           }
         }
       }
@@ -3687,6 +3907,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Direita"
+          }
+        }
+      }
+    },
+    "Right click": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Clique direito"
           }
         }
       }
@@ -4581,6 +4811,16 @@
         }
       }
     },
+    "The controller stops sending this button to games; Space Station for Mac turns it into the keyboard or mouse action above while it is running. Stored on this Mac per profile.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O controle para de enviar este botão aos jogos; o Space Station for Mac o transforma na ação de teclado ou mouse acima enquanto estiver aberto. Guardado neste Mac por perfil."
+          }
+        }
+      }
+    },
     "The controller's update interface did not appear.": {
       "localizations": {
         "pt-BR": {
@@ -5461,6 +5701,16 @@
         }
       }
     },
+    "X-axis sensitivity": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensibilidade do eixo X"
+          }
+        }
+      }
+    },
     "XInput": {
       "localizations": {
         "pt-BR": {
@@ -5487,6 +5737,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "XInput — o que os jogos esperam; a tela e o teste dos gatilhos precisam dele."
+          }
+        }
+      }
+    },
+    "Y-axis sensitivity": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensibilidade do eixo Y"
           }
         }
       }
@@ -5547,6 +5807,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "arquivo local"
+          }
+        }
+      }
+    },
+    "macOS needs to allow Space Station to control the keyboard and mouse (Privacy & Security › Accessibility).": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O macOS precisa permitir que o Space Station controle o teclado e o mouse (Privacidade e Segurança › Acessibilidade)."
           }
         }
       }

@@ -41,6 +41,7 @@ final class LiveInput {
     func setRawMonitoring(_ on: Bool) {
         if !on { rawTask?.cancel(); rawTask = nil; raw = nil; rawReportRate = nil; return }
         guard rawTask == nil else { return }
+        let engine = KeyboardMouseEngine.shared
         rawTask = Task.detached(priority: .utility) { [weak self] in
             guard let link = try? HIDLink() else { return }
             defer { link.close() }
@@ -55,6 +56,7 @@ final class LiveInput {
                     await MainActor.run { [weak self] in self?.rawReportRate = rate }
                 }
                 guard let state else { continue }
+                engine.process(state)                     // keyboard/mouse mapping, every report
                 if state != last || !connectedSeen {
                     last = state; connectedSeen = true
                     await MainActor.run { [weak self] in self?.raw = state; self?.connected = true }
@@ -120,6 +122,11 @@ final class LiveInput {
                 if gamepad.buttonMenu.isPressed { p.insert("≡") }; if gamepad.buttonOptions?.isPressed == true { p.insert("◧") }
                 if gamepad.buttonHome?.isPressed == true { p.insert("⌂") }
                 self.pressed = p
+                // XInput: no vendor report, so the engine gets what the system driver shows (sticks and plain buttons).
+                if self.raw == nil {
+                    KeyboardMouseEngine.shared.process(ControllerState(pressed: self.pressedKeys, leftX: self.left.x, leftY: self.left.y, rightX: self.right.x, rightY: self.right.y,
+                                                                       leftTrigger: self.leftTrigger, rightTrigger: self.rightTrigger))
+                }
             }
         }
     }

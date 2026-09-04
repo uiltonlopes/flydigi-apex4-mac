@@ -66,6 +66,16 @@ struct MainWindow: View {
         }
         // The receiver can be there before the pad answers: load the profiles once it does.
         .onChange(of: model.info == nil) { _, isNil in if !isNil { Task { await profiles.loadAll() } } }
+        .onChange(of: kmKey, initial: true) { _, k in
+            keyboardMouse.push(mac: k.mac, slot: k.slot, motion: k.motion, connected: k.connected)
+        }
+    }
+
+    @Environment(KeyboardMouseStore.self) private var keyboardMouse
+    private struct KMKey: Hashable { var mac: String?; var slot: UInt8; var connected: Bool; var revision: Int; var motion: GamepadConfig.Motion? }
+    private var kmKey: KMKey {
+        KMKey(mac: model.info?.mac, slot: profiles.activeSlot, connected: model.connection != .none, revision: keyboardMouse.revision,
+              motion: profiles.slots.first { $0.index == profiles.activeSlot }?.config.motion)
     }
 }
 
@@ -812,15 +822,37 @@ struct KeyEditor: View {
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(SS.n500))
     }
 
+    @Environment(KeyboardMouseStore.self) private var km
+    private var kmTarget: KMTarget? { km.map(for: model.info?.mac, slot: profiles.activeSlot).keys[key.rawValue] }
+    private func setKMTarget(_ t: KMTarget?) { km.update(mac: model.info?.mac, slot: profiles.activeSlot) { $0.keys[key.rawValue] = t } }
+    private static let defaultKMKey = KMKey(code: 49, label: "Space")
+
     private var specialEditor: some View {
         VStack(spacing: 24) {
-            Notice("Keyboard and mouse mapping needs a companion driver on the Mac. It arrives in a later release.")
             HStack(spacing: 24) {
                 inputColumn
                 Text("=").foregroundStyle(SS.n300)
-                DarkSelect(selection: .constant(0), options: [(0, "Disabled")], width: 260, disabled: true)
+                VStack(alignment: .leading, spacing: 10) {
+                    DarkSelect(selection: Binding(get: { kmTarget?.kind ?? .key }, set: { k in
+                        switch k {
+                        case .key: if case .key = kmTarget {} else { setKMTarget(.key(Self.defaultKMKey)) }
+                        case .mouseLeft: setKMTarget(.mouseLeft); case .mouseRight: setKMTarget(.mouseRight)
+                        case .wheelUp: setKMTarget(.wheelUp); case .wheelDown: setKMTarget(.wheelDown)
+                        }
+                    }), options: [(.key, "Keyboard key"), (.mouseLeft, "Left click"), (.mouseRight, "Right click"), (.wheelUp, "Mouse wheel up"), (.wheelDown, "Mouse wheel down")], width: 260)
+                    if case .key(let k) = kmTarget ?? .key(Self.defaultKMKey) {
+                        HStack(spacing: 10) {
+                            KeyCaptureButton(key: kmTarget == nil ? nil : k, width: 160) { setKMTarget(.key($0)) }
+                            Text("Click, then press the key on the Mac keyboard.").font(.system(size: 11)).foregroundStyle(SS.n400)
+                        }
+                    }
+                }
             }
+            Text("The controller stops sending this button to games; Space Station for Mac turns it into the keyboard or mouse action above while it is running. Stored on this Mac per profile.")
+                .font(.system(size: 12)).foregroundStyle(SS.n300).frame(maxWidth: 560)
+            KeyboardMouseStatus()
         }
+        .onAppear { if kmTarget == nil { setKMTarget(.key(Self.defaultKMKey)) } }
     }
 
     private func setKind(_ k: Kind) {
@@ -848,6 +880,9 @@ struct JoystickTab: View {
 
     private var stick: GamepadConfig.Stick { profiles.draft![stick: side] }
     private func set(_ f: (inout GamepadConfig.Stick) -> Void) { var s = stick; f(&s); profiles.draft?[stick: side] = s }
+    @Environment(KeyboardMouseStore.self) private var km
+    private var stickMap: StickMap { km.map(for: model.info?.mac, slot: profiles.activeSlot)[stick: side] }
+    private func setStickMap(_ m: StickMap) { km.update(mac: model.info?.mac, slot: profiles.activeSlot) { $0[stick: side] = m } }
     private var liveStick: LiveInput.Stick {
         if let r = live.raw { return side == .left ? .init(x: r.leftX, y: r.leftY) : .init(x: r.rightX, y: r.rightY) }
         return side == .left ? live.left : live.right
@@ -875,12 +910,52 @@ struct JoystickTab: View {
                 }
                 .frame(width: 360)
                 VStack(alignment: .leading, spacing: 20) {
-                    Field("Center dead zone") {
-                        StepSlider(value: Binding(get: { Double(stick.deadZone) }, set: { v in set { $0.deadZone = UInt8(v); $0.curve = .custom } }), range: 0...60, format: { "\(Int($0 / 127 * 100)) %" })
+                    Field("Mapping") {
+                        PillSegmented(selection: Binding(get: { stickMap.kind }, set: { k in
+                            setStickMap(k == .joystick ? .joystick : (k == .keyboard ? .keyboard(KeyboardStick()) : .mouse(MouseStick())))
+                        }), options: [(.joystick, "Joystick"), (.keyboard, "Keyboard"), (.mouse, "Mouse")], compact: true, fill: true)
+                            .padding(2).frame(maxWidth: .infinity).background(SS.n700, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
                     }
-                    Field("Edge (active range)") {
-                        StepSlider(value: Binding(get: { Double(stick.end) }, set: { v in set { $0.end = UInt8(v); $0.curve = .custom } }), range: 80...127, format: { "\(Int($0 / 127 * 100)) %" })
+                    switch stickMap {
+                    case .joystick:
+                        Field("Center dead zone") {
+                            StepSlider(value: Binding(get: { Double(stick.deadZone) }, set: { v in set { $0.deadZone = UInt8(v); $0.curve = .custom } }), range: 0...60, format: { "\(Int($0 / 127 * 100)) %" })
+                        }
+                        Field("Edge (active range)") {
+                            StepSlider(value: Binding(get: { Double(stick.end) }, set: { v in set { $0.end = UInt8(v); $0.curve = .custom } }), range: 80...127, format: { "\(Int($0 / 127 * 100)) %" })
+                        }
+                    case .keyboard(let k):
+                        Field("Directions") {
+                            PillSegmented(selection: Binding(get: { k.fourWay }, set: { v in var c = k; c.fourWay = v; setStickMap(.keyboard(c)) }), options: [(true, "4 directions"), (false, "8 directions")], compact: true, fill: true)
+                                .padding(2).frame(maxWidth: .infinity).background(SS.n700, in: RoundedRectangle(cornerRadius: 8, style: .continuous))
+                        }
+                        Field("Dead zone") {
+                            StepSlider(value: Binding(get: { Double(k.deadZone) }, set: { v in var c = k; c.deadZone = Int(v); setStickMap(.keyboard(c)) }), range: 1...100, format: { "\(Int($0)) %" })
+                        }
+                        Field("Keys") {
+                            VStack(spacing: 6) {
+                                KeyCaptureButton(key: k.up, width: 90) { var c = k; c.up = $0; setStickMap(.keyboard(c)) }
+                                HStack(spacing: 6) {
+                                    KeyCaptureButton(key: k.left, width: 90) { var c = k; c.left = $0; setStickMap(.keyboard(c)) }
+                                    KeyCaptureButton(key: k.down, width: 90) { var c = k; c.down = $0; setStickMap(.keyboard(c)) }
+                                    KeyCaptureButton(key: k.right, width: 90) { var c = k; c.right = $0; setStickMap(.keyboard(c)) }
+                                }
+                            }
+                            .frame(maxWidth: .infinity)
+                        }
+                        Text("Click a key and press its replacement on the Mac keyboard. Diagonals press two keys in 8-direction mode.").font(.system(size: 11)).foregroundStyle(SS.n400)
+                    case .mouse(let m):
+                        Field("Dead zone") {
+                            StepSlider(value: Binding(get: { Double(m.deadZone) }, set: { v in var c = m; c.deadZone = Int(v); setStickMap(.mouse(c)) }), range: 1...100, format: { "\(Int($0)) %" })
+                        }
+                        Field("X-axis sensitivity") {
+                            StepSlider(value: Binding(get: { Double(m.sensitivityX) }, set: { v in var c = m; c.sensitivityX = Int(v); setStickMap(.mouse(c)) }), range: 1...100)
+                        }
+                        Field("Y-axis sensitivity") {
+                            StepSlider(value: Binding(get: { Double(m.sensitivityY) }, set: { v in var c = m; c.sensitivityY = Int(v); setStickMap(.mouse(c)) }), range: 1...100)
+                        }
                     }
+                    if stickMap.kind != .joystick { KeyboardMouseStatus() }
                 }
                 .frame(width: 300)
                 VStack(spacing: 8) {
@@ -913,6 +988,10 @@ struct JoystickTab: View {
 
 struct GyroTab: View {
     @Environment(ProfileStore.self) private var profiles
+    @Environment(ControllerModel.self) private var model
+    @Environment(KeyboardMouseStore.self) private var km
+    private var gyroMouse: GyroMouse { km.map(for: model.info?.mac, slot: profiles.activeSlot).gyro }
+    private func setGyroMouse(_ g: GyroMouse) { km.update(mac: model.info?.mac, slot: profiles.activeSlot) { $0.gyro = g } }
     private var m: GamepadConfig.Motion { profiles.draft!.motion }
     private func set(_ f: (inout GamepadConfig.Motion) -> Void) { var v = m; f(&v); profiles.draft?.motion = v }
 
@@ -923,7 +1002,7 @@ struct GyroTab: View {
                 VStack(alignment: .leading, spacing: 20) {
                     Field("Mapping to") {
                         DarkSelect(selection: Binding(get: { m.mapType }, set: { v in set { $0.mapType = v } }),
-                                   options: [(.off, "Close"), (.leftStick, "Left joystick (racing games)"), (.rightStick, "Right joystick (shooting games)")])
+                                   options: [(.off, "Close"), (.leftStick, "Left joystick (racing games)"), (.rightStick, "Right joystick (shooting games)"), (.mouse, "Mouse")])
                     }
                     if m.mapType != .off {
                         Field("How to activate") {
@@ -943,7 +1022,19 @@ struct GyroTab: View {
                     }
                 }
                 .frame(width: 300)
-                if m.mapType != .off {
+                if m.mapType == .mouse {
+                    VStack(alignment: .leading, spacing: 20) {
+                        Field("X-axis sensitivity") {
+                            StepSlider(value: Binding(get: { Double(gyroMouse.sensitivityX) }, set: { v in var g = gyroMouse; g.sensitivityX = Int(v); setGyroMouse(g) }), range: 1...100)
+                        }
+                        Field("Y-axis sensitivity") {
+                            StepSlider(value: Binding(get: { Double(gyroMouse.sensitivityY) }, set: { v in var g = gyroMouse; g.sensitivityY = Int(v); setGyroMouse(g) }), range: 1...100)
+                        }
+                        Text("Moves the mouse pointer with the controller's motion while the activation key allows it. Needs DInput mode and the Accessibility permission; apply the profile so the controller knows the gyro is in use.").font(.system(size: 11)).foregroundStyle(SS.n400)
+                        KeyboardMouseStatus()
+                    }
+                    .frame(width: 300)
+                } else if m.mapType != .off {
                     VStack(alignment: .leading, spacing: 20) {
                         Field("Sensitivity") {
                             StepSlider(value: Binding(get: { Double(m.sensitivity) }, set: { v in set { $0.sensitivity = UInt8(v) } }), range: 1...100)

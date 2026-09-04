@@ -24,6 +24,7 @@ struct SpaceStationApp: App {
     @State private var games: GameProfileStore
     @State private var library = ProfileLibrary()
     @State private var macroLibrary = MacroLibrary()
+    @State private var keyboardMouse = KeyboardMouseStore()
     init() { let m = ControllerModel(); _model = State(initialValue: m); _games = State(initialValue: GameProfileStore(model: m)) }
 
     var body: some Scene {
@@ -35,6 +36,7 @@ struct SpaceStationApp: App {
                 .environment(games)
                 .environment(library)
                 .environment(macroLibrary)
+                .environment(keyboardMouse)
                 .frame(minWidth: 1100, minHeight: 720)
         }
         .windowStyle(.hiddenTitleBar)
