@@ -7,7 +7,7 @@
 // (3 = mouse) with its activation key. Which key/click a button produces, and the stick mappings, live on this
 // Mac per controller and profile slot — exactly what Space Station keeps in its local config files.
 //
-// Verified 2026-09-04 (apex4 dev km-probe): a key flagged 0xFE still shows in the DInput status report, but the
+// Verified 2026-09-04 with a one-off CLI probe: a key flagged 0xFE still shows in the DInput status report, but the
 // firmware hides it from the XInput/Xbox report, so in XInput the app cannot see keyboard-mapped buttons.
 
 import AppKit
@@ -214,7 +214,7 @@ final class KeyboardMouseEngine: @unchecked Sendable {
             else if motion.hold { motionOn = keyDown }
             else { if motionKeyWasDown && !keyDown { motionOn.toggle() }; motionKeyWasDown = keyDown }
             if motionOn, let last = lastGyro {
-                // Measured 2026-09-04 (apex4 dev gyro-one, ~500 reports/s): X = yaw, negative turning left, about ±120
+                // Measured 2026-09-04 with a one-off CLI probe (~500 reports/s): X = yaw, negative turning left, about ±120
                 // for a slow turn; Y = pitch, negative when the front rises, roughly 8× more sensitive (saturates at
                 // ±2047). Glitch filter like Space Station's: skip jumps of 200+ between consecutive reports (torn
                 // reads show up as −256 on X). Gains give ~800 px/s for that slow turn at sensitivity 50.

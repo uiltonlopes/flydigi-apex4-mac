@@ -264,8 +264,8 @@ in byte 0. Verified on an Apex 4 on 2026-09-01 (`apex4 dev hid-diff`):
 | 4–6, 11–15, 18, 20, 26, 29 | motion sensor (changes when the pad moves; not decoded) |
 
 A key whose table entry is `0xFE` (keyboard/mouse) **is still reported here** but is **removed from the XInput/Xbox
-report** (verified 2026-09-04, `apex4 dev km-probe`): the firmware suppresses it for games, so keyboard mappings
-can only be driven from the DInput vendor report. **Motion (verified 2026-09-04, `apex4 dev gyro-one`):** the pad streams the sensor **only while the active profile's
+report** (verified 2026-09-04 with a one-off `apex4 dev km-probe`, since removed): the firmware suppresses it for games, so keyboard mappings
+can only be driven from the DInput vendor report. **Motion (verified 2026-09-04 with one-off probes, `apex4 dev gyro-watch` remains):** the pad streams the sensor **only while the active profile's
 motion map type is not Off** (byte 137); the report rate stays ~500 Hz. Bytes 4–6 pack two signed 12-bit rates like
 Space Station's classic parser: `X = b4 | (b6 & 0xF0) << 4` = **yaw** (negative turning left, ≈ ±120 for a slow
 turn), `Y = b5 | (b6 & 0x0F) << 8` = **pitch** (negative when the front rises; far more sensitive, saturates at
@@ -293,7 +293,7 @@ press a key ("borrow the pad"), then hands the pad back to the system driver.
   (`"Padra置"`) or, in the worst case, a whole slot mis-attributed (id 0 showing slot 3). Drain the queue
   before every read and again ~30 ms after the last parcel (`Link.discardPending()`).
 - **A config read right after an LED read of the same id returns the previous config.** Probe 2026-09-02
-  (`apex4 dev slot-probe`): apply 2 → read cfg 0 "Padrao" → read cfg 1 "Safari" → read LED cfg 0 → read
+  (one-off `apex4 dev slot-probe`, since removed): apply 2 → read cfg 0 "Padrao" → read cfg 1 "Safari" → read LED cfg 0 → read
   **cfg 0 → "Safari"** (wrong) → read cfg 2 (right) → read LED cfg 2 → cfg 0 "Padrao" (right again). Slot ids
   are otherwise absolute in XInput (verified with the pad applied to 0, 1 and 2). Mitigation: query `A5 20`
   before any blob read on connect, read the LED of that slot, and burn one config read of that slot before
