@@ -205,9 +205,12 @@ final class KeyboardMouseEngine: @unchecked Sendable {
 
         // Gyro → mouse (DInput only: the rates come from the vendor report)
         if motion.enabled {
-            let k1 = ControllerKey(rawValue: motion.key1), k2 = ControllerKey(rawValue: motion.key2)
+            // 255 = no key; the second key is also "none" when it is 0 (the factory blob leaves it at 0, and Space
+            // Station only reads it when the first key is set).
+            let k1 = motion.key1 == 255 ? nil : ControllerKey(rawValue: motion.key1)
+            let k2 = (motion.key1 == 255 || motion.key2 == 255 || motion.key2 == 0) ? nil : ControllerKey(rawValue: motion.key2)
             let keyDown = (k1.map { s.pressed.contains($0) } ?? false) || (k2.map { s.pressed.contains($0) } ?? false)
-            if motion.key1 == 255 && motion.key2 == 255 { motionOn = true }
+            if k1 == nil { motionOn = true }
             else if motion.hold { motionOn = keyDown }
             else { if motionKeyWasDown && !keyDown { motionOn.toggle() }; motionKeyWasDown = keyDown }
             if motionOn, let last = lastGyro {
@@ -221,9 +224,19 @@ final class KeyboardMouseEngine: @unchecked Sendable {
                 }
             }
             lastGyro = (s.gyroX, s.gyroY)
+            lastMotion = (s.gyroX, s.gyroY, motionOn, now)
         }
 
         flushMouse()
+    }
+
+    private var lastMotion: (x: Int, y: Int, on: Bool, at: Date)?
+    /// For the Gyro tab: what the engine last saw from the sensor.
+    var motionStatus: String {
+        lock.lock(); defer { lock.unlock() }
+        guard motion.enabled else { return String(localized: "Gyro not enabled in the applied profile.") }
+        guard let m = lastMotion, Date().timeIntervalSince(m.at) < 1 else { return String(localized: "No sensor data — apply the profile and stay in DInput mode.") }
+        return String(format: String(localized: "Sensor X %d · Y %d · %@"), m.x, m.y, m.on ? String(localized: "moving the pointer") : String(localized: "waiting for the activation key"))
     }
 
     func releaseAll() { lock.lock(); releaseAllLocked(); lock.unlock() }
@@ -232,7 +245,7 @@ final class KeyboardMouseEngine: @unchecked Sendable {
         held.removeAll(); wheelNext.removeAll()
         for (_, ks) in dirKeys { for c in ks { key(c, down: false) } }
         dirKeys = [.left: [], .right: []]; lastDir = [.left: .center, .right: .center]
-        accX = 0; accY = 0; lastTime = nil; motionOn = false; motionKeyWasDown = false; lastGyro = nil
+        accX = 0; accY = 0; lastTime = nil; motionOn = false; motionKeyWasDown = false; lastGyro = nil; lastMotion = nil
         leftDown = false; rightDown = false
     }
 

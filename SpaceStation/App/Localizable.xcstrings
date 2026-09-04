@@ -1951,6 +1951,16 @@
         }
       }
     },
+    "Gyro not enabled in the applied profile.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Giroscópio não ativado no perfil aplicado."
+          }
+        }
+      }
+    },
     "Helper": {
       "localizations": {
         "pt-BR": {
@@ -2987,6 +2997,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Nenhum resultado."
+          }
+        }
+      }
+    },
+    "No sensor data — apply the profile and stay in DInput mode.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sem dados do sensor — aplique o perfil e fique no modo DInput."
           }
         }
       }
@@ -4237,6 +4257,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Curva de sensibilidade"
+          }
+        }
+      }
+    },
+    "Sensor X %d · Y %d · %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Sensor X %d · Y %d · %@"
           }
         }
       }
@@ -5821,6 +5851,16 @@
         }
       }
     },
+    "moving the pointer": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "movendo o ponteiro"
+          }
+        }
+      }
+    },
     "or match by window/app name containing": {
       "localizations": {
         "pt-BR": {
@@ -5867,6 +5907,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "até 5 cores"
+          }
+        }
+      }
+    },
+    "waiting for the activation key": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "aguardando a tecla de ativação"
           }
         }
       }

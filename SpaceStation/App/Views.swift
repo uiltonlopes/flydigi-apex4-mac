@@ -1034,6 +1034,9 @@ struct GyroTab: View {
                             StepSlider(value: Binding(get: { Double(gyroMouse.sensitivityY) }, set: { v in var g = gyroMouse; g.sensitivityY = Int(v); setGyroMouse(g) }), range: 1...100)
                         }
                         Text("Moves the mouse pointer with the controller's motion while the activation key allows it. Needs DInput mode and the Accessibility permission; apply the profile so the controller knows the gyro is in use.").font(.system(size: 11)).foregroundStyle(SS.n400)
+                        TimelineView(.periodic(from: .now, by: 0.25)) { _ in
+                            Text(KeyboardMouseEngine.shared.motionStatus).font(.system(size: 11).monospacedDigit()).foregroundStyle(SS.n300)
+                        }
                         KeyboardMouseStatus()
                     }
                     .frame(width: 300)
