@@ -16,6 +16,7 @@ Legend: ✅ verified on hardware · 🧪 implemented, needs a hardware test · �
 - ✅ Macros: on-board macros with step editor, recording from the pad, local library with `.fdgmacro` export/import. Verified on hardware 2026-09-04: recorded on M1, played back by the pad, edited and played again.
 - ✅ Screen: image/GIF editor (pan, zoom, fit/fill, trim, frame interval sent to the pad), Flydigi's animation library, factory animations, GIPHY search, "on the controller" record, restore default animation.
 - ✅ Per-app game profiles: slot + ForceAdapt + lighting switched when the chosen app comes to the front and restored when it leaves (verified with Safari as the target app, 2026-09-04).
+- ✅ Firmware update from the app: Settings › Firmware Update runs the whole sequence (download + validate, switch to DInput through the helper, OTA with progress, wait for the restart, back to XInput). Verified 2026-09-04: CLI 6.8.3.0 → 6.8.3.7, then the app re-flashed 6.8.3.7 end to end ([firmware-update.md](firmware-update.md) §6c).
 - ✅ Settings: firmware update check with Flydigi's note, USB mode switch, language (en, pt-BR), GIPHY key, open at login, helper install/remove, device nickname.
 - ✅ Release pipeline: Developer ID signing, notarization and stapling of app and DMG (`scripts/release.sh`).
 
@@ -28,7 +29,6 @@ Legend: ✅ verified on hardware · 🧪 implemented, needs a hardware test · �
 
 - ❌ **Share codes** compatible with Space Station: its codes carry the protobuf `ControllerMappingConfigBean` / `MacroItem`, not the device blob, so a bean ↔ blob converter is needed first (`MappingConfigParser` in SS4). Until then profiles and macros travel as `.fdgprofile` / `.fdgmacro` files.
 - ❌ **Keyboard / mouse mapping**: the firmware only flags a key as keyboard (`0xFE`); Space Station's Windows driver does the translation. On macOS this is an app-side engine (GameController in, `CGEvent` out, Accessibility permission) that runs while the app is open.
-- 🧪 **Firmware update from the app**: the CLI flasher updated the maintainer's pad 6.8.3.0 → 6.8.3.7 on 2026-09-04 ([firmware-update.md](firmware-update.md) §6c); the app's Update button runs the same sequence (switch to DInput, OTA, wait, switch back) but could not be exercised yet — there is no newer firmware to install.
 - ❌ App self-update (Sparkle or a GitHub-releases check) once releases are public.
 - ❌ Preferences: log file toggle, close-to-menu-bar vs quit.
 - ❌ Helper hardening: audit-token peer check on macOS 14–15 (`XPCPeerRequirement` covers 26+), idle exit.

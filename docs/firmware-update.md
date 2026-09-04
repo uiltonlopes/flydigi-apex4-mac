@@ -112,6 +112,6 @@ config interface.
   refuses XInput, the wireless receiver, battery < 40 % and any image that does not validate.
 - **App**: `ControllerModel.flashFirmware` runs the same sequence (download + validate, `A5 17` through the
   helper when in XInput, `OTALink.flash` with progress, poll the DInput config interface until the pad is back,
-  `05 ED`, refresh). Gates: cable, battery ≥ 40 %, helper when in XInput. Written after §6c, not yet exercised
-  (no newer image exists for this pad).
+  `05 ED`, refresh). Gates: cable, battery ≥ 40 %, helper when in XInput. **Exercised on 2026-09-04** by re-flashing 6.8.3.7 from the app
+  with the pad in XInput: helper switch → OTA (progress bar) → back on USB in DInput → `05 ED` → XInput, all automatic.
 - Never flash over the receiver; never flash a file whose header does not validate.

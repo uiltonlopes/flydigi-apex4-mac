@@ -314,16 +314,6 @@ final class ControllerModel {
         if info == nil { try? await Task.sleep(for: .seconds(2)); connection = USBMonitor.currentConnection(); await refresh() }
     }
 
-    /// TEMPORARY, to validate the in-app flow without a newer release: flash the image Flydigi offers for this pad
-    /// even when it is the installed version (asks the API as if 1.0.0.0 were installed; 0.0.0.0 gets an empty answer).
-    func reinstallCurrentFirmware() async {
-        guard let id = info?.deviceId, !firmwareFlashing else { return }
-        let r: Result<[String: FlydigiAPI.FirmwareChip], Error> = await Task.detached { Result { try FlydigiAPI.firmwareUpdates(deviceId: Int(id), mainChip: "1.0.0.0") } }.value
-        guard case .success(let chips) = r, let main = chips["main_chip"] else { lastError = String(localized: "Flydigi offers no image for this controller."); return }
-        firmwareUpdate = main
-        await flashFirmware()
-    }
-
     /// Polls the DInput config interface until the pad answers (after a mode switch or the OTA reboot).
     private func waitForDInput(seconds: Double) async throws -> DeviceInfo {
         let deadline = Date().addingTimeInterval(seconds)
