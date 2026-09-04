@@ -1027,11 +1027,13 @@ struct ColourChip: View {
     @State private var hover = false
     var body: some View {
         ZStack(alignment: .topTrailing) {
-            RoundedRectangle(cornerRadius: 8, style: .continuous).fill(colour)
-                .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(.white.opacity(0.18), lineWidth: 1))
-                .frame(width: 36, height: 36)
-                // The system well is hard to restyle, so it sits on top almost invisible and just takes the click.
-                .overlay(ColorPicker("", selection: $colour, supportsOpacity: false).labelsHidden().opacity(0.02))
+            Button { ColourPanel.shared.open(current: colour) { colour = $0 } } label: {
+                RoundedRectangle(cornerRadius: 8, style: .continuous).fill(colour)
+                    .overlay(RoundedRectangle(cornerRadius: 8, style: .continuous).strokeBorder(.white.opacity(hover ? 0.5 : 0.18), lineWidth: 1))
+                    .frame(width: 36, height: 36)
+                    .contentShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
+            }
+            .buttonStyle(.plain).help("Change this color")
             if removable && hover {
                 Button(action: onRemove) {
                     Image(systemName: "xmark").font(.system(size: 8, weight: .bold)).foregroundStyle(.white)
@@ -1044,4 +1046,20 @@ struct ColourChip: View {
         .onHover { hover = $0 }
         .animation(.easeOut(duration: 0.12), value: hover)
     }
+}
+
+/// The shared NSColorPanel, pointed at whichever swatch was clicked last (the SwiftUI ColorPicker's well is
+/// only a few points wide, so clicks on a custom swatch missed it).
+@MainActor final class ColourPanel: NSObject {
+    static let shared = ColourPanel()
+    private var onChange: ((Color) -> Void)?
+    func open(current: Color, onChange: @escaping (Color) -> Void) {
+        self.onChange = onChange
+        let p = NSColorPanel.shared
+        p.showsAlpha = false
+        p.setTarget(self); p.setAction(#selector(changed(_:)))
+        p.color = NSColor(current)
+        p.makeKeyAndOrderFront(nil)
+    }
+    @objc private func changed(_ sender: NSColorPanel) { onChange?(Color(nsColor: sender.color)) }
 }
