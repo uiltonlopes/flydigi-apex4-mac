@@ -1,8 +1,8 @@
-# Firmware update — how Space Station 4.2 flashes the Apex 4 (research, 2026-09-02)
+# Firmware update — how Space Station 4.2 flashes the Apex 4 (research 2026-09-02, flashed on hardware 2026-09-04)
 
 Derived read-only from Space Station 4.2.2.3: the .NET service (`SpaceStationService`), the Electron main
 process, the renderer bundle and the separate flasher tool `firmware\FirmwareConsole.exe` (`FirmwareLibrary.dll`).
-**Nothing here has been exercised on hardware by this project yet.** Legend: **[proven]** read from code;
+**§6c records the first real flash (6.8.3.0 → 6.8.3.7) done with this project's flasher.** Legend: **[proven]** read from code;
 **[inferred]** deduced from code + Telink OTA SDK conventions.
 
 ## 1. Who does what
@@ -82,6 +82,21 @@ is the only way back to XInput; the hardware combo also toggles modes.
   query and reports the stray packet as an error. Nothing else changed; the pad kept working. The dry run no
   longer sends it. So the only packets the OTA server accepts are START / DATA / END, exactly as SS4 sends.
 
+## 6c. First flash on hardware (2026-09-04, `apex4 firmware flash --yes --verbose`)
+
+- Pad wired, switched to DInput with `A5 17`, battery level 4/5. Image `K2_Telink87_Gamepad_6837_0714.bin`
+  (161 380 B, 10 087 packets, 3 per report).
+- **Every report is acknowledged by an echo of the report itself**: START was answered with
+  `05 02 02 00 01 ff 00…`, DATA 0 with `05 02 3c 00 00 00 0e 80 …` (our own bytes back). So "any report id 5"
+  really is the ack, as SS4 assumes.
+- END (`02 FF 66 27 9A D8`) was answered with the **result report `05 02 03 00 06 ff 00 …` = code 0** within
+  the 10 s window. Whole transfer: 11 s.
+- The pad rebooted on its own and was back on USB **about 1 s later, still in DInput** (`04b4:2412`), reporting
+  firmware **6.8.3.7**. `05 ED` returned it to XInput. Profile slots (names, mappings, sticks, triggers), LED
+  configuration and the screen animation all survived the update.
+- Right after any re-enumeration the XInput channel can fail once with "not found" for a second or two while
+  Apple's driver attaches; a retry succeeds.
+
 ## 7. Status in this project (2026-09-04)
 
 Everything for the main chip is reachable **without root** once the pad is in DInput: `IOHIDManager` on
@@ -90,11 +105,11 @@ config interface.
 
 - **Dry run** (done, verified on hardware): download, validate the file (size field, CRC32 recomputed over
   `0..size−4`, `KNLT` mark), enumerate the `0xFFEF` interface. Nothing written.
-- **Flasher** (implemented, **not yet run against the pad**): `OTAPacket` (FlydigiKit) builds START / DATA /
+- **Flasher** (implemented and **run once on hardware, see §6c**): `OTAPacket` (FlydigiKit) builds START / DATA /
   END exactly as §3; `OTALink.flash` (FlydigiTransport) streams them one report in flight, waits for the ack
   of each (any report id 5, like SS4), aborts on a result report with a non-zero code or on a 3 s silence,
   and after END waits up to 10 s for `FF06 00`. CLI: `apex4 firmware flash [<url|path>] --yes`, which also
   refuses XInput, the wireless receiver, battery < 40 % and any image that does not validate.
-- First hardware run: wired, DInput, 6.8.3.0 → 6.8.3.7, with `--verbose` to record the acks; then `apex4
-  mode --channel dinput` to return to XInput. Only after that goes the button into the app.
+- Next: the same sequence from the app (switch to DInput, flash, wait for the pad, switch back), with the
+  same gates.
 - Never flash over the receiver; never flash a file whose header does not validate.

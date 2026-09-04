@@ -321,8 +321,10 @@ struct Firmware: ParsableCommand {
             let info = try s.deviceInfo()
             guard info.isWired else { throw ValidationError("the pad is on the wireless receiver; connect the USB cable") }
             guard OTALink.isPresent() else { throw ValidationError("OTA interface (usage page FFEF) not present") }
-            print("pad \(info.modelName) · device id \(info.deviceId) · firmware \(info.firmware) · battery \(info.batteryRaw) % · wired")
-            guard Int(info.batteryRaw) >= minBattery else { throw ValidationError("battery \(info.batteryRaw) % is below \(minBattery) %; charge first") }
+            // The device-info byte is a 0–5 level (low nibble), bit 4 = charging; the app shows it as level × 20 %.
+            let battery = min(5, Int(info.batteryRaw & 0xF)) * 20
+            print("pad \(info.modelName) · device id \(info.deviceId) · firmware \(info.firmware) · battery \(battery) %\(info.batteryRaw >> 4 == 1 ? " (charging)" : "") · wired")
+            guard battery >= minBattery else { throw ValidationError("battery \(battery) % is below \(minBattery) %; charge first") }
 
             // 2. The image.
             let url: URL
