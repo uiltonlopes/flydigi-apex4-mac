@@ -1,0 +1,11 @@
+name: Feature request
+description: Something Space Station does that we don't, or an idea of your own
+labels: [enhancement]
+body:
+  - type: textarea
+    id: what
+    attributes: { label: What would you like, description: "If Space Station on Windows has it, say where it lives there." }
+    validations: { required: true }
+  - type: textarea
+    id: why
+    attributes: { label: Why it matters to you }

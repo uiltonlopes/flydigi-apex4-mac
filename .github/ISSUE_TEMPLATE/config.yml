@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Adding another Flydigi controller
+    url: https://github.com/uiltonlopes/flydigi-space-station-mac/blob/main/docs/adding-a-controller.md
+    about: Read this first if you own a different Flydigi pad and want it supported.

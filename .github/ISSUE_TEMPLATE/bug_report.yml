@@ -1,0 +1,28 @@
+name: Bug report
+description: Something does not work with your controller or in the app
+labels: [bug]
+body:
+  - type: input
+    id: version
+    attributes: { label: App version, placeholder: "0.2.0 (Settings › About)" }
+    validations: { required: true }
+  - type: input
+    id: controller
+    attributes: { label: Controller and firmware, placeholder: "Apex 4 (device id 84), firmware 6.8.3.7" }
+    validations: { required: true }
+  - type: dropdown
+    id: mode
+    attributes:
+      label: USB mode and connection
+      options: ["XInput · USB-C cable", "XInput · charging base receiver", "DInput · USB-C cable", "DInput · charging base receiver"]
+    validations: { required: true }
+  - type: input
+    id: macos
+    attributes: { label: macOS version, placeholder: "26.1 on MacBook Pro M3" }
+  - type: textarea
+    id: what
+    attributes: { label: What happened, description: "Steps, what you expected, what you saw." }
+    validations: { required: true }
+  - type: textarea
+    id: log
+    attributes: { label: Log, description: "Settings › Log › Export log… — paste or attach the file." }
