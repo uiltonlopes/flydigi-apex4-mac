@@ -26,9 +26,8 @@
 </p>
 
 > **Status: usable, pre-release.** Unofficial and not affiliated with Flydigi. The USB protocol was
-> reverse-engineered and verified on a real Apex 4 (firmware 6.8.3.0). The app covers what Space Station 4
-> offers for the Apex 4 except firmware flashing and keyboard/mouse mapping, and adds a few things of its
-> own. Details in [`docs/roadmap.md`](docs/roadmap.md).
+> reverse-engineered and verified on a real Apex 4 (firmware 6.8.3.x). The app covers what Space Station 4
+> offers for the Apex 4 except keyboard/mouse mapping, and adds a few things of its own. Details in [`docs/roadmap.md`](docs/roadmap.md).
 
 ## Contents
 
@@ -127,8 +126,9 @@ names. Everything is drawn with native SwiftUI controls; the app also lives in t
 
 ### Settings
 
-- **Firmware**: automatic update check on connect, Flydigi's release note (translated on-device), a
-  read-only dry run that downloads and validates the image. Flashing itself is deliberately disabled.
+- **Firmware update** from the Mac: automatic check on connect, Flydigi's release note (translated
+  on-device), and the update itself over USB, the same OTA sequence Space Station uses. The app refuses to
+  run it over the receiver or below 40 % battery; profiles, lighting and the screen animation are kept.
 - USB mode, language (English, Português do Brasil), GIPHY key, open at login, privileged helper install
   and removal, about and support.
 
@@ -168,7 +168,7 @@ not), [`docs/architecture.md`](docs/architecture.md), [`docs/spacestation4-analy
 
 | Controller | Device id | Status |
 |---|---|---|
-| Flydigi Apex 4 (`k2`) | 84 | supported, tested on firmware 6.8.3.0 |
+| Flydigi Apex 4 (`k2`) | 84 | supported, tested on firmware 6.8.3.0 and 6.8.3.7 (updated from the app's flasher) |
 | Apex 4 EVA-01 / STN / Assassin's Creed / GS / Black Myth / Genshin / Star Rail | 86, 87, 92, 93, 102, 103, 104 | same protocol and artwork, untested |
 | Apex 3, Vader 3 / 3 Pro, older | see `DeviceCatalog.swift` | classic protocol, unsupported (help wanted) |
 | Apex 5 / 6, Vader 4 Pro, Vader 5 | 128+ | new protocol (VID 0x37D7), unsupported |
@@ -232,6 +232,10 @@ cd FlydigiKit && swift build
 
 ```bash
 .build/debug/apex4 firmware check           # asks Flydigi for updates, read-only
+```
+
+```bash
+.build/debug/apex4 firmware flash --yes     # main-chip update over USB (DInput, cable, battery ≥ 40 %)
 ```
 
 ```bash

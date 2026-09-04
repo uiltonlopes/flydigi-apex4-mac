@@ -110,6 +110,8 @@ config interface.
   of each (any report id 5, like SS4), aborts on a result report with a non-zero code or on a 3 s silence,
   and after END waits up to 10 s for `FF06 00`. CLI: `apex4 firmware flash [<url|path>] --yes`, which also
   refuses XInput, the wireless receiver, battery < 40 % and any image that does not validate.
-- Next: the same sequence from the app (switch to DInput, flash, wait for the pad, switch back), with the
-  same gates.
+- **App**: `ControllerModel.flashFirmware` runs the same sequence (download + validate, `A5 17` through the
+  helper when in XInput, `OTALink.flash` with progress, poll the DInput config interface until the pad is back,
+  `05 ED`, refresh). Gates: cable, battery ≥ 40 %, helper when in XInput. Written after §6c, not yet exercised
+  (no newer image exists for this pad).
 - Never flash over the receiver; never flash a file whose header does not validate.

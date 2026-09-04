@@ -382,6 +382,7 @@ struct SettingsPage: View {
     @Environment(ControllerModel.self) private var model
     @State private var checking = false
     @State private var dryRunning = false
+    @State private var confirmFlash = false
     @State private var language = AppLanguage.current
     @State private var giphyKey = UserDefaults.standard.string(forKey: Giphy.keyDefaultsKey) ?? ""
     @State private var needsRestart = false
@@ -514,16 +515,30 @@ struct SettingsPage: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("New firmware available, please update the firmware").font(.system(size: 13, weight: .semibold)).foregroundStyle(.white)
                         if !u.info.isEmpty { ReleaseNote(text: u.info) }
-                        Text("How to update today").font(.system(size: 12, weight: .semibold)).foregroundStyle(.white).padding(.top, 4)
-                        Text("Flashing from the Mac is being validated step by step (see the dry run below). Until it ships, update with Flydigi Space Station on a Windows PC: connect the controller with the USB cable, open Settings → Firmware Update → Update. Keep it plugged in until it restarts.")
-                            .font(.system(size: 12)).foregroundStyle(SS.n300)
-                        HStack(spacing: 8) {
-                            GhostButton(title: dryRunning ? "Verifying…" : "Download and verify (dry run)", icon: "checkmark.shield", enabled: !dryRunning) {
-                                dryRunning = true
-                                Task { await model.firmwareDryRun(); dryRunning = false }
+                        if model.firmwareFlashing {
+                            VStack(alignment: .leading, spacing: 6) {
+                                HStack(spacing: 8) { ProgressView().controlSize(.small); Text(model.firmwareStage).font(.system(size: 12, weight: .semibold)).foregroundStyle(.white) }
+                                ProgressView(value: model.firmwareProgress).tint(SS.brand500)
+                                Text("Do not unplug the cable or turn the controller off. It restarts by itself at the end (about 20 seconds in total).").font(.system(size: 11)).foregroundStyle(SS.n400)
                             }
-                            PrimaryButton(title: "Update", icon: "arrow.up.circle", enabled: false) {}
-                                .help("Flashing is not enabled yet")
+                            .padding(.top, 4)
+                        } else {
+                            Text("The update runs from this Mac the same way Space Station does it: the controller is put in update mode, the image is written over USB, and it restarts with the new firmware. Profiles, lighting and the screen animation are kept.")
+                                .font(.system(size: 12)).foregroundStyle(SS.n300)
+                            if let why = model.firmwareFlashBlocker { Text(why).font(.system(size: 12)).foregroundStyle(SS.yellow) }
+                            HStack(spacing: 8) {
+                                PrimaryButton(title: String(localized: "Update to \(u.version)"), icon: "arrow.up.circle", enabled: model.firmwareFlashBlocker == nil && !model.busy) { confirmFlash = true }
+                                GhostButton(title: dryRunning ? "Verifying…" : "Download and verify only", icon: "checkmark.shield", enabled: !dryRunning && !model.busy) {
+                                    dryRunning = true
+                                    Task { await model.firmwareDryRun(); dryRunning = false }
+                                }
+                            }
+                            .alert(String(localized: "Update the firmware to \(u.version)?"), isPresented: $confirmFlash) {
+                                Button(String(localized: "Update")) { Task { await model.flashFirmware() } }
+                                Button(String(localized: "Cancel"), role: .cancel) {}
+                            } message: {
+                                Text("Keep the USB cable connected the whole time. The controller switches to update mode, receives the image and restarts on its own; games lose it for about 20 seconds. There is no way back to the previous version afterwards.")
+                            }
                         }
                         if !model.firmwareReport.isEmpty {
                             VStack(alignment: .leading, spacing: 3) {

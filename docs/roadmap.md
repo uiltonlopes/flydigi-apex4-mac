@@ -29,7 +29,7 @@ Legend: ✅ verified on hardware · 🧪 implemented, needs a hardware test · �
 
 - ❌ **Share codes** compatible with Space Station: its codes carry the protobuf `ControllerMappingConfigBean` / `MacroItem`, not the device blob, so a bean ↔ blob converter is needed first (`MappingConfigParser` in SS4). Until then profiles and macros travel as `.fdgprofile` / `.fdgmacro` files.
 - ❌ **Keyboard / mouse mapping**: the firmware only flags a key as keyboard (`0xFE`); Space Station's Windows driver does the translation. On macOS this is an app-side engine (GameController in, `CGEvent` out, Accessibility permission) that runs while the app is open.
-- 🧪 **Firmware flashing in the app**: the CLI flasher updated the maintainer's pad 6.8.3.0 → 6.8.3.7 on 2026-09-04 ([firmware-update.md](firmware-update.md) §6c). The app still only checks and dry-runs; the Update button comes next.
+- 🧪 **Firmware update from the app**: the CLI flasher updated the maintainer's pad 6.8.3.0 → 6.8.3.7 on 2026-09-04 ([firmware-update.md](firmware-update.md) §6c); the app's Update button runs the same sequence (switch to DInput, OTA, wait, switch back) but could not be exercised yet — there is no newer firmware to install.
 - ❌ App self-update (Sparkle or a GitHub-releases check) once releases are public.
 - ❌ Preferences: log file toggle, close-to-menu-bar vs quit.
 - ❌ Helper hardening: audit-token peer check on macOS 14–15 (`XPCPeerRequirement` covers 26+), idle exit.

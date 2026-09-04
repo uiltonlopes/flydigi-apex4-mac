@@ -351,6 +351,16 @@
         }
       }
     },
+    "Back on USB with firmware %@": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "De volta no USB com firmware %@"
+          }
+        }
+      }
+    },
     "Back to normal now": {
       "localizations": {
         "pt-BR": {
@@ -571,6 +581,16 @@
         }
       }
     },
+    "Charge the controller to at least 40 % first.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Carregue o controle até pelo menos 40 % antes."
+          }
+        }
+      }
+    },
     "Check for updates": {
       "localizations": {
         "pt-BR": {
@@ -731,6 +751,16 @@
         }
       }
     },
+    "Connect the USB cable — updates never run over the receiver.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Conecte o cabo USB — a atualização nunca roda pelo receptor."
+          }
+        }
+      }
+    },
     "Connect the controller and press Refresh.": {
       "localizations": {
         "pt-BR": {
@@ -831,12 +861,32 @@
         }
       }
     },
+    "Controller in DInput mode": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controle em modo DInput"
+          }
+        }
+      }
+    },
     "Controller preset": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Preset do controle"
+          }
+        }
+      }
+    },
+    "Controller restarting…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Controle reiniciando…"
           }
         }
       }
@@ -1121,6 +1171,16 @@
         }
       }
     },
+    "Do not unplug the cable or turn the controller off. It restarts by itself at the end (about 20 seconds in total).": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Não desconecte o cabo nem desligue o controle. Ele reinicia sozinho no final (cerca de 20 segundos no total)."
+          }
+        }
+      }
+    },
     "Done": {
       "localizations": {
         "pt-BR": {
@@ -1167,6 +1227,26 @@
           "stringUnit": {
             "state": "translated",
             "value": "Baixar e verificar (simulação)"
+          }
+        }
+      }
+    },
+    "Download and verify only": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Só baixar e verificar"
+          }
+        }
+      }
+    },
+    "Downloading the firmware…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Baixando o firmware…"
           }
         }
       }
@@ -1881,6 +1961,16 @@
         }
       }
     },
+    "Image sent; the controller restarted before reporting.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Imagem enviada; o controle reiniciou antes de responder."
+          }
+        }
+      }
+    },
     "Import…": {
       "localizations": {
         "pt-BR": {
@@ -1917,6 +2007,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Instalar helper"
+          }
+        }
+      }
+    },
+    "Install the helper (or switch to DInput) so the app can put the controller in update mode.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Instale o helper (ou mude para DInput) para o app colocar o controle em modo de atualização."
           }
         }
       }
@@ -2007,6 +2107,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Continue girando até a cobertura passar de 50 %."
+          }
+        }
+      }
+    },
+    "Keep the USB cable connected the whole time. The controller switches to update mode, receives the image and restarts on its own; games lose it for about 20 seconds. There is no way back to the previous version afterwards.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Mantenha o cabo USB conectado o tempo todo. O controle entra em modo de atualização, recebe a imagem e reinicia sozinho; jogos perdem o controle por uns 20 segundos. Não há como voltar para a versão anterior depois."
           }
         }
       }
@@ -3221,6 +3331,16 @@
         }
       }
     },
+    "Putting the controller in update mode (DInput)…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Colocando o controle em modo de atualização (DInput)…"
+          }
+        }
+      }
+    },
     "Quick": {
       "localizations": {
         "pt-BR": {
@@ -4311,6 +4431,16 @@
         }
       }
     },
+    "Switching back to XInput…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Voltando para XInput…"
+          }
+        }
+      }
+    },
     "System": {
       "localizations": {
         "pt-BR": {
@@ -4391,6 +4521,16 @@
         }
       }
     },
+    "The controller confirmed the image (result 0).": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O controle confirmou a imagem (resultado 0)."
+          }
+        }
+      }
+    },
     "The controller did not accept the command.": {
       "localizations": {
         "pt-BR": {
@@ -4421,12 +4561,32 @@
         }
       }
     },
+    "The controller did not come back within %lld s. Unplug and replug the cable, then check its firmware version.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "O controle não voltou em %lld s. Desconecte e reconecte o cabo e confira a versão do firmware."
+          }
+        }
+      }
+    },
     "The controller does not report movement while calibrating — follow the timer.": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "O controle não reporta movimento enquanto calibra — siga o cronômetro."
+          }
+        }
+      }
+    },
+    "The controller's update interface did not appear.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A interface de atualização do controle não apareceu."
           }
         }
       }
@@ -4527,6 +4687,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "O gatilho vibra junto com os motores da empunhadura."
+          }
+        }
+      }
+    },
+    "The update runs from this Mac the same way Space Station does it: the controller is put in update mode, the image is written over USB, and it restarts with the new firmware. Profiles, lighting and the screen animation are kept.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A atualização roda deste Mac do mesmo jeito que o Space Station faz: o controle entra em modo de atualização, a imagem é gravada pelo USB e ele reinicia com o novo firmware. Perfis, luz e a animação da tela são mantidos."
           }
         }
       }
@@ -4981,6 +5151,36 @@
         }
       }
     },
+    "Update complete": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualização concluída"
+          }
+        }
+      }
+    },
+    "Update failed": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualização falhou"
+          }
+        }
+      }
+    },
+    "Update the firmware to %@?": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Atualizar o firmware para %@?"
+          }
+        }
+      }
+    },
     "Update to %@": {
       "localizations": {
         "pt-BR": {
@@ -5247,6 +5447,16 @@
           "stringUnit": {
             "state": "translated",
             "value": "Gravar este perfil no controle e salvar (⌘S)"
+          }
+        }
+      }
+    },
+    "Writing the firmware — keep the cable connected…": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Gravando o firmware — mantenha o cabo conectado…"
           }
         }
       }

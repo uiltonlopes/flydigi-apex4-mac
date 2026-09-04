@@ -190,7 +190,7 @@ final class ControllerModel {
         }
     }
 
-    // MARK: Firmware (read-only for now — docs/firmware-update.md)
+    // MARK: Firmware check and dry run (docs/firmware-update.md)
 
     /// Asks Flydigi whether a newer main-chip firmware exists for the installed one. Network only.
     func checkFirmware() async {
@@ -238,6 +238,95 @@ final class ControllerModel {
         case .success(let log): firmwareReport = log + ["Dry run complete — nothing was written."]
         case .failure(let e): firmwareReport.append("Failed: \(e)")
         }
+    }
+
+    // MARK: Firmware flashing (docs/firmware-update.md §6c — same sequence as the CLI, verified on hardware)
+
+    var firmwareFlashing = false
+    var firmwareProgress: Double = 0
+    var firmwareStage = ""
+
+    /// Why the Update button is disabled, or nil when flashing may start.
+    var firmwareFlashBlocker: String? {
+        guard firmwareUpdate != nil, let info else { return nil }
+        if !info.wired { return String(localized: "Connect the USB cable — updates never run over the receiver.") }
+        if min(5, Int(info.batteryRaw & 0xF)) * 20 < 40 { return String(localized: "Charge the controller to at least 40 % first.") }
+        if connection == .xinput, !helperInstalled { return String(localized: "Install the helper (or switch to DInput) so the app can put the controller in update mode.") }
+        return nil
+    }
+
+    /// Download → validate → (XInput: switch to DInput) → OTA → wait for the reboot → (switch back) → refresh.
+    func flashFirmware() async {
+        guard let update = firmwareUpdate, firmwareFlashBlocker == nil, !firmwareFlashing else { return }
+        let wasXInput = connection == .xinput
+        firmwareFlashing = true; busy = true; lastError = nil
+        suppressNotificationsUntil = .distantFuture        // the pad re-enumerates twice; we drive it ourselves
+        padPoll?.cancel(); padPoll = nil
+        firmwareProgress = 0; firmwareReport = []
+        func log(_ line: String) { firmwareReport.append(line) }
+        do {
+            firmwareStage = String(localized: "Downloading the firmware…")
+            let img: FirmwareImage = try await Task.detached {
+                let d = try FlydigiAPI.download(update.url); let i = try FirmwareImage(data: d); try i.validate(); return i
+            }.value
+            log(String(format: "%@: %d bytes, CRC32 %08x OK, %d packets", update.url.lastPathComponent, img.payloadSize, img.storedCRC, img.packetCount))
+
+            if wasXInput {
+                firmwareStage = String(localized: "Putting the controller in update mode (DInput)…")
+                guard #available(macOS 14.0, *) else { throw HelperError.notInstalled }
+                try await Task.detached { try HelperClient.shared.switchMode() }.value
+                _ = try await waitForDInput(seconds: 15)
+                log(String(localized: "Controller in DInput mode"))
+            }
+            guard OTALink.isPresent() else { throw HelperError.transport(String(localized: "The controller's update interface did not appear.")) }
+
+            firmwareStage = String(localized: "Writing the firmware — keep the cable connected…")
+            let outcome = try await Task.detached { [weak self] in
+                let ota = try OTALink(); defer { ota.close() }
+                var last = -1
+                return try ota.flash(img) { sent, total in
+                    let pct = sent * 100 / total
+                    if pct != last { last = pct; Task { @MainActor in self?.firmwareProgress = Double(sent) / Double(total) } }
+                }
+            }.value
+            firmwareProgress = 1
+            log(outcome == .confirmed ? String(localized: "The controller confirmed the image (result 0).") : String(localized: "Image sent; the controller restarted before reporting."))
+
+            firmwareStage = String(localized: "Controller restarting…")
+            try? await Task.sleep(for: .seconds(2))
+            let back = try await waitForDInput(seconds: 30)
+            log(String(localized: "Back on USB with firmware \(back.firmware)"))
+
+            if wasXInput {
+                firmwareStage = String(localized: "Switching back to XInput…")
+                try await Task.detached { let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }; try s.switchMode() }.value
+                try? await Task.sleep(for: .seconds(4))
+            }
+            firmwareStage = String(localized: "Update complete")
+        } catch {
+            lastError = "\(error)"; firmwareStage = String(localized: "Update failed"); log("Failed: \(error)")
+        }
+        firmwareFlashing = false; busy = false
+        suppressNotificationsUntil = Date().addingTimeInterval(4)
+        connection = USBMonitor.currentConnection()
+        firmwareCheckedFor = nil                           // re-check against the new version
+        await refresh()
+        if info == nil { try? await Task.sleep(for: .seconds(2)); connection = USBMonitor.currentConnection(); await refresh() }
+    }
+
+    /// Polls the DInput config interface until the pad answers (after a mode switch or the OTA reboot).
+    private func waitForDInput(seconds: Double) async throws -> DeviceInfo {
+        let deadline = Date().addingTimeInterval(seconds)
+        while Date() < deadline {
+            try? await Task.sleep(for: .seconds(1))
+            let r: DeviceInfo? = try? await Task.detached {
+                let s = try DeviceSession.open(preferring: .dinput); defer { s.close() }
+                guard s.channel == .dinput else { throw HelperError.transport("not DInput") }
+                return try s.deviceInfo()
+            }.value
+            if let r { return r }
+        }
+        throw HelperError.transport(String(localized: "The controller did not come back within \(Int(seconds)) s. Unplug and replug the cable, then check its firmware version."))
     }
 
     // MARK: Actions

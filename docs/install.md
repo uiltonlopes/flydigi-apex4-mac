@@ -39,8 +39,9 @@ Delete `Space Station.app`. To remove the helper first: Settings → **Remove he
 ## Safety
 
 Everything the app writes (lighting, profiles, macros, screen) goes to the same flash areas Space
-Station writes, using the same commands, verified on real hardware. Firmware flashing is deliberately
-not implemented. If the screen ever gets stuck mid-upload, unplug and re-plug the controller.
+Station writes, using the same commands, verified on real hardware. The firmware update uses the same OTA
+sequence as Space Station's flasher and only runs over the cable with the battery above 40 %; keep the cable
+in until the controller restarts. If the screen ever gets stuck mid-upload, unplug and re-plug the controller.
 
 ## Support
 
