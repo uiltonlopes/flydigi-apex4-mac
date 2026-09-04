@@ -1,6 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 — 2026-09-04
+
+First signed and notarized release. Everything Space Station 4 offers for the Apex 4, plus keyboard/mouse mapping, per-game profiles, GIPHY, share codes and firmware updates from the Mac.
+
 - Share codes compatible with Space Station: profile menu › Share as code… uploads the profile (with lighting) and shows the code; Import from code… fetches one into the library and the editor. CLI: `apex4 config share-code [--upload]`, `apex4 config import-code`.
 - App update check against GitHub releases (Settings › About and a sidebar badge), Settings › Closing the window (quit vs menu bar), Settings › Log (export the unified log, open Console), `spacestation://` URL scheme, helper exits when idle for 10 minutes.
 - DMG with the usual drag-to-Applications window (background, app on the left, Applications on the right), built with create-dmg.
