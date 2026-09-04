@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Keyboard and mouse mapping, done on the Mac: Buttons › Special (key, left/right click, wheel up/down), Sticks › Mapping (keyboard 4/8 directions or mouse with sensitivity), Gyro › Mouse. The app posts the events (Accessibility permission, Settings › Keyboard & mouse); mappings are kept per controller and profile slot. Buttons need DInput mode — the controller hides keyboard-flagged buttons in XInput.
+- Buttons: choosing Macro on a button that already had one relinks it; "Edit macro" opens that macro in the Macros tab.
 - Verified on hardware: macros recorded on the pad (M1), edited in the app and played back by the controller; per-app game profiles switching with a real app in front.
 - Firmware: `apex4 firmware flash` streams the main-chip OTA the way Space Station's flasher does (START / DATA / END over the DInput OTA interface), gated on `--yes`, cable, DInput, battery ≥ 40 % and a validated image. First real update done with it on 2026-09-04 (6.8.3.0 → 6.8.3.7, 11 s, profiles and lighting intact). Settings › Firmware Update now has the real **Update** button: confirmation, switch to DInput through the helper, OTA with progress, wait for the restart, switch back to XInput, re-check — verified end to end on hardware.
 - Release pipeline: Developer ID signing, notarization and stapling of both the app (via zip) and the signed DMG; Gatekeeper reports "Notarized Developer ID".

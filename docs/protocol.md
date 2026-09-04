@@ -263,6 +263,11 @@ in byte 0. Verified on an Apex 4 on 2026-09-01 (`apex4 dev hid-diff`):
 | 23 / 24 | LT / RT (0…255) |
 | 4–6, 11–15, 18, 20, 26, 29 | motion sensor (changes when the pad moves; not decoded) |
 
+A key whose table entry is `0xFE` (keyboard/mouse) **is still reported here** but is **removed from the XInput/Xbox
+report** (verified 2026-09-04, `apex4 dev km-probe`): the firmware suppresses it for games, so keyboard mappings
+can only be driven from the DInput vendor report. Bytes 4–6 are read as two signed 12-bit motion rates (X = b4 |
+(b6 & 0xF0) << 4, Y = b5 | (b6 & 0x0F) << 8, like Space Station's classic parser) — decode still to be confirmed.
+
 This is how the app lights up paddles, Fn and Home, which Apple's Xbox driver never reports in XInput
 mode (`FlydigiKit/Sources/FlydigiKit/InputReport.swift`). Reply frames on the same interface use
 `04 FF …` and are ignored by the parser.
