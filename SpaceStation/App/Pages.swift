@@ -383,6 +383,7 @@ struct SettingsPage: View {
     @State private var checking = false
     @State private var dryRunning = false
     @State private var confirmFlash = false
+    @State private var confirmReinstall = false
     @State private var language = AppLanguage.current
     @State private var giphyKey = UserDefaults.standard.string(forKey: Giphy.keyDefaultsKey) ?? ""
     @State private var needsRestart = false
@@ -508,6 +509,19 @@ struct SettingsPage: View {
                         .padding(.horizontal, 8).frame(height: 22).background(SS.brand500, in: Capsule())
                 } else if model.firmwareChecked {
                     Text("Up to date").font(.system(size: 12)).foregroundStyle(SS.green)
+                }
+            }
+            if model.firmwareUpdate == nil, model.firmwareChecked, !model.firmwareFlashing {
+                // TEMPORARY validation aid: runs the whole update flow with the image Flydigi currently ships.
+                HStack(spacing: 8) {
+                    GhostButton(title: "Reinstall current firmware (test)", icon: "arrow.triangle.2.circlepath", enabled: model.firmwareFlashBlocker == nil && !model.busy) { confirmReinstall = true }
+                    if let why = model.firmwareFlashBlocker { Text(why).font(.system(size: 12)).foregroundStyle(SS.yellow) }
+                }
+                .alert(String(localized: "Reinstall the current firmware?"), isPresented: $confirmReinstall) {
+                    Button(String(localized: "Reinstall")) { Task { await model.reinstallCurrentFirmware() } }
+                    Button(String(localized: "Cancel"), role: .cancel) {}
+                } message: {
+                    Text("Keep the USB cable connected the whole time. The controller switches to update mode, receives the image and restarts on its own; games lose it for about 20 seconds. There is no way back to the previous version afterwards.")
                 }
             }
             if let u = model.firmwareUpdate {

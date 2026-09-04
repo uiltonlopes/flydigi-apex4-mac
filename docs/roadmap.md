@@ -21,7 +21,7 @@ Legend: ✅ verified on hardware · 🧪 implemented, needs a hardware test · �
 
 ## Needs a hardware test
 
-- 🧪 **NS mode**: the profile is written to slots 4–7; confirm on a Switch that the pad uses it.
+- 🧪 **NS mode**: the profile is written to slots 4–7 exactly as Space Station does; nobody on the project owns a Switch, so it stays unverified until an owner reports.
 - 🧪 Other Apex 4 editions (device ids 86, 87, 92, 93, 102, 103, 104): same protocol, artwork present, never connected here.
 
 ## Open

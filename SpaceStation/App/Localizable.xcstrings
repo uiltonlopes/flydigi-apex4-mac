@@ -1621,6 +1621,16 @@
         }
       }
     },
+    "Flydigi offers no image for this controller.": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A Flydigi não oferece imagem para este controle."
+          }
+        }
+      }
+    },
     "Flydigi's factory curve: a slight lift near the centre (23 % output at 15 % travel), then linear. X: stick position, Y: output.": {
       "localizations": {
         "pt-BR": {
@@ -3477,6 +3487,36 @@
           "stringUnit": {
             "state": "translated",
             "value": "Atualizar controle"
+          }
+        }
+      }
+    },
+    "Reinstall": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reinstalar"
+          }
+        }
+      }
+    },
+    "Reinstall current firmware (test)": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reinstalar o firmware atual (teste)"
+          }
+        }
+      }
+    },
+    "Reinstall the current firmware?": {
+      "localizations": {
+        "pt-BR": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reinstalar o firmware atual?"
           }
         }
       }
