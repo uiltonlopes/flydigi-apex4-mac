@@ -39,7 +39,6 @@ public final class USBLink: Link, @unchecked Sendable {
     private var inPipe: UInt8 = 0
     private var outPipe: UInt8 = 0
     /// The other OUT endpoint of interface 0 — where a game's Xbox 360 rumble packet goes (ep2 on the wired pad).
-    private var rumblePipe: UInt8 = 0
     public private(set) var endpointSummary = ""
     private let lock = NSLock()
     private var inbox: [[UInt8]] = []
@@ -102,7 +101,6 @@ public final class USBLink: Link, @unchecked Sendable {
             endpointSummary += "\(direction == UInt8(kUSBIn) ? "IN" : "OUT")\(number)(max \(maxPacket)) "
             if direction == UInt8(kUSBIn) && number == 1 { inPipe = pipeRef }
             if direction == UInt8(kUSBOut) && number == 5 { outPipe = pipeRef }
-            if direction == UInt8(kUSBOut) && number != 5 && rumblePipe == 0 { rumblePipe = pipeRef }
         }
         guard inPipe != 0, outPipe != 0 else { close(); throw TransportError.io("interface 0 does not expose IN ep1 / OUT ep5 (found \(numEndpoints) endpoints)") }
 
@@ -118,14 +116,6 @@ public final class USBLink: Link, @unchecked Sendable {
         guard kr == kIOReturnSuccess else { throw Self.err("WritePipe", kr) }
     }
 
-    /// Writes an Xbox 360 output packet (rumble / LED) on the pad's XInput OUT endpoint, not the Flydigi one.
-    public func writeXbox(_ packet: [UInt8]) throws {
-        guard let intf = interface, !closed else { throw TransportError.io("link closed") }
-        guard rumblePipe != 0 else { throw TransportError.io("no second OUT endpoint (endpoints: \(endpointSummary))") }
-        var buf = packet
-        let kr = buf.withUnsafeMutableBytes { intf.pointee!.pointee.WritePipe(intf, rumblePipe, $0.baseAddress, UInt32(packet.count)) }
-        guard kr == kIOReturnSuccess else { throw Self.err("WritePipe(xbox)", kr) }
-    }
 
     public func waitForReport<T>(timeout: TimeInterval, _ match: @Sendable @escaping ([UInt8]) -> T?) throws -> T {
         let deadline = Date().addingTimeInterval(timeout)

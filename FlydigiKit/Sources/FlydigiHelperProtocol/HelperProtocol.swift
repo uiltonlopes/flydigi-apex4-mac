@@ -9,7 +9,6 @@ public enum HelperConstants {
     public static let machService = "com.uiltonlopes.spacestation.helper"
     public static let plistName = "com.uiltonlopes.spacestation.helper.plist"
     public static let protocolVersion = 1
-    public static let appBundleId = "com.uiltonlopes.spacestation"
 }
 
 public enum HelperRequest: Codable, Sendable {
@@ -17,8 +16,6 @@ public enum HelperRequest: Codable, Sendable {
     case deviceInfo
     case readLED(slot: UInt8)                                 // lighting is stored per profile slot (A5 26/2A <cfgId>)
     case applyLED(slot: UInt8, bytes: [UInt8], persist: Bool)
-    case readBlob(kind: BlobKindCode)
-    case writeBlob(kind: BlobKindCode, bytes: [UInt8], persist: Bool)
     /// Screen upload is chunked per frame so the app can show progress and the message stays small.
     case beginScreenUpload(frameCount: Int, period: UInt8)   // period = frame interval in 100 ms units
     case uploadScreenFrame(index: Int, lvgl: [UInt8])      // 1-based index
@@ -41,7 +38,6 @@ public enum HelperRequest: Codable, Sendable {
     case setTurboSwitch(Bool)
 }
 
-public enum BlobKindCode: Codable, Sendable { case config, led }
 
 public struct HelperDeviceInfo: Codable, Sendable, Hashable {
     public var deviceId: UInt8, firmware: String, mac: String, wired: Bool, batteryRaw: UInt8

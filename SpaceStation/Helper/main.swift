@@ -26,6 +26,17 @@ final class HelperService: @unchecked Sendable {
 
     private var idleTimer: DispatchWorkItem?
     private static let idleHold: TimeInterval = 3   // keep the capture briefly so bursts of requests don't re-enumerate the pad each time
+    /// If the app dies mid-upload no frame ever arrives; give the pad back after 30 s of silence.
+    private var uploadWatchdog: DispatchWorkItem?
+    private func armUploadWatchdog() {
+        uploadWatchdog?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            guard let self, self.uploadFrames > 0 else { return }
+            self.uploadFrames = 0; self.session?.close(); self.session = nil
+        }
+        uploadWatchdog = work
+        queue.asyncAfter(deadline: .now() + 30, execute: work)
+    }
     private var exitTimer: DispatchWorkItem?
     private static let exitAfter: TimeInterval = 600   // no request for 10 min and nothing open → exit; launchd restarts us on the next message
 
@@ -82,26 +93,18 @@ final class HelperService: @unchecked Sendable {
                 guard let led = LEDConfig(bytes: bytes) else { return .error("invalid LED blob") }
                 try withSession { s in s.configId = slot; defer { s.configId = 0 }; try s.applyLED(led, persist: persist) }
                 releaseIfIdle(); return .ok
-            case let .readBlob(kind):
-                let b = try withSession { try $0.readBlob(kind == .config ? .config : .led) }
-                releaseIfIdle(); return .blob(b)
-            case let .writeBlob(kind, bytes, persist):
-                guard bytes.count == (kind == .config ? 790 : 500) else { return .error("blob must be \(kind == .config ? 790 : 500) bytes") }
-                try withSession { s in
-                    try s.writeBlob(bytes, kind: kind == .config ? .config : .led)
-                    if persist { try s.saveToFlash() }
-                }
-                releaseIfIdle(); return .ok
             case let .beginScreenUpload(frameCount, period):
                 guard (1...Screen.maxFrames).contains(frameCount) else { return .error("frame count must be 1…\(Screen.maxFrames)") }
                 _ = try withSession { $0 }                     // capture now, hold until finish
                 uploadFrames = frameCount; uploadPeriod = period
+                armUploadWatchdog()
                 return .ok
             case let .uploadScreenFrame(index, lvgl):
                 guard uploadFrames > 0 else { return .error("no upload in progress") }
                 guard lvgl.count == Screen.frameLength else { return .error("frame must be \(Screen.frameLength) bytes") }
                 guard (1...uploadFrames).contains(index) else { return .error("frame index must be 1…\(uploadFrames)") }
                 try withSession { try $0.uploadScreenFrame(lvgl, index: index, of: uploadFrames, period: uploadPeriod) }
+                armUploadWatchdog()
                 return .frameDone(index: index)
             case .finishScreenUpload:
                 guard uploadFrames > 0 else { return .error("no upload in progress") }
@@ -134,7 +137,9 @@ final class HelperService: @unchecked Sendable {
                 try withSession { try $0.motorTest(left: l, right: r) }
                 releaseIfIdle(); return .ok
             case .calibration(let start):
-                try withSession { try $0.calibration(start: start) }; return .ok
+                try withSession { try $0.calibration(start: start) }
+                if !start { releaseIfIdle() }                   // start holds the capture while the wizard runs
+                return .ok
             case .readJoystickSettings:
                 let j = try withSession { try $0.readJoystickSettings() }
                 releaseIfIdle()
@@ -144,7 +149,7 @@ final class HelperService: @unchecked Sendable {
                     guard let o = DeviceSession.JoystickOption(rawValue: sub) else { throw TransportError.protocolError("bad option") }
                     try s.setJoystickOption(o, value: value)
                 }
-                return .ok
+                releaseIfIdle(); return .ok
             case .readSleepTime:
                 let t = try withSession { try $0.screenSleepTime() }
                 releaseIfIdle(); return .value(t)
@@ -159,11 +164,11 @@ final class HelperService: @unchecked Sendable {
                 releaseIfIdle(); return .ok
             case .captureKey(let ms):
                 let k = try withSession { try $0.captureKey(timeout: Double(ms) / 1000) }
-                return .key(k?.rawValue)
+                releaseIfIdle(); return .key(k?.rawValue)
             case .switchMode:
                 let s = try (session ?? DeviceSession.open(preferring: .xinput))
                 session = nil                                   // switchMode() closes the link itself, without reset
-                try s.switchMode()
+                do { try s.switchMode() } catch { s.close(); throw error }
                 return .ok
             }
         } catch {

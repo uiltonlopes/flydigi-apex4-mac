@@ -153,9 +153,13 @@ final class ControllerModel {
             : String(localized: "The controller did not answer in time. Turn it on or reconnect the cable — it shows up by itself.")
         padPoll?.cancel()
         padPoll = Task { @MainActor [weak self] in
-            try? await Task.sleep(for: .seconds(5))
-            guard !Task.isCancelled, let self, self.awaitingPad, !self.busy else { return }
-            await self.refresh()
+            while !Task.isCancelled {
+                try? await Task.sleep(for: .seconds(5))
+                guard !Task.isCancelled, let self, self.awaitingPad else { break }
+                if !self.busy { await self.refresh() }
+                if self.info != nil { break }
+            }
+            self?.padPoll = nil
         }
     }
 
@@ -298,6 +302,9 @@ final class ControllerModel {
             try? await Task.sleep(for: .seconds(2))
             let back = try await waitForDInput(seconds: 30)
             log(String(localized: "Back on USB with firmware \(back.firmware)"))
+            if back.firmware != update.version {
+                throw HelperError.transport(String(localized: "The controller still reports \(back.firmware) — the update did not take. Try again with the cable firmly connected."))
+            }
 
             if wasXInput {
                 firmwareStage = String(localized: "Switching back to XInput…")

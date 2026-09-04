@@ -21,6 +21,7 @@ public final class OTALink: @unchecked Sendable {
     private let arrived = DispatchSemaphore(value: 0)
     private let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: 64)
     private var closed = false
+    private let cancelled = DispatchSemaphore(value: 0)
 
     /// Present without opening anything (safe to call any time).
     public static func isPresent(usagePage: UInt32 = usagePageMain) -> Bool {
@@ -47,6 +48,7 @@ public final class OTALink: @unchecked Sendable {
             me.lock.lock(); me.inbox.append(bytes); if me.inbox.count > 64 { me.inbox.removeFirst() }; me.lock.unlock()
             me.arrived.signal()
         }, ctx)
+        IOHIDDeviceSetCancelHandler(device) { [cancelled] in cancelled.signal() }
         IOHIDDeviceActivate(device)
     }
 
@@ -166,7 +168,9 @@ public final class OTALink: @unchecked Sendable {
     public func close() {
         guard !closed else { return }
         closed = true
-        IOHIDDeviceCancel(device); IOHIDDeviceClose(device, IOOptionBits(kIOHIDOptionsTypeNone)); IOHIDManagerClose(manager, IOOptionBits(kIOHIDOptionsTypeNone))
+        IOHIDDeviceCancel(device)
+        _ = cancelled.wait(timeout: .now() + 1)           // no callback can run after the cancel handler fired
+        IOHIDDeviceClose(device, IOOptionBits(kIOHIDOptionsTypeNone)); IOHIDManagerClose(manager, IOOptionBits(kIOHIDOptionsTypeNone))
         buffer.deallocate()
     }
 }

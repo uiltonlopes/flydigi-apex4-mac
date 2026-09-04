@@ -62,10 +62,6 @@ final class HelperClient: @unchecked Sendable {
         }
     }
 
-    func ping() -> Bool {
-        if case .pong = try? send(.ping) { return true } else { return false }
-    }
-
     func deviceInfo() throws -> HelperDeviceInfo {
         guard case let .deviceInfo(i) = try send(.deviceInfo) else { throw HelperError.transport("unexpected reply") }
         return i

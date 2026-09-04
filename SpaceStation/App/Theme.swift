@@ -91,12 +91,6 @@ struct DarkCard<Content: View>: View {
     }
 }
 
-struct VDivider: View {
-    var body: some View {
-        Rectangle().fill(LinearGradient(colors: [.white.opacity(0), .white.opacity(0.2), .white.opacity(0)], startPoint: .top, endPoint: .bottom)).frame(width: 1)
-    }
-}
-
 struct HDivider: View {
     var body: some View {
         Rectangle().fill(LinearGradient(colors: [.white.opacity(0), .white.opacity(0.2), .white.opacity(0)], startPoint: .leading, endPoint: .trailing)).frame(height: 1)

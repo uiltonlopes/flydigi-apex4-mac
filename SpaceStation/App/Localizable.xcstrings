@@ -31,16 +31,6 @@
         }
       }
     },
-    "1 color": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "1 cor"
-          }
-        }
-      }
-    },
     "1 h": {
       "localizations": {
         "pt-BR": {
@@ -487,16 +477,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Posição inicial do rompimento"
-          }
-        }
-      }
-    },
-    "Breakthrough stroke": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Curso do rompimento"
           }
         }
       }
@@ -971,16 +951,6 @@
         }
       }
     },
-    "Controller Sleep Time": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Tempo para o controle dormir"
-          }
-        }
-      }
-    },
     "Controller in DInput mode": {
       "localizations": {
         "pt-BR": {
@@ -1091,26 +1061,6 @@
         }
       }
     },
-    "Custom\nAnimation": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Animação\npersonalizada"
-          }
-        }
-      }
-    },
-    "Custom curve (drag the points)": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Curva personalizada (arraste os pontos)"
-          }
-        }
-      }
-    },
     "Cycle time": {
       "localizations": {
         "pt-BR": {
@@ -1147,16 +1097,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Intensidade do amortecimento."
-          }
-        }
-      }
-    },
-    "Damping force": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Força do amortecimento"
           }
         }
       }
@@ -1391,16 +1331,6 @@
         }
       }
     },
-    "Download and verify (dry run)": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Baixar e verificar (simulação)"
-          }
-        }
-      }
-    },
     "Download and verify only": {
       "localizations": {
         "pt-BR": {
@@ -1501,16 +1431,6 @@
         }
       }
     },
-    "Enable Fast Swap, then press SELECT + A / B / X / Y on the controller to switch between profiles 1 / 2 / 3 / 4. The controller does not report this switch back, so the state shown is the last one set from this Mac.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ative a troca rápida e pressione SELECT + A / B / X / Y no controle para alternar entre os perfis 1 / 2 / 3 / 4. O controle não informa esse estado de volta, então o que aparece aqui é o último valor enviado deste Mac."
-          }
-        }
-      }
-    },
     "Enabling gyro mapping will reduce controller polling rate": {
       "localizations": {
         "pt-BR": {
@@ -1601,16 +1521,6 @@
         }
       }
     },
-    "Fast Swap Config": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Troca rápida de perfil"
-          }
-        }
-      }
-    },
     "Fast swap": {
       "localizations": {
         "pt-BR": {
@@ -1657,16 +1567,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Concluir"
-          }
-        }
-      }
-    },
-    "Finish unlocks when every limit has been reached.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Concluir libera quando todos os limites forem alcançados."
           }
         }
       }
@@ -1781,26 +1681,6 @@
         }
       }
     },
-    "Flashing from the Mac is being validated step by step (see the dry run below). Until it ships, update with Flydigi Space Station on a Windows PC: connect the controller with the USB cable, open Settings → Firmware Update → Update. Keep it plugged in until it restarts.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A gravação pelo Mac está sendo validada passo a passo (veja a simulação abaixo). Até ficar pronta, atualize pelo Flydigi Space Station em um PC Windows: conecte o controle pelo cabo USB, abra Ajustes → Atualização de firmware → Atualizar. Mantenha o cabo até ele reiniciar."
-          }
-        }
-      }
-    },
-    "Flashing is not enabled yet": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A gravação ainda não está habilitada"
-          }
-        }
-      }
-    },
     "Flydigi library": {
       "localizations": {
         "pt-BR": {
@@ -1831,52 +1711,12 @@
         }
       }
     },
-    "Flydigi's per-game trigger presets. Automatic switching when a game launches is planned; for now this is the reference list.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Predefinições de gatilho por jogo da Flydigi. A troca automática ao abrir o jogo está planejada; por enquanto esta é a lista de referência."
-          }
-        }
-      }
-    },
     "Flydigi's release note": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Nota de lançamento da Flydigi"
-          }
-        }
-      }
-    },
-    "Flydigi's release note (as published, in Chinese):": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nota de lançamento da Flydigi (como publicada, em chinês):"
-          }
-        }
-      }
-    },
-    "Force needed to push through it.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Força necessária para atravessá-la."
-          }
-        }
-      }
-    },
-    "Force needed, past the start position, to make it vibrate.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Força necessária, depois da posição inicial, para começar a vibrar."
           }
         }
       }
@@ -2021,16 +1861,6 @@
         }
       }
     },
-    "Grip vibration below this value does not move the trigger.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Vibração da empunhadura abaixo desse valor não move o gatilho."
-          }
-        }
-      }
-    },
     "Grip vibration intensity": {
       "localizations": {
         "pt-BR": {
@@ -2111,26 +1941,6 @@
         }
       }
     },
-    "How hard the trigger resists past that point.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Quanto o gatilho resiste depois desse ponto."
-          }
-        }
-      }
-    },
-    "How long the wall lasts.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Por quanto curso a parede dura."
-          }
-        }
-      }
-    },
     "How to activate": {
       "localizations": {
         "pt-BR": {
@@ -2141,32 +1951,12 @@
         }
       }
     },
-    "How to update today": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Como atualizar hoje"
-          }
-        }
-      }
-    },
     "Idle time before the controller sleeps; Home wakes it.": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Tempo parado até o controle dormir; o Home acorda."
-          }
-        }
-      }
-    },
-    "If the controller is not used for this period of time, it will enter sleep mode and can be awakened by pressing the Home button.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Se o controle ficar sem uso por esse tempo, ele entra em modo de espera e acorda com o botão Home."
           }
         }
       }
@@ -2227,16 +2017,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Importar…"
-          }
-        }
-      }
-    },
-    "In DInput mode the current value cannot be read; the choice is sent as is.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "No modo DInput o valor atual não pode ser lido; a escolha é enviada como está."
           }
         }
       }
@@ -2407,16 +2187,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Teclado e mouse"
-          }
-        }
-      }
-    },
-    "Keyboard and mouse mapping needs a companion driver on the Mac. It arrives in a later release.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Mapear teclado e mouse precisa de um driver auxiliar no Mac. Chega em uma versão futura."
           }
         }
       }
@@ -2641,16 +2411,6 @@
         }
       }
     },
-    "Live: every change is sent to the controller as you adjust it.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ao vivo: cada ajuste é enviado ao controle na hora."
-          }
-        }
-      }
-    },
     "Load into editor": {
       "localizations": {
         "pt-BR": {
@@ -2847,16 +2607,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Mapeamentos, analógicos, gatilhos, giroscópio, vibração e macros voltam ao padrão no editor. Nada é gravado no controle até você Aplicar."
-          }
-        }
-      }
-    },
-    "Match stroke": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Acompanhar o curso"
           }
         }
       }
@@ -3431,26 +3181,6 @@
         }
       }
     },
-    "Open Settings…": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Abrir ajustes…"
-          }
-        }
-      }
-    },
-    "Open Space Station": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Abrir o Space Station"
-          }
-        }
-      }
-    },
     "Open at login": {
       "localizations": {
         "pt-BR": {
@@ -3467,16 +3197,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Abrir o controle"
-          }
-        }
-      }
-    },
-    "Output data from the start position": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Enviar dados a partir da posição inicial"
           }
         }
       }
@@ -3511,16 +3231,6 @@
         }
       }
     },
-    "Pick one on the left or press + to bind a new macro to a button. Steps play on the pad itself, so they work in any game and on any platform.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Escolha uma à esquerda ou use + para vincular uma nova macro a um botão. Os passos rodam no próprio controle, então funcionam em qualquer jogo e plataforma."
-          }
-        }
-      }
-    },
     "Pick one on the left or press “New macro” to bind a sequence to a button. Steps play on the pad itself, so they work in any game and on any platform.": {
       "localizations": {
         "pt-BR": {
@@ -3537,16 +3247,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Gatilho linear comum: sem efeito do motor."
-          }
-        }
-      }
-    },
-    "Plain trigger: no motor effect.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gatilho comum: sem efeito do motor."
           }
         }
       }
@@ -3581,16 +3281,6 @@
         }
       }
     },
-    "Portuguese": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Português"
-          }
-        }
-      }
-    },
     "Press": {
       "localizations": {
         "pt-BR": {
@@ -3617,16 +3307,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pressione uma tecla…"
-          }
-        }
-      }
-    },
-    "Press both triggers fully": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pressione os dois gatilhos até o fim"
           }
         }
       }
@@ -3661,42 +3341,12 @@
         }
       }
     },
-    "Pressure level": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Nível de pressão"
-          }
-        }
-      }
-    },
     "Preview": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Prévia"
-          }
-        }
-      }
-    },
-    "Preview needs XInput mode.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A prévia precisa do modo XInput."
-          }
-        }
-      }
-    },
-    "Preview on controller": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pré-visualizar no controle"
           }
         }
       }
@@ -3847,16 +3497,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Pronto para concluir"
-          }
-        }
-      }
-    },
-    "Ready. Changes apply live and are saved on the pad.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Pronto. As alterações valem na hora e ficam salvas no controle."
           }
         }
       }
@@ -4041,16 +3681,6 @@
         }
       }
     },
-    "Resistance": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Resistência"
-          }
-        }
-      }
-    },
     "Restart now": {
       "localizations": {
         "pt-BR": {
@@ -4201,16 +3831,6 @@
         }
       }
     },
-    "Rotate each stick slowly along its edge, then press both triggers all the way. The rings fill in as you reach the limits.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gire cada analógico devagar pela borda e depois pressione os dois gatilhos até o fim. Os anéis vão preenchendo conforme você alcança os limites."
-          }
-        }
-      }
-    },
     "Rotate each stick slowly along its outer edge three or four times, then press each trigger fully three times.": {
       "localizations": {
         "pt-BR": {
@@ -4247,16 +3867,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Roda como root só enquanto fala com o controle em modo XInput, porque o driver Xbox da Apple é dono da interface USB. Necessário para enviar à tela, testar gatilhos e capturar teclas em XInput."
-          }
-        }
-      }
-    },
-    "Runs the grip motors for 3 s so you can feel the trigger follow them": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Liga os motores da empunhadura por 3 s para você sentir o gatilho acompanhar"
           }
         }
       }
@@ -4367,16 +3977,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Buscar no GIPHY"
-          }
-        }
-      }
-    },
-    "Search again": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Procurar de novo"
           }
         }
       }
@@ -4551,16 +4151,6 @@
         }
       }
     },
-    "Shield value": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Valor de bloqueio"
-          }
-        }
-      }
-    },
     "Shooting": {
       "localizations": {
         "pt-BR": {
@@ -4607,16 +4197,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Slot %lld"
-          }
-        }
-      }
-    },
-    "Slow": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Lenta"
           }
         }
       }
@@ -4831,42 +4411,12 @@
         }
       }
     },
-    "Stop preview": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Parar pré-visualização"
-          }
-        }
-      }
-    },
     "Streamlined": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Corrente"
-          }
-        }
-      }
-    },
-    "Strength": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Força"
-          }
-        }
-      }
-    },
-    "Strength coefficient": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Coeficiente de intensidade"
           }
         }
       }
@@ -5131,26 +4681,6 @@
         }
       }
     },
-    "The shared key is a GIPHY beta key, limited to about 100 searches per hour for everyone using this app. A free key of your own from developers.giphy.com gives you a private limit.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "A chave compartilhada é uma chave beta do GIPHY, limitada a cerca de 100 buscas por hora para todo mundo que usa este app. Uma chave gratuita sua, criada em developers.giphy.com, dá um limite só seu."
-          }
-        }
-      }
-    },
-    "The sticks and triggers have not reached all their limits yet. Finishing now may store a wrong range — you can always run the calibration again.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Analógicos e gatilhos ainda não alcançaram todos os limites. Concluir agora pode gravar um alcance errado — você sempre pode calibrar de novo."
-          }
-        }
-      }
-    },
     "The test needs XInput mode.": {
       "localizations": {
         "pt-BR": {
@@ -5201,32 +4731,12 @@
         }
       }
     },
-    "The trigger stops here, like a shorter trigger.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "O gatilho para aqui, como um gatilho mais curto."
-          }
-        }
-      }
-    },
     "The trigger vibrates together with the grip motors (game rumble).": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "O gatilho vibra junto com os motores da empunhadura (vibração do jogo)."
-          }
-        }
-      }
-    },
-    "The trigger vibrates together with the grip motors.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "O gatilho vibra junto com os motores da empunhadura."
           }
         }
       }
@@ -5371,16 +4881,6 @@
         }
       }
     },
-    "Trigger travel over which it vibrates.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Curso do gatilho ao longo do qual ele vibra."
-          }
-        }
-      }
-    },
     "Trigger travel range for sustained breakthrough feedback.": {
       "localizations": {
         "pt-BR": {
@@ -5431,52 +4931,12 @@
         }
       }
     },
-    "Trigger travel where the damping starts.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Curso do gatilho em que o amortecimento começa."
-          }
-        }
-      }
-    },
-    "Trigger travel where the resistance wall begins.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Curso do gatilho em que a parede de resistência começa."
-          }
-        }
-      }
-    },
-    "Trigger travel where the vibration starts.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Curso do gatilho em que a vibração começa."
-          }
-        }
-      }
-    },
     "Triggers": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Gatilhos"
-          }
-        }
-      }
-    },
-    "Triggers reached": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Gatilhos ok"
           }
         }
       }
@@ -5531,32 +4991,12 @@
         }
       }
     },
-    "Turbo Function": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Função Turbo"
-          }
-        }
-      }
-    },
     "Turbo shortcut": {
       "localizations": {
         "pt-BR": {
           "stringUnit": {
             "state": "translated",
             "value": "Atalho de Turbo"
-          }
-        }
-      }
-    },
-    "Turbo shortcut on the controller": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Atalho de Turbo no controle"
           }
         }
       }
@@ -5587,16 +5027,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Modo USB"
-          }
-        }
-      }
-    },
-    "USB-C cable or the charging base's receiver": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Cabo USB-C ou o receptor da base de carregamento"
           }
         }
       }
@@ -5881,36 +5311,6 @@
         }
       }
     },
-    "Vibration start force": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Força inicial da vibração"
-          }
-        }
-      }
-    },
-    "Vibration start position": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Posição inicial da vibração"
-          }
-        }
-      }
-    },
-    "Vibration strength": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Intensidade da vibração"
-          }
-        }
-      }
-    },
     "Vibration test": {
       "localizations": {
         "pt-BR": {
@@ -5987,26 +5387,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "Quando a vibração da empunhadura fica abaixo deste limiar, o gatilho não vibra."
-          }
-        }
-      }
-    },
-    "With it on, hold Turbo + a button to make that button auto-fire, and Turbo + Turbo to clear. Works for A/B/X/Y, LB, LT, RB, RT, the D-pad and the stick clicks. Not reported back by the controller.": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Ligado, segure Turbo + um botão para ele disparar sozinho, e Turbo + Turbo para limpar. Vale para A/B/X/Y, LB, LT, RB, RT, direcional e cliques dos analógicos. O controle não informa esse estado de volta."
-          }
-        }
-      }
-    },
-    "Working…": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "Trabalhando…"
           }
         }
       }
@@ -6197,16 +5577,6 @@
           "stringUnit": {
             "state": "translated",
             "value": "liga/desliga"
-          }
-        }
-      }
-    },
-    "up to 5 colors": {
-      "localizations": {
-        "pt-BR": {
-          "stringUnit": {
-            "state": "translated",
-            "value": "até 5 cores"
           }
         }
       }

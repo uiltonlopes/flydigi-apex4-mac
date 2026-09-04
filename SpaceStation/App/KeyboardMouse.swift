@@ -193,8 +193,8 @@ final class KeyboardMouseEngine: @unchecked Sendable {
                     dirKeys[side] = keys; lastDir[side] = d
                 }
             case .mouse(let m):
-                let dz = Float(m.deadZone) / 100
-                let r = hypot(x, y)
+                let dz = min(Float(m.deadZone) / 100, 0.95)
+                let r = min(hypot(x, y), 1)
                 guard r > dz, dt > 0 else { continue }
                 let scale = (r - dz) / (1 - dz) / r           // deflection beyond the dead zone, 0…1, along the same angle
                 let speed = 1400.0                              // px/s at full deflection and sensitivity 50

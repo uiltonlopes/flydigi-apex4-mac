@@ -81,7 +81,6 @@ struct GameRuleEditor: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(ProfileStore.self) private var profiles
     @Environment(ControllerModel.self) private var model
-    @State private var matchByName = false
     @State private var running: [NSRunningApplication] = []
 
     var body: some View {

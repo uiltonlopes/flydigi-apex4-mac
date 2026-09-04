@@ -47,7 +47,7 @@ enum Protobuf {
             switch wire {
             case 0: guard let v = readVarint() else { return out }; out.append(Field(number: number, wire: 0, varint: v, data: []))
             case 2:
-                guard let n = readVarint(), i + Int(n) <= b.count else { return out }
+                guard let n = readVarint(), n <= UInt64(b.count - i) else { return out }
                 out.append(Field(number: number, wire: 2, varint: 0, data: Array(b[i..<i + Int(n)]))); i += Int(n)
             case 1: guard i + 8 <= b.count else { return out }; out.append(Field(number: number, wire: 1, varint: 0, data: Array(b[i..<i + 8]))); i += 8
             case 5: guard i + 4 <= b.count else { return out }; out.append(Field(number: number, wire: 5, varint: 0, data: Array(b[i..<i + 4]))); i += 4
@@ -269,7 +269,8 @@ extension SS4Profile {
             } else {
                 d[n + 1] = j.mapType == 0 ? b : 127
             }
-            d[n + 2] = UInt8(truncatingIfNeeded: Int(x1)); d[n + 3] = UInt8(truncatingIfNeeded: Int(y1)); d[n + 4] = UInt8(truncatingIfNeeded: Int(x2)); d[n + 5] = UInt8(truncatingIfNeeded: Int(y2))
+            func byte(_ v: Double) -> UInt8 { v.isFinite ? UInt8(min(max(v, 0), 255)) : 0 }
+            d[n + 2] = byte(x1); d[n + 3] = byte(y1); d[n + 4] = byte(x2); d[n + 5] = byte(y2)
             d[n + 6] = UInt8(truncatingIfNeeded: j.end)
         }
         // triggers
@@ -318,7 +319,7 @@ extension SS4Profile {
             list.append(UInt8(truncatingIfNeeded: m.keyId)); list.append(UInt8(truncatingIfNeeded: m.count)); list.append(UInt8(truncatingIfNeeded: m.count >> 8)); list.append(UInt8(truncatingIfNeeded: m.type))
             var t = 0
             for a in m.actions {
-                t = a.duration / Self.minMacroInterval(protoVersion) + t
+                t = min(t + a.duration / Self.minMacroInterval(protoVersion), 0xFFFF)
                 list.append(UInt8(truncatingIfNeeded: t)); list.append(UInt8(truncatingIfNeeded: t >> 8)); list.append(UInt8(truncatingIfNeeded: a.keyId)); list.append(UInt8(truncatingIfNeeded: a.event))
             }
         }
@@ -480,11 +481,45 @@ extension SS4Profile {
             }
         }
         oldLedConfig = Protobuf.ints(fs, 13); lunpan = Protobuf.ints(fs, 14)
+        sanitize()
     }
 
     // MARK: Share string ("0A-1B-…", what the code resolves to)
 
     public var shareString: String { protobuf().map { String(format: "%02X", $0) }.joined(separator: "-") }
+
+    /// Untrusted input (a downloaded code) must never crash the app: every byte-valued field is clamped to what the
+    /// blob can hold before any arithmetic, macro lists are capped to what fits.
+    public mutating func sanitize() {
+        func b(_ v: inout Int) { v = min(max(v, 0), 255) }
+        func bs(_ a: inout [Int], _ n: Int) { a = a.prefix(n).map { min(max($0, 0), 255) } }
+        protoVersion = min(max(protoVersion, 0), 0xFFFF); packageCount = min(max(packageCount, 0), 255); dataVersion = min(max(dataVersion, 0), 0xFFFF)
+        title = String(title.prefix(10))
+        for s in [\SS4Profile.leftStick, \SS4Profile.rightStick] {
+            b(&self[keyPath: s].center); b(&self[keyPath: s].end); b(&self[keyPath: s].edge); b(&self[keyPath: s].sensitivity.type)
+            b(&self[keyPath: s].sensitivity.point1.x); b(&self[keyPath: s].sensitivity.point1.y); b(&self[keyPath: s].sensitivity.point2.x); b(&self[keyPath: s].sensitivity.point2.y)
+        }
+        keys = Array(keys.prefix(32))
+        for i in keys.indices { b(&keys[i].keyId); b(&keys[i].mapType); b(&keys[i].mapControllerKeyId); b(&keys[i].continuousKeyId); b(&keys[i].continuousEnableType); b(&keys[i].frequency); b(&keys[i].multiFunctionKeyId) }
+        for v in [\SS4Profile.vibration.left, \SS4Profile.vibration.right] { b(&self[keyPath: v].min); b(&self[keyPath: v].max); b(&self[keyPath: v].scale) }
+        for t in [\SS4Profile.leftTrigger, \SS4Profile.rightTrigger] {
+            b(&self[keyPath: t].zero); b(&self[keyPath: t].end); b(&self[keyPath: t].type)
+            b(&self[keyPath: t].point1.x); b(&self[keyPath: t].point1.y); b(&self[keyPath: t].point2.x); b(&self[keyPath: t].point2.y)
+            if var ad = self[keyPath: t].adapter { b(&ad.type); b(&ad.bind.type); b(&ad.bind.filter); b(&ad.bind.scale); bs(&ad.bind.param, 5); b(&ad.mixedBorder); bs(&ad.param, 10); self[keyPath: t].adapter = ad }
+            if var tv = self[keyPath: t].vibration {
+                for k in [\SS4Profile.TriggerVibration.linear, \SS4Profile.TriggerVibration.micro] { b(&tv[keyPath: k].type); b(&tv[keyPath: k].minLevel); b(&tv[keyPath: k].maxLevel); b(&tv[keyPath: k].filter); b(&tv[keyPath: k].minStart); b(&tv[keyPath: k].scale); b(&tv[keyPath: k].minTime) }
+                self[keyPath: t].vibration = tv
+            }
+        }
+        b(&motion.useMode); b(&motion.mappingType); b(&motion.joystickEnableType); b(&motion.joystickSensitivity); b(&motion.joystickDeadZone); bs(&motion.joystickEnableKeys, 2); bs(&motion.mouseEnableKeys, 2)
+        macros.items = Array(macros.items.prefix(Self.maxMacros(protoVersion)))
+        for i in macros.items.indices {
+            b(&macros.items[i].keyId); b(&macros.items[i].type); macros.items[i].count = min(max(macros.items[i].count, 0), 0xFFFF)
+            macros.items[i].actions = Array(macros.items[i].actions.prefix(128))
+            for j in macros.items[i].actions.indices { b(&macros.items[i].actions[j].keyId); b(&macros.items[i].actions[j].event); macros.items[i].actions[j].duration = min(max(macros.items[i].actions[j].duration, 0), 60_000) }
+        }
+        bs(&oldLedConfig, 10); bs(&lunpan, 2)
+    }
 
     public init?(shareString s: String) {
         var text = s.trimmingCharacters(in: .whitespacesAndNewlines)

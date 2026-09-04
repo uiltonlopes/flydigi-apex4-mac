@@ -60,19 +60,6 @@ public enum ImageLoader {
                        provider: provider, decode: nil, shouldInterpolate: false, intent: .defaultIntent)
     }
 
-    /// Average frame delay in centiseconds (what the firmware's `freq` field expects), 0 for stills.
-    public static func frameDelayCentiseconds(url: URL) -> Int {
-        guard let src = CGImageSourceCreateWithURL(url as CFURL, nil) else { return 0 }
-        let n = CGImageSourceGetCount(src); guard n > 1 else { return 0 }
-        var total = 0.0
-        for i in 0..<n {
-            let props = CGImageSourceCopyPropertiesAtIndex(src, i, nil) as? [CFString: Any]
-            let gif = props?[kCGImagePropertyGIFDictionary] as? [CFString: Any]
-            total += (gif?[kCGImagePropertyGIFUnclampedDelayTime] as? Double) ?? (gif?[kCGImagePropertyGIFDelayTime] as? Double) ?? 0.1
-        }
-        return max(1, Int(total / Double(n) * 100))
-    }
-
     static func rgb8(_ img: CGImage, width w: Int, height h: Int, crop: ScreenCrop? = nil) -> [UInt8] {
         var rgba = [UInt8](repeating: 0, count: w * h * 4)
         let cs = CGColorSpace(name: CGColorSpace.sRGB)!

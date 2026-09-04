@@ -96,7 +96,7 @@ public enum FlydigiAPI {
             else if let v = try? c.decode(String.self) { self = .string(v) } else if let v = try? c.decode([AnyJSON].self) { self = .array(v) } else { self = .object(try c.decode([String: AnyJSON].self)) }
         }
         subscript(_ k: String) -> AnyJSON? { if case .object(let o) = self { return o[k] }; return nil }
-        var string: String? { switch self { case .string(let s): s; case .number(let n): n == n.rounded() ? String(Int(n)) : String(n); default: nil } }
+        var string: String? { switch self { case .string(let s): s; case .number(let n): Int(exactly: n).map(String.init) ?? String(n); default: nil } }
     }
 
     /// Uploads a profile (its bean as "0A-1B-…") and returns the share code Space Station users type in.

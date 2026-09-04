@@ -91,7 +91,6 @@ public enum DeviceCatalog {
     private static let byId: [UInt8: DeviceDescriptor] = Dictionary(uniqueKeysWithValues: all.map { ($0.id, $0) })
 
     public static func descriptor(for deviceId: UInt8) -> DeviceDescriptor? { byId[deviceId] }
-    public static var supported: [DeviceDescriptor] { all.filter { $0.support == .supported } }
 }
 
 public extension DeviceInfo {

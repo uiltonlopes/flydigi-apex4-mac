@@ -77,7 +77,7 @@ struct MainWindow: View {
     /// `device`, `profile?slot=1…4`. Used by the screenshot script and usable from Shortcuts / the shell.
     private static let urlLog = Logger(subsystem: "com.uiltonlopes.spacestation", category: "url")
     private func open(_ url: URL) {
-        let q = Dictionary(uniqueKeysWithValues: (URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []).map { ($0.name, $0.value ?? "") })
+        let q = Dictionary((URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems ?? []).map { ($0.name, $0.value ?? "") }, uniquingKeysWith: { $1 })
         Self.urlLog.notice("open \(url.absoluteString, privacy: .public) host=\(url.host ?? "-", privacy: .public) q=\(q.description, privacy: .public) draft=\(profiles.draft != nil, privacy: .public)")
         switch url.host {
         case "home":
@@ -102,7 +102,10 @@ struct MainWindow: View {
             #endif
         case "screen":
             route = .screen
-            NavHints.shared.screenSource = q["source"]; NavHints.shared.giphyQuery = q["q"]
+            NavHints.shared.screenSource = q["source"]
+            #if DEBUG
+            NavHints.shared.giphyQuery = q["q"]          // a web page must not spend the user's GIPHY quota
+            #endif
         case "adaptive": route = .adaptiveTrigger
         case "settings": route = .settings
         case "device": route = .deviceCenter
@@ -116,8 +119,10 @@ struct MainWindow: View {
             #if DEBUG
             if q["revert"] != nil { profiles.revert() }
             #endif
-            // Switching the slot changes what the pad does right now, so only when nothing is being edited.
+            #if DEBUG
+            // Switching the slot changes what the pad does right now; a web page must not be able to trigger it.
             if let s = q["slot"].flatMap(Int.init), (1...4).contains(s), !profiles.isDirty { profiles.select(slot: UInt8(s - 1)); route = .home }
+            #endif
         default: break
         }
     }

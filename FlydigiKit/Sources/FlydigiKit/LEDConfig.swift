@@ -12,7 +12,6 @@ public struct LEDConfig: Sendable, Hashable {
     public enum Mode: UInt8, Sendable, CaseIterable, Hashable {
         case unknown = 0, streamlined = 1, breathing = 2, gradient = 3, feedback = 4, steady = 5, off = 6, factoryDefault = 7
         /// Modes the user can pick.
-        public static let selectable: [Mode] = [.off, .steady, .breathing, .gradient, .streamlined, .feedback]
     }
 
     /// One colour step of a group. Channels are **percent** (0–100), not 0–255.

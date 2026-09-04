@@ -7,7 +7,6 @@ import AppKit
 import FlydigiKit
 import FlydigiTransport
 
-typealias ForceAdaptPreset = ForceAdapt
 
 /// Lighting to show while a game profile is active (not saved to the pad's flash; the normal lighting
 /// comes back when the app leaves).

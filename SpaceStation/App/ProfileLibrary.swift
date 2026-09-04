@@ -65,11 +65,6 @@ final class ProfileLibrary {
         entries.swapAt(i, j); persist()
     }
 
-    /// `.fdgprofile` = the raw 790-byte blob; the title travels inside it (bytes 770…789).
-    func export(_ p: SavedProfile, to url: URL) {
-        guard let b = bytes(of: p) else { return }
-        do { try Data(b).write(to: url) } catch { lastError = "\(error)" }
-    }
     func importFile(_ url: URL) {
         guard let d = try? Data(contentsOf: url), d.count == 790, let c = GamepadConfig(bytes: [UInt8](d)) else {
             lastError = String(localized: "Not a Space Station for Mac profile (expected a 790-byte .fdgprofile)."); return

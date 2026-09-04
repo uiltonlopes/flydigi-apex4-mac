@@ -25,7 +25,6 @@ struct SensitivityCurve: View {
     private var y0: CGFloat { size - 14 * k }           // bottom (input 0)
     private var y1: CGFloat { 5 * k }                   // top (output 100) — just enough room for the "100" label
     @State private var dragging: Int? = nil             // 1 or 2 while a handle is held
-    @State private var dragPos: CGPoint = .zero
 
     private var deadFrac: CGFloat { CGFloat(deadZone) / 127 }
     private var edgeFrac: CGFloat { CGFloat(127 - min(edge, 127)) / 127 }

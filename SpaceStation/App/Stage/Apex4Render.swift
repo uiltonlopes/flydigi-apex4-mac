@@ -55,7 +55,7 @@ enum Apex4Render {
     // MARK: Artwork
 
     static let wireframe: NSImage? = load("apex4-wireframe", "svg")
-    static let hero: NSImage? = load("apex4-hero", "png")
+    static let hero: NSImage? = load("k2-84", "png")
     /// Space Station's device-card artwork for the special editions (EVA-01, Assassin's Creed, Black Myth
     /// Wukong, Genshin, Honkai Star Rail); the standard Apex 4 has none.
     static func cardBackground(deviceId: UInt8?) -> NSImage? { deviceId.flatMap { load("card-k2-\($0)", "png") } }
@@ -78,19 +78,6 @@ struct Apex4Wireframe: View {
     var body: some View {
         if let img = Apex4Render.wireframe {
             Image(nsImage: img).resizable().interpolation(.high).aspectRatio(Apex4Render.canvas, contentMode: .fit)
-        } else {
-            Apex4BodyShape().aspectRatio(Apex4Render.canvas, contentMode: .fit)
-        }
-    }
-}
-
-/// Product picture with a soft accent glow behind it.
-struct Apex4Hero: View {
-    var body: some View {
-        if let img = Apex4Render.hero {
-            Image(nsImage: img).resizable().interpolation(.high).aspectRatio(contentMode: .fit)
-                .shadow(color: SS.brand500.opacity(0.45), radius: 40, y: 12)
-                .shadow(color: .black.opacity(0.6), radius: 18, y: 14)
         } else {
             Apex4BodyShape().aspectRatio(Apex4Render.canvas, contentMode: .fit)
         }

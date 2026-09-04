@@ -50,7 +50,7 @@ final class LiveInput {
             var count = 0, windowStart = Date()
             while !Task.isCancelled {
                 let state: ControllerState? = try? link.waitForReport(timeout: 0.25) { (r: [UInt8]) -> ControllerState? in ControllerState(dinputReport: r) }
-                if state != nil { count += 1 }
+                if state != nil { count += 1 } else { engine.releaseAll() }      // pad silent: never leave a key held down
                 if Date().timeIntervalSince(windowStart) >= 1 {
                     let rate = count; count = 0; windowStart = Date()
                     await MainActor.run { [weak self] in self?.rawReportRate = rate }
