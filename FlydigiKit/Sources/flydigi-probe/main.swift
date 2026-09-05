@@ -16,6 +16,7 @@ let version = "0.2.0"
 let seconds: Double = CommandLine.arguments.dropFirst().first.flatMap(Double.init) ?? 15
 let vendors: [Int] = [0x04B4, 0x37D7, 0x045E]           // classic DInput (Cypress), Flydigi's own VID, Xbox identity
 nonisolated(unsafe) var report: [String] = []
+setvbuf(stdout, nil, _IOLBF, 0)
 func out(_ s: String) { print(s); report.append(s) }
 func hex(_ b: [UInt8]) -> String { b.map { String(format: "%02x", $0) }.joined(separator: " ") }
 func looksFlydigi(_ s: String?) -> Bool {
@@ -97,9 +98,15 @@ out("")
 final class Capture: @unchecked Sendable {
     let lock = NSLock()
     var perId: [UInt8: (count: Int, first: [UInt8], last: [UInt8], changed: Set<Int>)] = [:]
+    var replies: [[UInt8]] = []                          // classic command replies (`04 FF …`), kept apart from the status stream
     let buffer = UnsafeMutablePointer<UInt8>.allocate(capacity: 1024)
+    /// Runs on the HID dispatch queue; declared here (not at top level) so it is not main-actor isolated.
+    static let callback: IOHIDReportCallback = { ctx, _, _, _, _, ptr, len in
+        Unmanaged<Capture>.fromOpaque(ctx!).takeUnretainedValue().add(Array(UnsafeBufferPointer(start: ptr, count: Int(len))))
+    }
     func add(_ r: [UInt8]) {
         lock.lock(); defer { lock.unlock() }
+        if r.count > 2, r[0] == 4, r[1] == 0xFF, replies.count < 16 { replies.append(r); return }
         let id = r.first ?? 0
         if var e = perId[id] {
             e.count += 1
@@ -119,9 +126,7 @@ for d in flydigiHID {
     }
     let cap = Capture()
     IOHIDDeviceSetDispatchQueue(d, queue)
-    IOHIDDeviceRegisterInputReportCallback(d, cap.buffer, 1024, { ctx, _, _, _, _, ptr, len in
-        Unmanaged<Capture>.fromOpaque(ctx!).takeUnretainedValue().add(Array(UnsafeBufferPointer(start: ptr, count: Int(len))))
-    }, Unmanaged.passUnretained(cap).toOpaque())
+    IOHIDDeviceRegisterInputReportCallback(d, cap.buffer, 1024, Capture.callback, Unmanaged.passUnretained(cap).toOpaque())
     IOHIDDeviceActivate(d)
     captures.append((d, cap, label))
 }
@@ -129,6 +134,21 @@ if !captures.isEmpty {
     print("\n>>> Recording for \(Int(seconds)) s: press EVERY button once (including paddles and the extra keys), move both sticks in a full circle, pull both triggers, and shake the controller a little.")
     let t0 = Date()
     while Date().timeIntervalSince(t0) < seconds { Thread.sleep(forTimeInterval: 0.5); let left = Int(seconds - Date().timeIntervalSince(t0)); if left % 5 == 0 { print("    \(left) s…") } }
+
+    // Known-safe query, classic DInput vendor interface only (04b4:2412, usage page FFA0): device info `05 EC`.
+    var infoLine: String?
+    if let (d, cap, _) = captures.first(where: { int(hidProp($0.0, kIOHIDVendorIDKey)) == 0x04B4 && int(hidProp($0.0, kIOHIDProductIDKey)) == 0x2412 && int(hidProp($0.0, kIOHIDPrimaryUsagePageKey)) == 0xFFA0 }) {
+        let cmd = DInput.command(DInput.Cmd.deviceInfo)
+        let r = cmd.withUnsafeBufferPointer { IOHIDDeviceSetReport(d, kIOHIDReportTypeOutput, CFIndex(cmd[0]), $0.baseAddress!, $0.count) }
+        if r == kIOReturnSuccess {
+            Thread.sleep(forTimeInterval: 1.0)
+            cap.lock.lock(); let replies = cap.replies; cap.lock.unlock()
+            if let reply = replies.first(where: { DInputReply.deviceInfo($0) != nil }), let info = DInputReply.deviceInfo(reply) {
+                infoLine = "  device id \(info.deviceId) (\(info.modelName)) · firmware \(info.firmware) · \(info.isWired ? "wired" : "wireless") · reply: \(hex(reply))"
+            } else { infoLine = "  no device-info reply (\(replies.count) other replies)" }
+        } else { infoLine = String(format: "  write failed 0x%08x", r) }
+    }
+
     out("== Input reports (\(Int(seconds)) s)")
     for (d, cap, label) in captures {
         IOHIDDeviceCancel(d)
@@ -143,33 +163,9 @@ if !captures.isEmpty {
         cap.lock.unlock()
     }
     out("")
+    if let infoLine { out("== Classic DInput device info (05 EC)"); out(infoLine); out("") }
+    for (d, _, _) in captures { IOHIDDeviceClose(d, IOOptionBits(kIOHIDOptionsTypeNone)) }
 }
-
-// MARK: - 4. Known-safe query (classic DInput interface only)
-
-if let d = flydigiHID.first(where: { int(hidProp($0, kIOHIDVendorIDKey)) == 0x04B4 && int(hidProp($0, kIOHIDProductIDKey)) == 0x2412 && int(hidProp($0, kIOHIDPrimaryUsagePageKey)) == 0xFFA0 }) {
-    out("== Classic DInput device info (05 EC)")
-    let cap = Capture()
-    IOHIDDeviceSetDispatchQueue(d, queue)
-    IOHIDDeviceRegisterInputReportCallback(d, cap.buffer, 1024, { ctx, _, _, _, _, ptr, len in
-        Unmanaged<Capture>.fromOpaque(ctx!).takeUnretainedValue().add(Array(UnsafeBufferPointer(start: ptr, count: Int(len))))
-    }, Unmanaged.passUnretained(cap).toOpaque())
-    IOHIDDeviceActivate(d)
-    let cmd = DInput.command(DInput.Cmd.deviceInfo)
-    let r = cmd.withUnsafeBufferPointer { IOHIDDeviceSetReport(d, kIOHIDReportTypeOutput, CFIndex(cmd[0]), $0.baseAddress!, $0.count) }
-    if r == kIOReturnSuccess {
-        Thread.sleep(forTimeInterval: 1.0)
-        cap.lock.lock()
-        let replies = cap.perId.values.map(\.last).filter { $0.count > 3 && $0[1] == 0xFF }
-        cap.lock.unlock()
-        if let reply = replies.first, let info = DInputReply.deviceInfo(reply) {
-            out("  device id \(info.deviceId) (\(info.modelName)) · firmware \(info.firmware) · \(info.isWired ? "wired" : "wireless") · reply: \(hex(reply))")
-        } else { out("  no device-info reply") }
-    } else { out(String(format: "  write failed 0x%08x", r)) }
-    IOHIDDeviceCancel(d)
-    out("")
-}
-for (d, _, _) in captures { IOHIDDeviceClose(d, IOOptionBits(kIOHIDOptionsTypeNone)) }
 
 // MARK: - 5. Save
 
