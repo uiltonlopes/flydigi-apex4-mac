@@ -183,7 +183,7 @@ struct Sidebar: View {
     private var connected: Bool { model.connection != .none }
     private var deviceName: String {
         if !model.nickname.isEmpty { return model.nickname }
-        return model.info.flatMap { DeviceCatalog.descriptor(for: $0.deviceId)?.name } ?? "Flydigi Apex 4"
+        return model.info.map { DeviceCatalog.descriptor(for: $0.deviceId)?.name ?? "Flydigi controller (id \($0.deviceId))" } ?? "Flydigi Apex 4"
     }
 
     private var deviceCard: some View {

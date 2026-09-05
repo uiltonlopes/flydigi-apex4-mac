@@ -254,6 +254,10 @@ final class ControllerModel {
     /// Why the Update button is disabled, or nil when flashing may start.
     var firmwareFlashBlocker: String? {
         guard firmwareUpdate != nil, let info else { return nil }
+        // The OTA sequence was only ever exercised on the Apex 4 family. Flydigi's server answers for other device
+        // ids too, but writing that image with this flow to an untested model is not something we let happen.
+        if let d = DeviceCatalog.descriptor(for: info.deviceId), d.family != .apex4 { return String(localized: "Updates from this app are only enabled for the Apex 4 family. Use Flydigi Space Station (Windows) for \(d.name).") }
+        if DeviceCatalog.descriptor(for: info.deviceId) == nil { return String(localized: "Updates from this app are only enabled for the Apex 4 family (unknown controller id \(info.deviceId)).") }
         if !info.wired { return String(localized: "Connect the USB cable — updates never run over the receiver.") }
         if min(5, Int(info.batteryRaw & 0xF)) * 20 < 40 { return String(localized: "Charge the controller to at least 40 % first.") }
         if connection == .xinput, !helperInstalled { return String(localized: "Install the helper (or switch to DInput) so the app can put the controller in update mode.") }

@@ -1,7 +1,8 @@
 # Changelog
 
 ## Unreleased
-- `flydigi-probe`: read-only survey tool for owners of other Flydigi models (USB/HID descriptors, input-report capture, Apex 4 device info), shipped as a signed universal binary next to the release.
+- `flydigi-probe`: read-only survey tool for owners of other Flydigi models (USB/HID descriptors, input-report capture, Apex 4 device info), shipped as a signed universal binary next to the release. v2 also reads XInput-class interfaces without a macOS driver (new-generation pads), sends the new-generation identity request, and lists Switch-mode (Nintendo VID) devices.
+- Fix: the firmware **Update** button is now disabled for controllers outside the Apex 4 family — Flydigi's server offered an image for a Direwolf 3 and the app would have flashed it with a sequence verified only on the Apex 4. Device id 95 is named Direwolf 3 (was "Vader 3 Pro (FP3)?").
 
 ## 0.2.0 — 2026-09-04
 

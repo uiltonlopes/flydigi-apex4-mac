@@ -71,7 +71,7 @@ public enum DeviceCatalog {
             (28, "f3", "Flydigi Vader 3", .vader3), (80, "f3p", "Flydigi Vader 3 Pro", .vader3), (81, "f3p", "Flydigi Vader 3 Pro One Piece", .vader3), (88, "f3p", "Flydigi Vader 3 Pro EVA", .vader3),
             (82, "fp2", "Flydigi Vader 2 Pro (FP2)?", .other), (83, "fp2", "Flydigi Vader 2 Pro Naruto (FP2)?", .other), (89, "fp2", "Flydigi Vader 2 Pro Wired (FP2)?", .other), (90, "fp2", "Flydigi Vader 2 Pro Switch (FP2)?", .other), (94, "fp2", "Flydigi Vader 2 Pro M (FP2M)?", .other),
             (85, "f4", "Flydigi Vader 4 (F4)?", .other), (91, "f4", "Flydigi Vader 4 Assassin's Creed (F4)?", .other),
-            (95, "fp3", "Flydigi Vader 3 Pro (FP3)?", .other), (97, "fp3", "Flydigi Vader 3 Pro Naruto (FP3)?", .other),
+            (95, "fp3", "Flydigi Direwolf 3", .other), (97, "fp3", "Flydigi Direwolf 3 Naruto (FP3)?", .other),   // 95 confirmed by a tester (fw 5.3.1.1)
             (32, "wee1", "Flydigi Wee 1", .other), (33, "wee2", "Flydigi Wee 2", .other), (34, "wee3", "Flydigi Wee 3", .other),
             (48, "q1", "Flydigi Q1", .other), (49, "d1", "Flydigi Direwolf (D1)?", .other), (50, "q1", "Flydigi Q1 (WCH)", .other),
             (64, "wasp", "Flydigi Wasp BT", .other), (65, "wasp", "Flydigi Wasp N", .other), (66, "wasp", "Flydigi Wasp X", .other), (67, "wasp2", "Flydigi Wasp 2", .other),

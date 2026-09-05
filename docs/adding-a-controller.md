@@ -26,9 +26,12 @@ cd ~/Downloads && unzip -o flydigi-probe-*-macos.zip && ./flydigi-probe
 
 For 15 seconds press every button once, move both sticks in a circle, pull both triggers. The tool writes
 `flydigi-probe-<date>.txt` on your Desktop: USB and HID interfaces with their report descriptors, the input reports
-that changed, and (Apex 4 family only) the device info. It never writes to the controller. Send the file with the
-model, firmware version and connection type in an issue or a DM. Run it once per controller and once per USB mode
-if the pad has a mode switch.
+that changed, and the device info (classic `05 EC` query on Apex 4-family pads, new-generation `06 5A A5 01`
+heartbeat on `0x37D7` pads). Interfaces that macOS has no driver for (the XInput-class interface 0 of the new
+generation) are read directly over USB, so the pad does not need to appear as a game controller. Switch-mode pads
+(Nintendo VID `0x057E`) are listed too. The only things sent to the controller are those two identity requests; nothing
+is written to its memory. Send the file with the model, firmware version and connection type in an issue or a DM.
+Run it once per controller and once per USB mode if the pad has a mode switch.
 
 ## 1. Identify the pad
 
