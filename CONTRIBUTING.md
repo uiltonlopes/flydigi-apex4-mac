@@ -42,7 +42,8 @@ Commit messages in English or Portuguese are both fine. Reviews usually happen w
 
 ## Adding another Flydigi controller
 
-See `docs/adding-a-controller.md`. Same-generation pads (Apex 3, Vader 3) are a few evenings of work;
+See `docs/adding-a-controller.md`. If you own another Flydigi pad but do not code, running `flydigi-probe`
+(from the Releases page) and sending its report is already a big help. Same-generation pads (Apex 3, Vader 3) are a few evenings of work;
 the new-protocol ones (Apex 5, Vader 4 Pro/5) are a project.
 
 ## Reporting bugs

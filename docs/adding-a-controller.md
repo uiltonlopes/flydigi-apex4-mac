@@ -14,6 +14,22 @@ Vader 3/3 Pro) and a real project for the new-protocol ones (Apex 5, Vader 4 Pro
 - Never leave a pad in a worse state than you found it: dump its configs first
   (`apex4 config dump ./backup`), restore afterwards.
 
+## 0.5 Owners who are not developers: run the probe
+
+You do not need Xcode to help. Download `flydigi-probe-<version>-macos.zip` from the
+[Releases](https://github.com/uiltonlopes/flydigi-space-station-mac/releases) page, connect the controller with its
+cable (or dongle), and in Terminal:
+
+```bash
+cd ~/Downloads && unzip -o flydigi-probe-*-macos.zip && ./flydigi-probe
+```
+
+For 15 seconds press every button once, move both sticks in a circle, pull both triggers. The tool writes
+`flydigi-probe-<date>.txt` on your Desktop: USB and HID interfaces with their report descriptors, the input reports
+that changed, and (Apex 4 family only) the device info. It never writes to the controller. Send the file with the
+model, firmware version and connection type in an issue or a DM. Run it once per controller and once per USB mode
+if the pad has a mode switch.
+
 ## 1. Identify the pad
 
 ```bash

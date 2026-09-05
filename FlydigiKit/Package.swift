@@ -9,6 +9,7 @@ let package = Package(
         .library(name: "FlydigiTransport", targets: ["FlydigiTransport"]),
         .library(name: "FlydigiHelperProtocol", targets: ["FlydigiHelperProtocol"]),
         .executable(name: "apex4", targets: ["apex4"]),
+        .executable(name: "flydigi-probe", targets: ["flydigi-probe"]),
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser.git", from: "1.5.0"),
@@ -30,6 +31,12 @@ let package = Package(
                 "FlydigiKit", "FlydigiTransport", "FlydigiHelperProtocol",
                 .product(name: "ArgumentParser", package: "swift-argument-parser"),
             ]
+        ),
+        // Read-only survey tool for owners of other Flydigi models (see docs/adding-a-controller.md).
+        .executableTarget(
+            name: "flydigi-probe",
+            dependencies: ["FlydigiKit"],
+            linkerSettings: [.linkedFramework("IOKit")]
         ),
         .testTarget(
             name: "FlydigiKitTests",

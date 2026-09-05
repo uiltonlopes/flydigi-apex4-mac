@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- `flydigi-probe`: read-only survey tool for owners of other Flydigi models (USB/HID descriptors, input-report capture, Apex 4 device info), shipped as a signed universal binary next to the release.
+
 ## 0.2.0 — 2026-09-04
 
 First signed and notarized release. Everything Space Station 4 offers for the Apex 4, plus keyboard/mouse mapping, per-game profiles, GIPHY, share codes and firmware updates from the Mac.
